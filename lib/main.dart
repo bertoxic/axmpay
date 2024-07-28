@@ -10,7 +10,7 @@ import 'package:fintech_app/routes/router.dart';
 import 'package:fintech_app/services/api_service.dart';
 
 final ColorScheme colorScheme = ColorScheme(
-  primary: Colors.green, // Primary color used for app bars, buttons, etc.
+  primary: Color(0xff462eb4), // Primary color used for app bars, buttons, etc.
   primaryContainer:  Color(0xFFFFFFFF), // A darker variant of the primary color
   secondary: Colors.amber, // Secondary color used for accents
   secondaryContainer: Colors.amber.shade700, // A darker variant of the secondary color
@@ -18,8 +18,8 @@ final ColorScheme colorScheme = ColorScheme(
   background: Color(0xFFE8F3E9), // The main background color of the app
   error: Colors.red, // The color used for error states
   onPrimary: Colors.white, // The color used for text/icons on primary color
-  onSecondary: Colors.green.shade900, // The color used for text/icons on secondary color
-  onSurface: Color(0xB20E4917), // The color used for text/icons on surface color
+  onSecondary: Color(0x78241A7A), // The color used for text/icons on secondary color
+  onSurface: Color(0xB20E1C49), // The color used for text/icons on surface color
   onBackground: Color(0xEAFFFFFF), // The color used for text/icons on background color
   onError: Colors.white, // The color used for text/icons on error color
   brightness: Brightness.light, // Specifies whether the color scheme is dark or light

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fintech_app/ui/%20widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:fintech_app/ui/%20widgets/custom_text/custom_apptext.dart';
 import 'package:flutter/cupertino.dart';
@@ -78,6 +80,7 @@ class LoginPage extends StatelessWidget {
                           userdetails.email = _emailController.value.text;
                           userdetails.password = _passwordController.value.text;
                           authProvider.Login(userdetails);
+
                           context.goNamed("/home");
                         },
                           type: ButtonType.elevated,

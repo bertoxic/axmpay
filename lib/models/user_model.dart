@@ -158,7 +158,7 @@ class UserDetails {
 
 
 class UserData {
-  final String status;
+ // final String status;
   final int id;
   final String apiKey;
   final String refby;
@@ -193,7 +193,7 @@ class UserData {
   final String date;
 
   UserData({
-    required this.status,
+   // required this.status,
     required this.id,
     required this.apiKey,
     required this.refby,
@@ -227,10 +227,9 @@ class UserData {
     required this.password,
     required this.date,
   });
-
   factory UserData.fromJson(Map<String, dynamic> json) {
     return UserData(
-      status: json['status'],
+      //status: json['status'],
       id: json['data']['id'],
       apiKey: json['data']['api_key'],
       refby: json['data']['refby'],
@@ -265,10 +264,86 @@ class UserData {
       date: json['data']['Date'],
     );
   }
+  factory UserData.fromMap(Map<String, dynamic> json) {
+    return UserData(
+      //status: json['status'],
+      id: json['id'],
+      apiKey: json['api_key'],
+      refby: json['refby'],
+      refLink: json['refLink'],
+      vkey: json['vkey'],
+      refStatus: json['refStatus'],
+      earn: json['earn'],
+      userStatus: json['status'],
+      phoneStatus: json['phoneStatus'],
+      emailStatus: json['emailStatus'],
+      typeId: json['Type_ID'],
+      bvn: json['BVN'],
+      nin: json['NIN'],
+      type: json['type'],
+      aid: json['AID'],
+      accountStatus: json['accountStatus'],
+      fullName: json['fullName'],
+      accountNumber: json['accountNumber'],
+      customerId: json['customerID'],
+      availableBalance: json['availableBalance'],
+      imageName: json['ImageName'],
+      firstname: json['firstname'],
+      lastname: json['lastname'],
+      dob: json['DOB'],
+      gender: json['gender'],
+      email: json['email'],
+      phone: json['phone'],
+      country: json['country'],
+      address: json['address'],
+      username: json['username'],
+      password: json['password'],
+      date: json['Date'],
+    );
+  }
 
+  Map<String, dynamic> toMap() {
+    return {
+      //'status': status,
+
+        'id': id,
+        'api_key': apiKey,
+        'refby': refby,
+        'refLink': refLink,
+        'vkey': vkey,
+        'refStatus': refStatus,
+        'earn': earn,
+        'status': userStatus,
+        'phoneStatus': phoneStatus,
+        'emailStatus': emailStatus,
+        'Type_ID': typeId,
+        'BVN': bvn,
+        'NIN': nin,
+        'type': type,
+        'AID': aid,
+        'accountStatus': accountStatus,
+        'fullName': fullName,
+        'accountNumber': accountNumber,
+        'customerID': customerId,
+        'availableBalance': availableBalance,
+        'ImageName': imageName,
+        'firstname': firstname,
+        'lastname': lastname,
+        'DOB': dob,
+        'gender': gender,
+        'email': email,
+        'phone': phone,
+        'country': country,
+        'address': address,
+        'username': username,
+        'password': password,
+        'Date': date,
+
+    };
+  }
   Map<String, dynamic> toJson() {
     return {
-      'status': status,
+      //'status': status,
       'data': {
         'id': id,
         'api_key': apiKey,
