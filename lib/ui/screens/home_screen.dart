@@ -99,7 +99,7 @@ import 'package:provider/provider.dart';
                                           end: Alignment.bottomRight,
                                           colors: <Color>[
                                             colorScheme.primary,
-                                            Color(0xB20CAB18),
+                                            Color(0xB20C93AB),
                                             // Color(0xB643C036),
                                             Color(0xFF5EE862),
                                           ]),
@@ -195,13 +195,13 @@ import 'package:provider/provider.dart';
                                   Container(
                                     height: 40.w,
                                     decoration: BoxDecoration(
-                                        color: Colors.green.shade400,
+                                        color: colorScheme.primary,
                                         borderRadius: const BorderRadius.only(
                                             topLeft: Radius.circular(8),
                                             bottomLeft: Radius.circular(8))),
                                     child: Padding(
                                       padding: EdgeInsets.all(8.0),
-                                      child: AppText.caption("Ng +234"),
+                                      child: AppText.caption("Ng +234", color: Colors.grey.shade200,),
                                     ),
                                   ),
                                   SizedBox(
@@ -294,7 +294,7 @@ Widget _buildColumn(IconData icon, String text) {
         children: [
           Icon(
             icon,
-            color: Colors.green.shade400,
+            color: colorScheme.onSecondaryContainer,
           ),
           SizedBox(height: 4.h), // Add some space between icon and text
           AppText.caption(
@@ -416,7 +416,7 @@ class BottomSheetContent extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.wallet_sharp,
-                        color: Colors.green.shade700,
+                        color: colorScheme.onSecondary,
                       ),
                       //  SizedBox(width: 30.w,),
                       Column(

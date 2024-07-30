@@ -16,6 +16,7 @@ import '../../constants/app_colors.dart';
 import '../../main.dart';
 import '../../models/user_model.dart';
 import '../../providers/authentication_provider.dart';
+import '../../providers/user_service_provider.dart';
 
 class LoginPage extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
@@ -26,7 +27,7 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
      LoginDetails userdetails =LoginDetails(email: "oyehbaze@gmail.com", password: "1234");
     final authProvider = Provider.of<AuthenticationProvider>(context);
-    return  Form(
+     return  Form(
       key: _formKey,
       child: Scaffold(
         appBar: AppBar(title: const Text("Signin to your account"),),
@@ -80,11 +81,10 @@ class LoginPage extends StatelessWidget {
                           userdetails.email = _emailController.value.text;
                           userdetails.password = _passwordController.value.text;
                           authProvider.Login(userdetails);
-
                           context.goNamed("/home");
                         },
                           type: ButtonType.elevated,
-                          backgroundColor: Colors.green,
+                          backgroundColor: colorScheme.primary,
                         text: "Login",
                         ),
                       ),

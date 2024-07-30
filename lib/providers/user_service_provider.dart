@@ -1,6 +1,4 @@
-
-
-  import 'dart:convert';
+import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:fintech_app/database/database.dart';
@@ -13,33 +11,76 @@ import 'package:sqflite/sqflite.dart';
 
 import '../models/user_model.dart';
 
-class UserServiceProvider extends ChangeNotifier{
-  UserData? userdata ;
+class UserServiceProvider extends ChangeNotifier {
+  UserData? userdata;
+  Wallet? wallet;
+  BankListResponse? bankListResponse;
   ApiService apiService = ApiService();
-UserRepository userRepo  = UserRepository();
-  Future<UserData?>  getUserDetails() async{
-    try{
+  UserRepository userRepo = UserRepository();
+
+
+  //     https://www.axmpay.com/api/v1/getBankNames.php
+
+  Future<UserData?> getUserDetails() async {
+    try {
       String? token = await SharedPreferencesUtil.getString('auth_token');
-      Response response  = await apiService.get("getUserDetails.php", token);
-      if (response.statusCode != 200 ){
-        throw Exception("status code is  : ${response.statusCode}, henczz error");
+      Response response = await apiService.get("getUserDetails.php", token);
+      await getWalletDetails();
+      if (response.statusCode != 200) {
+        throw Exception(
+            "status code is  : ${response.statusCode}, hence error");
       }
-      userdata =  UserData.fromJson(jsonDecode(response.data));
-      if (userdata != null){
+      userdata = UserData.fromJson(jsonDecode(response.data));
+     // await getWalletDetails();
+      await getBankNames();
+      if (userdata != null) {
         userRepo.insertUser(userdata!);
-        if(userdata?.id !=null){
+        if (userdata?.id != null) {
           UserData? usr = await userRepo.getUserById(userdata!.id);
-          print("userrr from database isss ${usr?.email}");
         }
-      }else{
+      } else {
         throw Exception("userdata is null ....user_service_provider.dart");
       }
+    } catch (e) {
+      print("errorrr : $e");
+    }
+    notifyListeners();
+    return userdata;
+  }
 
-    }catch(e){
+  Future<Wallet?> getWalletDetails() async {
+    try {
+
+      String? token = await SharedPreferencesUtil.getString('auth_token');
+      Response response = await apiService.get("walletEnquiry.php", token);
+      wallet = Wallet.fromJson(jsonDecode(response.data));
+      if (response.statusCode ==200) {
+         // print("wallllett is ${wallet?.toJson()}");
+
+      }
+      if (response.statusCode != 200) {
+        throw Exception(
+            "status code is  : ${response.statusCode}, hence error");
+      }
+
+          print(jsonDecode(response.data));
+    } catch (e) {
       print("errorrr : $e");
     }
 
-    return userdata;
+    return wallet;
+  }
+
+  Future<BankListResponse?> getBankNames() async {
+
+    String? token = await SharedPreferencesUtil.getString("auth_token");
+   Response response = await apiService.get("getBankNames.php", token);
+   var jsondata = jsonDecode(response.data);
+    bankListResponse = BankListResponse.fromJson(jsondata);
+
+  notifyListeners();
+  print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ${bankListResponse?.bankList[0].bankName}");
+    return bankListResponse;
   }
 
 

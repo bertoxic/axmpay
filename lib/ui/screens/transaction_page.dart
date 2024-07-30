@@ -1,22 +1,60 @@
+import 'dart:math';
+
 import 'package:fintech_app/constants/app_colors.dart';
+import 'package:fintech_app/providers/user_service_provider.dart';
 import 'package:fintech_app/ui/%20widgets/custom_buttons.dart';
 import 'package:fintech_app/ui/%20widgets/custom_container.dart';
+import 'package:fintech_app/ui/%20widgets/custom_pop_up.dart';
 import 'package:fintech_app/ui/%20widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:fintech_app/ui/%20widgets/custom_text/custom_apptext.dart';
 import 'package:fintech_app/ui/%20widgets/custom_textfield.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class TransferScreen extends StatelessWidget {
-  const TransferScreen({super.key});
+import '../../models/user_model.dart';
+
+class TransferScreen extends StatefulWidget {
+   TransferScreen({super.key});
 
   @override
+  State<TransferScreen> createState() => _TransferScreenState();
+}
+class _TransferScreenState extends State<TransferScreen> {
+  final TextEditingController _controller = TextEditingController();
+  List<Bank> filter_search = [];
+  List<Bank> total_items = [];
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<UserServiceProvider>(context, listen: false).getBankNames();
+      _controller.addListener(_filterItems);
+    filter_search = total_items;
+  }
+  void dispose() {
+    _controller.removeListener(_filterItems);
+    _controller.dispose();
+    super.dispose();
+  }
+  void _filterItems() {
+    final query = _controller.value.text.toLowerCase();
+    setState(() {
+      filter_search = total_items.where((item) {
+       // String? bankname = item.bankName?.toLowerCase();
+        print("$query");
+        return item.bankName!.toLowerCase()!.contains(query);
+      }).toList();
+    });
+  }
+  @override
   Widget build(BuildContext context) {
-    return  Scaffold(
+    final userp = Provider.of<UserServiceProvider>(context);
+    total_items = userp.bankListResponse?.bankList ?? [];
+  return  Scaffold(
       appBar: AppBar(),
       body: SpacedContainer(
         containerColor: Colors.grey.shade200,
-        margin: const EdgeInsets.all(8),  
+        margin: const EdgeInsets.all(8),
         child: SingleChildScrollView(
           child: Column(
                 children: [
@@ -30,19 +68,105 @@ class TransferScreen extends StatelessWidget {
                             backgroundColor: Colors.grey.shade300,
                             child: Icon(Icons.person),
                             )),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AppText.caption("kanibari numan"),
-                            AppText.body("07 74994888")
-                          ],
-                        ),
-
+    Consumer<UserServiceProvider>(
+    builder: (context, userServiceProvider, child) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppText.caption("${userp.userdata?.fullName}"),
+          AppText.body("${userServiceProvider.userdata?.availableBalance}")
+        ],
+      ); //xxxxxxxxxx
+    })
                       ],
                     ),
                   ),
+
+                  SpacedContainer(
+                    height: 100.h,
+                      containerColor: Colors.red.shade200,
+                      borderRadius: BorderRadius.circular(8),
+                      padding: EdgeInsets.all(8.sp),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                        Row(
+                          children: [
+                            AppText.subtitle("Select Bank"),
+                          ],),
+    GestureDetector(
+      onTap: (){
+
+           ScrollablePopup.show(context: context,
+               isDismissible: true,
+               child:  StatefulBuilder(
+    builder: (BuildContext context, StateSetter setState)
+           {
+             return SizedBox(
+               width: 340.h,
+               height: 800.h,
+               child: Consumer<UserServiceProvider>(
+                 builder: (context, userServiceProvider, child) {
+                   return Column(
+                     children: [
+                       SizedBox(
+                           height: 36.h,
+                           width: 240.w,
+                           child: CustomTextField(
+                             controller: _controller,
+                             onChanged: (value) {
+                               setState(() {
+                                 _filterItems();
+                               });
+                             },
+                             fieldName: "fieldName", hintText: "search bank",
+                           )),
+                       SizedBox(
+                         width: 340.h,
+                         height: 720.h,
+                         child: ListView.builder(
+                           itemCount: filter_search.length,
+                           itemBuilder: (BuildContext context, int index) {
+                             final item = filter_search[index];
+                             Color itemColor = getRandomColor();
+                             return ListTile(onTap: () {
+                               print("${item?.bankName}");
+                               Navigator.pop(context);
+                             },
+                               leading: Container(
+                                   padding: EdgeInsets.all(4),
+                                   decoration: BoxDecoration(
+                                     borderRadius: BorderRadius.circular(100),
+                                       color: itemColor.withOpacity(0.2),
+                                   ),
+                                   child: Icon(Icons.home_work_outlined,)),
+                               iconColor: itemColor,
+                               title: AppText.caption(item?.bankName ?? ""),
+                               // Add more widgets (e.g., subtitle, trailing icon) as needed
+                             );
+                           },
+                         ),
+                       ),
+                     ],
+                   );
+                 }, //////////////////////////////////////
+               ),
+             );
+           },)
+    );
+      },
+      child: Consumer<UserServiceProvider>(
+      builder: (context, userServiceProvider, child) {
+        return AppText.caption(
+            userServiceProvider.bankListResponse?.bankList[3].bankName ?? "loading ...");
+      }),
+    ),
+                        ],)),
+                  SizedBox(
+                    height: 20.h,
+                  ),
                   Container(
-                    height: 150.sp,
+                    height: 100.sp,
                     padding: EdgeInsets.all(12.sp),
                     decoration: BoxDecoration(
                         color: AppColors.white,
@@ -63,9 +187,10 @@ class TransferScreen extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(16)
                               ),
                               child: SpacedContainer(
-                                padding: EdgeInsets.all(4.sp),
+                                padding: EdgeInsets.all(2.sp),
                                 child: AppText.caption(
                                   "transaction amount",
+                                  style: TextStyle(fontSize: 8.sp),
                                   color: Colors.green.shade800,
                                 ),
                               ),
@@ -74,29 +199,23 @@ class TransferScreen extends StatelessWidget {
                           ],
                         ),
                         SizedBox(height: 8.sp,),
-                        CustomTextField(
-                          hintText: "  100 - 50 000 000",
-                            prefix: AppText.body("\$"),
-                            decoration: const InputDecoration(
-                              enabledBorder: OutlineInputBorder(
-                                borderSide:BorderSide(color: Color(0xFAEAEAEA)),
-                                    borderRadius: BorderRadius.all(Radius.circular(12))
-                              ),
-                              focusedBorder: UnderlineInputBorder(
+                        SizedBox( height: 40.h,
+                          child: CustomTextField(
+                            hintText: "  100 - 50 000 000",
+                              prefix: AppText.body("\$"),
 
-                              )
-                            ),
-                            fieldName: "transaction_amount")
+                              fieldName: "transaction_amount"),
+                        )
                       ],
                     ),
                   ),
                   SizedBox(
-                    height: 30.h,
+                    height: 20.h,
                   ),
                   Container(
-                    height: 150.h,
+                    height: 100.h,
                     width: double.maxFinite,
-                    padding: EdgeInsets.all(16.sp),
+                    padding: EdgeInsets.all(12.sp),
                     decoration: BoxDecoration(
                         color: AppColors.white,
                         borderRadius: BorderRadius.circular(8)
@@ -106,22 +225,15 @@ class TransferScreen extends StatelessWidget {
                       children: [
                         AppText.body("Remark"),
                         SizedBox(height: 8.sp,),
-                        CustomTextField(
-                          hintText: "write anything here",
-                            decoration: InputDecoration(
-                              filled: true,
-                                fillColor: AppColors.lightgrey,
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide.none
-                                ),
-                                focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Colors.green.shade800)
-                                )
-                            ),
-                            fieldName: "remark")
+                        SizedBox(
+                          height: 40.h,
+                          child: CustomTextField(
+                            hintText: "write anything here",
+                              fieldName: "remark"),
+                        )
                       ],
                     ),),
-  SizedBox(height: 50.h,),
+  SizedBox(height: 20.h,),
                 CustomButton(
                     text: "Confirm",
                   type: ButtonType.elevated,
@@ -262,4 +374,23 @@ class BottomSheetContent extends StatelessWidget {
       ],
     );
   }
+}
+
+Color getRandomColor() {
+  final List<Color> _colors = [
+    Colors.red,
+    Colors.blue,
+    Colors.green,
+    Colors.yellow,
+    Colors.orange,
+    Colors.purple,
+    Colors.pink,
+    Colors.brown,
+    Colors.cyan,
+    Colors.teal,
+    Colors.indigo,
+    Colors.lime,
+  ];
+  final randomIndex = Random().nextInt(_colors.length);
+  return _colors[randomIndex];
 }

@@ -124,6 +124,7 @@ class CustomTextField extends StatelessWidget {
       decoration: (decoration ??  InputDecoration(
           filled: true,
           fillColor: AppColors.lightgrey,
+          contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20.0),
             borderSide: BorderSide(color: Colors.green),
@@ -137,6 +138,7 @@ class CustomTextField extends StatelessWidget {
             borderSide: BorderSide(color: Colors.red),
           )
       )).copyWith(
+        constraints: const BoxConstraints(minHeight: 10),
         hintText: hintText,
         labelText: labelText,
         hintStyle: hintStyle??const TextStyle(color: Colors.grey),

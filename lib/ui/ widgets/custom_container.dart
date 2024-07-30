@@ -4,6 +4,8 @@
 import 'package:flutter/cupertino.dart';
 
 class SpacedContainer extends StatelessWidget {
+  final double? height;
+  final double? width;
  final  Widget child;
  final EdgeInsets padding;
  final EdgeInsets margin;
@@ -17,11 +19,15 @@ class SpacedContainer extends StatelessWidget {
     this.margin= const EdgeInsets.all(4.0),
    this.containerColor,
    this.borderRadius,
+    this.height,
+    this.width,
 }): super(key:key);
 
 @override
   Widget build(BuildContext context){
   return Container(
+    height: height,
+    width: width,
     padding: padding,
     margin: margin,
     decoration: BoxDecoration(

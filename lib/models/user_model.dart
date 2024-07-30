@@ -387,3 +387,163 @@ String toString() {
 
 }
 
+class Wallet {
+  final String status;
+  final bool isSuccessful;
+  final double? maximumDeposit;
+  final String phoneNumber;
+  final String pndStatus;
+  final String accountStatus;
+  final String name;
+  final String number;
+  final String responseCode;
+  final String? responseMessage;
+  final String? responseStatus;
+  final String productCode;
+  final String? email;
+  final String? firstName;
+  final String? lastName;
+  final String lienStatus;
+  final String bvn;
+  final double availableBalance;
+  final String freezeStatus;
+  final double ledgerBalance;
+  final double maximumBalance;
+  final String nuban;
+  final String tier;
+  final String responseDescription;
+
+  Wallet({
+    required this.status,
+    required this.isSuccessful,
+    this.maximumDeposit,
+    required this.phoneNumber,
+    required this.pndStatus,
+    required this.accountStatus,
+    required this.name,
+    required this.number,
+    required this.responseCode,
+    this.responseMessage,
+    this.responseStatus,
+    required this.productCode,
+    this.email,
+    this.firstName,
+    this.lastName,
+    required this.lienStatus,
+    required this.bvn,
+    required this.availableBalance,
+    required this.freezeStatus,
+    required this.ledgerBalance,
+    required this.maximumBalance,
+    required this.nuban,
+    required this.tier,
+    required this.responseDescription,
+  });
+
+  factory Wallet.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] as Map<String, dynamic>;
+    return Wallet(
+      status: json['status'] as String,
+      isSuccessful: data['isSuccessful'] as bool,
+      maximumDeposit: data['maximumDeposit'] as double?,
+      phoneNumber: data['phoneNuber'] as String, // Note: There's a typo in the JSON key
+      pndStatus: data['pndstatus'] as String,
+      accountStatus: data['status'] as String,
+      name: data['name'] as String,
+      number: data['number'] as String,
+      responseCode: data['responseCode'] as String,
+      responseMessage: data['responseMessage'] as String?,
+      responseStatus: data['responseStatus'] as String?,
+      productCode: data['productCode'] as String,
+      email: data['email'] as String?,
+      firstName: data['firstName'] as String?,
+      lastName: data['lastName'] as String?,
+      lienStatus: data['lienStatus'] as String,
+      bvn: data['bvn'] as String,
+      availableBalance: data['availableBalance'] as double,
+      freezeStatus: data['freezeStatus'] as String,
+      ledgerBalance: data['ledgerBalance'] as double,
+      maximumBalance: data['maximumBalance'] as double,
+      nuban: data['nuban'] as String,
+      tier: data['tier'] as String,
+      responseDescription: data['responseDescription'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'status': status,
+      'data': {
+        'isSuccessful': isSuccessful,
+        'maximumDeposit': maximumDeposit,
+        'phoneNuber': phoneNumber, // Note: Keeping the typo as in the original JSON
+        'pndstatus': pndStatus,
+        'status': accountStatus,
+        'name': name,
+        'number': number,
+        'responseCode': responseCode,
+        'responseMessage': responseMessage,
+        'responseStatus': responseStatus,
+        'productCode': productCode,
+        'email': email,
+        'firstName': firstName,
+        'lastName': lastName,
+        'lienStatus': lienStatus,
+        'bvn': bvn,
+        'availableBalance': availableBalance,
+        'freezeStatus': freezeStatus,
+        'ledgerBalance': ledgerBalance,
+        'maximumBalance': maximumBalance,
+        'nuban': nuban,
+        'phoneNo': phoneNumber,
+        'tier': tier,
+        'responseDescription': responseDescription,
+      },
+    };
+  }
+}
+
+class Bank {
+  String? bankName;
+  int? bankCode;
+  int? nibssBankCode;
+
+  Bank({required this.bankCode, required this.bankName,required this.nibssBankCode});
+
+  factory Bank.fromJson(Map<String, dynamic> json){
+    return Bank(
+        bankCode: json["bankCode"] is int ? json["bankCode"] : int.tryParse(json["bankCode"].toString()),
+        //bankCode: json["bankCode"],
+        bankName: json["bankName"],
+        nibssBankCode: json["nibssBankCode"] is int ? json["nibssBankCode"] : int.tryParse(json["bankCode"].toString()));
+  }
+    Map<String, dynamic> toJson(){
+    return {
+      "bankCode":bankCode,
+      "bankName": bankName,
+      "nibssBankCode" : nibssBankCode
+    };
+    }
+}
+
+class BankListResponse {
+  final String status;
+  final String message;
+  final List<Bank> bankList;
+
+  BankListResponse({
+    required this.status,
+    required this.message,
+    required this.bankList,
+  });
+
+  factory BankListResponse.fromJson(Map<String, dynamic> json) {
+    return BankListResponse(
+      status: json['status'],
+      message: json['message'],
+      bankList: (json['data']['bankList'] as List)
+          .map((bankJson) => Bank.fromJson(bankJson))
+          .toList(),
+    );
+  }
+}

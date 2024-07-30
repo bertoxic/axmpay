@@ -16,8 +16,8 @@ class AppTextTheme {
   static TextStyle display({Color? color}) => _baseTextStyle(40, FontWeight.bold, color: color, height: 1.2);
   static TextStyle headline({Color? color}) => _baseTextStyle(32, FontWeight.bold, color: color, height: 1.3);
   static TextStyle title({Color? color}) => _baseTextStyle(24, FontWeight.w600, color: color, height: 1.4);
-  static TextStyle subtitle({Color? color}) => _baseTextStyle(18, FontWeight.w500, color: color, height: 1.5);
-  static TextStyle body({Color? color}) => _baseTextStyle(16, FontWeight.normal, color: color, height: 1.5);
+  static TextStyle subtitle({Color? color}) => _baseTextStyle(16, FontWeight.w500, color: color, height: 1.5);
+  static TextStyle body({Color? color}) => _baseTextStyle(14, FontWeight.normal, color: color, height: 1.5);
   static TextStyle caption({Color? color}) => _baseTextStyle(14, FontWeight.w400, color: color, height: 1.4);
   static TextStyle overline({Color? color}) => _baseTextStyle(12, FontWeight.w300, color: color, height: 1.3);
 }
