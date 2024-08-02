@@ -1,6 +1,7 @@
 import 'package:fintech_app/ui/screens/MainWrapper.dart';
 import 'package:fintech_app/ui/screens/details.dart';
 import 'package:fintech_app/ui/screens/transaction_page.dart';
+import 'package:fintech_app/ui/screens/user_profile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
@@ -16,6 +17,7 @@ final  _rootNavigatorSettings= GlobalKey<NavigatorState>(debugLabel: 'shellSetti
 final  _rootNavigatorProfile= GlobalKey<NavigatorState>(debugLabel: 'shellProfile');
 final  _rootNavigatorFinance= GlobalKey<NavigatorState>(debugLabel: 'shellFinance');
 final  _rootNavigatorTransfer= GlobalKey<NavigatorState>(debugLabel: 'shellTransfer');
+final  _rootNavigatorUserProfile= GlobalKey<NavigatorState>(debugLabel: 'shellUserProfile');
 final GoRouter  _router = GoRouter(
   initialLocation: '/register',
   navigatorKey: _rootNavigatorKey,
@@ -87,6 +89,21 @@ final GoRouter  _router = GoRouter(
               name: '/user_details_page',
               builder: (BuildContext context, GoRouterState state) {
                 return   DetailsPage(
+                  key: state.pageKey,
+                );
+              },
+            ),
+
+      ]),
+      StatefulShellBranch(
+          navigatorKey: _rootNavigatorUserProfile,
+          initialLocation: "/user_profile_page",
+          routes: [
+            GoRoute(
+              path: '/user_profile_page',
+              name: '/user_profile_page',
+              builder: (BuildContext context, GoRouterState state) {
+                return   UserProfileScreen(
                   key: state.pageKey,
                 );
               },

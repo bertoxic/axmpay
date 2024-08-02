@@ -55,7 +55,7 @@ class UserServiceProvider extends ChangeNotifier {
       Response response = await apiService.get("walletEnquiry.php", token);
       wallet = Wallet.fromJson(jsonDecode(response.data));
       if (response.statusCode ==200) {
-         // print("wallllett is ${wallet?.toJson()}");
+          print("wallllett is ${wallet?.toJson()}");
 
       }
       if (response.statusCode != 200) {
@@ -79,9 +79,14 @@ class UserServiceProvider extends ChangeNotifier {
     bankListResponse = BankListResponse.fromJson(jsondata);
 
   notifyListeners();
-  print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ${bankListResponse?.bankList[0].bankName}");
     return bankListResponse;
   }
 
-
+       getReceiversAccountDetails(AccountRequestDetails accountRequestDetails) async {
+    final data = accountRequestDetails.toJson();
+           String? token = await SharedPreferencesUtil.getString('auth_token');
+         final  response =  await apiService.post("getAccountDetails.php", data, token);
+    var jsonData = jsonDecode(response.data);
+        print(jsonData.toString());
+        }
 }

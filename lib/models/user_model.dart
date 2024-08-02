@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class LoginDetails {
   String email;
   String password;
@@ -545,5 +547,23 @@ class BankListResponse {
           .map((bankJson) => Bank.fromJson(bankJson))
           .toList(),
     );
+  }
+}
+
+class AccountRequestDetails{
+  String accountNumber;
+  String bankCode;
+  String senderAccountNumber;
+  AccountRequestDetails({
+    required this.accountNumber,
+    required this.bankCode, required
+    this.senderAccountNumber});
+  Map<String, dynamic>  toJson(){
+    return {
+      "accountNumber" : accountNumber,
+      "bankCode" : bankCode,
+      "senderAccountNumber" : senderAccountNumber,
+    };
+
   }
 }

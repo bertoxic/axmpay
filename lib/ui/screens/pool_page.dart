@@ -1,12 +1,16 @@
 import 'package:flutter/cupertino.dart';
 
-class poolScreen extends StatelessWidget {
-  const poolScreen({super.key});
+
+class PoolScreen extends StatefulWidget {
+  const PoolScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return  SingleChildScrollView(
+  State<PoolScreen> createState() => _PoolScreenState();
+}
 
-    );
+class _PoolScreenState extends State<PoolScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
   }
 }

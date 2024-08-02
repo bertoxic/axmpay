@@ -1,3 +1,4 @@
+
 import 'package:fintech_app/constants/app_colors.dart';
 import 'package:fintech_app/main.dart';
 import 'package:fintech_app/models/user_model.dart';
@@ -11,6 +12,7 @@ import 'package:fintech_app/ui/%20widgets/custom_responsive_sizes/responsive_siz
 import 'package:fintech_app/ui/%20widgets/custom_text/custom_apptext.dart';
 import 'package:fintech_app/ui/%20widgets/custom_textfield.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
     class HomePage extends StatelessWidget {
@@ -19,7 +21,7 @@ import 'package:provider/provider.dart';
       @override
       Widget build(BuildContext context) {
         String? selectedValue = "";
-        UserServiceProvider userProvider= UserServiceProvider();
+        final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
         return Container(
             //color: Colors.green,
             child: Scaffold(
@@ -28,17 +30,8 @@ import 'package:provider/provider.dart';
             scrollDirection: Axis.vertical,
             child: Container(
               color: colorScheme.background,
-              child: FutureBuilder<UserData?>(
-                future: userProvider.getUserDetails(),
-                builder: (BuildContext context, AsyncSnapshot<UserData?> snapshot) {
-                if(snapshot.connectionState ==ConnectionState.waiting){
-
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                }else if (snapshot.hasData && snapshot.data != null) {
-                  UserData userData = snapshot.data!;
-                  return Column(
+              child:
+                   Column(
 
                     children: [
                       Container(
@@ -59,12 +52,12 @@ import 'package:provider/provider.dart';
                                         CircleAvatar(
                                           radius: 20.sp,
                                           backgroundColor: Colors.grey,
-                                          child: Text("${userData.username}"),
+                                          child: Text("${userProvider.userdata?.username}"),
                                         ),
                                         Padding(
                                           padding: EdgeInsets.symmetric(
                                               horizontal: 8.w, vertical: 0),
-                                          child:  Text("${userData.firstname} ${userData.lastname}"),
+                                          child:  Text("${userProvider.userdata?.firstname} ${userProvider.userdata?.lastname}"),
                                         )
                                       ],
                                     ),
@@ -123,7 +116,7 @@ import 'package:provider/provider.dart';
                                         ),
                                         Center(
                                             child: AppText.title(
-                                              "\$ ${userData.availableBalance}",
+                                              "\$ ${userProvider.userdata?.availableBalance}",
                                               color: colorScheme.onPrimary,
                                             )),
                                       ],
@@ -157,9 +150,11 @@ import 'package:provider/provider.dart';
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                                 children: [
-                                  _buildColumn(Icons.message, "pay bill"),
+                                  _buildColumn(Icons.message, "pay bill",),
                                   _buildColumn(Icons.food_bank_outlined, "recharge"),
-                                  _buildColumn(Icons.widgets, "buy ticket"),
+                                  _buildColumn(Icons.widgets, "buy ticket", onTap: (){
+                                    context.pushNamed("/user_profile_page");
+                                  }),
                                   _buildColumn(Icons.face, "transfer"),
                                 ],
                               ),
@@ -270,37 +265,38 @@ import 'package:provider/provider.dart';
                         ),
                       ),
                     ],
-                  );
-                } else{
-                  return  Text(snapshot.data?.fullName??" no data");
-                }
-      },
+                  ),
+
+
               ),
         ),
       ),
-    ));
+    );
   }
 }
 
-Widget _buildColumn(IconData icon, String text) {
-  return Card(
-    elevation: 0.8,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-    child: Padding(
-      padding: const EdgeInsets.all(4.0).copyWith(left: 8, right: 8),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: colorScheme.onSecondaryContainer,
-          ),
-          SizedBox(height: 4.h), // Add some space between icon and text
-          AppText.caption(
-            text,
-          ),
-        ],
+Widget _buildColumn(IconData icon, String text, {void Function()? onTap}) {
+  return InkWell(
+    onTap: onTap,
+    child: Card(
+      elevation: 0.8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+      child: Padding(
+        padding: const EdgeInsets.all(4.0).copyWith(left: 8, right: 8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: colorScheme.onSecondaryContainer,
+            ),
+            SizedBox(height: 4.h), // Add some space between icon and text
+            AppText.caption(
+              text,
+            ),
+          ],
+        ),
       ),
     ),
   );
