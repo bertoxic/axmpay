@@ -2,13 +2,13 @@ import 'package:fintech_app/main.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
-class UserProfileScreen extends StatefulWidget {
-  const UserProfileScreen({super.key});
+class AnimationBack extends StatefulWidget {
+  const AnimationBack({super.key});
   @override
-  _UserProfileScreenState createState() => _UserProfileScreenState();
+  _AnimationBackState createState() => _AnimationBackState();
 }
 
-class _UserProfileScreenState extends State<UserProfileScreen> with SingleTickerProviderStateMixin {
+class _AnimationBackState extends State<AnimationBack> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   double _dragPosition = 0.0;
 

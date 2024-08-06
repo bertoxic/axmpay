@@ -551,12 +551,12 @@ class BankListResponse {
 }
 
 class AccountRequestDetails{
-  String accountNumber;
-  String bankCode;
-  String senderAccountNumber;
+  String? accountNumber;
+  String? bankCode;
+  String? senderAccountNumber;
   AccountRequestDetails({
-    required this.accountNumber,
-    required this.bankCode, required
+     this.accountNumber,
+     this.bankCode,
     this.senderAccountNumber});
   Map<String, dynamic>  toJson(){
     return {
@@ -565,5 +565,85 @@ class AccountRequestDetails{
       "senderAccountNumber" : senderAccountNumber,
     };
 
+  }
+}
+
+class TransactionHistoryModel {
+  final int trxID;
+  final String accountName;
+  final String dateCreated;
+  final int amount;
+  final String action;
+  final String type;
+  final String status;
+
+  TransactionHistoryModel({
+    required this.trxID,
+    required this.accountName,
+    required this.dateCreated,
+    required this.amount,
+    required this.action,
+    required this.type,
+    required this.status,
+  });
+
+  factory TransactionHistoryModel.fromJson(Map<String, dynamic> json) {
+    return TransactionHistoryModel(
+      trxID: int.parse(json['trxID']),
+      accountName: json['accountName'],
+      dateCreated: json['dateCreated'],
+      //amount: json['amount'],
+      amount: int.parse(json['amount']),
+      action: json['action'],
+      type: json['type'],
+      status: json['status'],
+    );
+  }
+}
+
+
+
+class SpecificTransactionData {
+  final String trxID;
+  final String accountName;
+  final DateTime timeCreated;
+  final double amount;
+  final double fee;
+  final double totalAmount;
+  final String balAfter;
+  final String action;
+  final String narration;
+  final String type;
+  final String status;
+
+  SpecificTransactionData({
+    required this.trxID,
+    required this.accountName,
+    required this.timeCreated,
+    required this.amount,
+    required this.fee,
+    required this.totalAmount,
+    required this.balAfter,
+    required this.action,
+    required this.narration,
+    required this.type,
+    required this.status,
+  });
+
+  factory SpecificTransactionData.fromJson(Map<String, dynamic> data) {
+    Map<String, dynamic> json = data["data"];
+    return SpecificTransactionData(
+      trxID: json['trxID'],
+      accountName: json['accountName'],
+      timeCreated: DateTime.parse(json['timeCreated']),
+      amount: double.parse(json['amount']),
+      fee: double.parse(json['fee']),
+      totalAmount: double.parse(json['totalAmount']),
+      balAfter: json['balAfter'],
+      action: json['action'],
+      narration: json['narration'],
+      type: json['type'],
+      status: json['status'],
+    );
   }
 }

@@ -129,7 +129,7 @@ import 'package:provider/provider.dart';
                         padding: EdgeInsets.all(2.w),
                         margin: EdgeInsets.all(8.w),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                          borderRadius: const BorderRadius.all(Radius.circular(8)),
                           color: Colors.white.withOpacity(0.9),
                         ),
                         child: Column(
@@ -151,11 +151,15 @@ import 'package:provider/provider.dart';
                                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                                 children: [
                                   _buildColumn(Icons.message, "pay bill",),
-                                  _buildColumn(Icons.food_bank_outlined, "recharge"),
+                                  _buildColumn(Icons.food_bank_outlined, "recharge", onTap: (){
+                                    context.pushNamed("/OTP_verification");
+                                  }),
                                   _buildColumn(Icons.widgets, "buy ticket", onTap: (){
                                     context.pushNamed("/user_profile_page");
                                   }),
-                                  _buildColumn(Icons.face, "transfer"),
+                                  _buildColumn(Icons.face, "transfer", onTap: (){
+                                    context.pushNamed("/transaction_history_page");
+                                  }),
                                 ],
                               ),
                             ),

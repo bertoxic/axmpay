@@ -105,7 +105,7 @@ class RegisterPage extends StatelessWidget {
                               ),
                               errorBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20.0),
-                                borderSide: BorderSide(color: Colors.red),
+                                borderSide: const BorderSide(color: Colors.red),
                               ),
                               fillColor: AppColors.lightgrey,
                               filled: true

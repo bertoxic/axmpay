@@ -2,8 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:fintech_app/main.dart';
+import 'package:fintech_app/utils/global_error_handler.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+
+import '../utils/sharedPrefernce.dart';
 
 
 class ApiService {
@@ -22,15 +27,19 @@ class ApiService {
     ));
 
     _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) {
+      onRequest: (options, handler) async{
+        String? token = await SharedPreferencesUtil.getString("auth_token");
+        if (token != null) {
+          options.headers[HttpHeaders.authorizationHeader] = 'Bearer $token';
+        }
         print('Request: ${options.method} ${options.uri}');
         print('Headers: ${options.headers}');
         print('Data: ${options.data}');
         return handler.next(options);
       },
       onResponse: (response, handler) {
-        print('Response: ${response.statusCode}');
-        print('Response Data: ${response.data}');
+        print('Response code 1: ${response.statusCode}');
+        print('Response Data 2: ${response.data}');
         return handler.next(response);
       },
       onError: (DioException e, handler) {
@@ -42,35 +51,48 @@ class ApiService {
   }
 
   String _getBaseUrl() {
-    if (kIsWeb) return 'https://www.axmpay.com/api/v1';
+    if (kIsWeb) return 'https://www.axmpay.com/api/v1/';
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
       case TargetPlatform.iOS:
-        return 'https://www.axmpay.com/api/v1/';
+        return 'https://www.axmpay.com/app/api/v1/';
+       // return 'https://www.axmpay.com/api/v1/';
       default:
-        return 'https://www.axmpay.com/api/v1/';
+        return 'https://www.axmpay.com/app/api/v1/';
     }
   }
 
-  Future<Response> get(String endpoint, String? token) async {
+  // Future<Response> get(String endpoint, String? token) async {
+  //   try {
+  //     final response = await _dio.get(
+  //       endpoint,
+  //     options: _getOptions(token),
+  //     );
+  //     _handleResponse(response);
+  //     return response;
+  //   } on DioException catch (e) {
+  //     if (!_isShowingErrorDialog) {
+  //       _isShowingErrorDialog = true;
+  //       handleGlobalError(navigatorKey.currentContext!, e).then((_) {
+  //         _isShowingErrorDialog = false;
+  //       });
+  //     }
+  //     rethrow;
+  //     //throw _handleError(e);
+  //   }
+  // }
+
+  Future<Response> get(BuildContext context, String endpoint, String? token) async {
     try {
       final response = await _dio.get(
         endpoint,
-      options: _getOptions(token),
-    //     options: Options(
-    //       headers: {
-    //     'authorization': 'Bearer $token',
-    //     'Content-Type': 'application/json',
-    //     },
-    //       contentType: "application/json",
-    //       method: "GET",
-    //
-    //     )
+        options: _getOptions(token),
       );
       _handleResponse(response);
       return response;
     } on DioException catch (e) {
-      throw _handleError(e);
+      handleGlobalError(context, e);
+      rethrow;
     }
   }
 
@@ -87,7 +109,9 @@ class ApiService {
       _handleResponse(response);
       return response;
     } on DioException catch (e) {
-      throw _handleError(e);
+      handleGlobalError(navigatorKey.currentContext!, e);
+      rethrow;
+      //throw _handleError(e);
     }
   }
 
@@ -123,10 +147,14 @@ class ApiService {
     }
   }
   void _handleResponse(Response response) {
-    if (response.statusCode == 400) {
-    var  jsondata = jsonDecode(response.data);
-      print('Bad Request here: ${jsondata}');
-      throw BadRequestException('Bad request: ${jsondata}');
+    if (response.statusCode != 200) {
+      if (response.statusCode == 400) {
+        var  jsondata = jsonDecode(response.data);
+        throw BadRequestException('Bad request ohh: ');
+      }else if (response.statusCode == 401) {
+        throw TokenExpiredException();
+      }
+
     }
   }
 
@@ -141,6 +169,8 @@ class ApiService {
     }
   }
 }
+
+bool _isShowingErrorDialog = false;
 
 class BadRequestException implements Exception {
   final String message;

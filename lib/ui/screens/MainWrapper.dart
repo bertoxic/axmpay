@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../ widgets/custom_buttom_navbar.dart';
+import '../../utils/global_error_handler.dart';
 
 class MainWrapperPage extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -24,11 +25,15 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
     super.initState();
   }
 
-  Future<void>   _initializeUserDetails()async {
-      final userprovider =  Provider.of<UserServiceProvider>(context,listen: false);
-      final userdat = await userprovider.getUserDetails();
-      await userprovider.getBankNames();
-      await userprovider.getWalletDetails();
+  Future<void> _initializeUserDetails() async {
+    final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
+    // try {
+      final userData = await userProvider.getUserDetails(context);
+      await userProvider.getBankNames(context);
+     // await userProvider.getWalletDetails();
+    // } catch (e) {
+    //   handleGlobalError(context, e);
+    // }
   }
   void goToBranch(int index) {
     widget.navigationShell.goBranch(
@@ -44,6 +49,17 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+    //   WidgetsBinding.instance.addPostFrameCallback((_) {
+    //    // handleGlobalError(context, errorDetails.exception);
+    //   });
+    //
+    //   return const Scaffold(
+    //     body: Center(
+    //       child: Text('An error occurred. Please try again.'),
+    //     ),
+    //   );
+    // };
     return Scaffold(
       backgroundColor: Colors.grey,
       floatingActionButton: FloatingActionButton(
@@ -74,7 +90,12 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
     return const Scaffold(
     body: Center(child: CircularProgressIndicator()),
     );
-    } else if (snapshot.hasError) {
+    } else if (snapshot.hasError)
+    {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+      handleGlobalError(context, snapshot.error);
+    }
+    );
       return Scaffold(
         body: Center(child: Text('Error: ${snapshot.error}')),
       );

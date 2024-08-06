@@ -2,13 +2,13 @@
 import 'package:fintech_app/providers/Custom_Widget_State_Provider.dart';
 import 'package:fintech_app/providers/user_service_provider.dart';
 import 'package:fintech_app/ui/%20widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:fintech_app/utils/globalErrorHandler.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fintech_app/providers/authentication_provider.dart';
 import 'package:fintech_app/providers/config_provider.dart';
 import 'package:fintech_app/routes/router.dart';
 import 'package:fintech_app/services/api_service.dart';
-
 final ColorScheme colorScheme = ColorScheme(
   primary: Color(0xff462eb4), // Primary color used for app bars, buttons, etc.
   primaryContainer:  Color(0xFFFFFFFF), // A darker variant of the primary color
@@ -40,7 +40,7 @@ await configProvider.loadConfig();
         ChangeNotifierProvider<ConfigProvider>(create: (context)=>ConfigProvider()),
         ChangeNotifierProvider<UserServiceProvider>(create: (context)=>UserServiceProvider())
       ],
-      child:  MyApp()));
+      child:  GlobalErrorHandler(child: MyApp())));
 }
 
 class MyApp extends StatelessWidget {
@@ -59,9 +59,10 @@ class MyApp extends StatelessWidget {
 
       // No primary or onPrimary colors specified
     ),
-    ), colorScheme: colorScheme
+    ), colorScheme: colorScheme,
     ),
-
+    builder: (context, child) {
+    return GlobalErrorHandler(child: child!);},
     );
   }
 }

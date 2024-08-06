@@ -27,13 +27,13 @@ class AuthService {
       print("Response status code: ${response.statusCode}");
       print("Response data: ${response.data.toString()}");
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.statusCode == 200) {
         // Check if response.data is a String, if so, try to parse it
         if (response.data is String) {
+
           try {
             Map<String, dynamic> jsonData = jsonDecode(response.data);
             response.data = jsonData;
-            print("tttttttttttttttttttt ${response.data}");
           } catch (e) {
             print("Error parsing response data: $e");
           }

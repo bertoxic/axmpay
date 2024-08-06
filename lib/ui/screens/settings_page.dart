@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 
 import '../ widgets/custom_text/custom_apptext.dart';
 
-class Profile extends StatelessWidget {
-  const Profile({super.key});
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
