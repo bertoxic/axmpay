@@ -27,7 +27,7 @@ class UserProfileScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.grey.shade200
               ),
-              child: Text("helo"),
+              child: const Text("hello"),
             ),
           )
         ],
