@@ -5,12 +5,12 @@ import 'package:fintech_app/models/user_model.dart';
 import 'package:fintech_app/providers/Custom_Widget_State_Provider.dart';
 import 'package:fintech_app/providers/user_service_provider.dart';
 import 'package:fintech_app/services/auth_service.dart';
-import 'package:fintech_app/ui/%20widgets/custom_buttons.dart';
-import 'package:fintech_app/ui/%20widgets/custom_container.dart';
-import 'package:fintech_app/ui/%20widgets/custom_dropdown.dart';
-import 'package:fintech_app/ui/%20widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/ui/%20widgets/custom_text/custom_apptext.dart';
-import 'package:fintech_app/ui/%20widgets/custom_textfield.dart';
+import 'package:fintech_app/ui/widgets/custom_buttons.dart';
+import 'package:fintech_app/ui/widgets/custom_container.dart';
+import 'package:fintech_app/ui/widgets/custom_dropdown.dart';
+import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
+import 'package:fintech_app/ui/widgets/custom_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -152,7 +152,7 @@ import 'package:provider/provider.dart';
                                 children: [
                                   _buildColumn(Icons.message, "pay bill",),
                                   _buildColumn(Icons.food_bank_outlined, "recharge", onTap: (){
-                                    context.pushNamed("/OTP_verification");
+                                    context.pushNamed("/forgot_password_input_mail");
                                   }),
                                   _buildColumn(Icons.widgets, "buy ticket", onTap: (){
                                     context.pushNamed("/user_profile_page");

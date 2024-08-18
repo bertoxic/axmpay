@@ -1,7 +1,7 @@
 
 import 'package:fintech_app/providers/Custom_Widget_State_Provider.dart';
 import 'package:fintech_app/providers/user_service_provider.dart';
-import 'package:fintech_app/ui/%20widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:fintech_app/utils/globalErrorHandler.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

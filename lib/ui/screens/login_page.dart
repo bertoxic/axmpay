@@ -1,15 +1,15 @@
 import 'dart:async';
 
-import 'package:fintech_app/ui/%20widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/ui/%20widgets/custom_text/custom_apptext.dart';
+import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:fintech_app/constants/text_constants.dart';
-import 'package:fintech_app/ui/%20widgets/custom_buttons.dart';
-import 'package:fintech_app/ui/%20widgets/custom_container.dart';
-import 'package:fintech_app/ui/%20widgets/custom_textfield.dart';
+import 'package:fintech_app/ui/widgets/custom_buttons.dart';
+import 'package:fintech_app/ui/widgets/custom_container.dart';
+import 'package:fintech_app/ui/widgets/custom_textfield.dart';
 import 'package:fintech_app/utils/form_validator.dart';
 
 import '../../constants/app_colors.dart';

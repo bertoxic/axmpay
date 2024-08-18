@@ -1,35 +1,20 @@
-import 'package:fintech_app/main.dart';
-import 'package:fintech_app/ui/widgets/custom_buttons.dart';
 import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
-import 'package:fintech_app/ui/widgets/custom_textfield.dart';
-import 'package:fintech_app/utils/form_validator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import '../../../main.dart';
+import '../../../utils/form_validator.dart';
+import '../../widgets/custom_buttons.dart';
+import '../../widgets/custom_text/custom_apptext.dart';
+import '../../widgets/custom_textfield.dart';
 
-import '../../../providers/user_service_provider.dart';
-
-class InputEmailRecovery extends StatefulWidget {
-  InputEmailRecovery({super.key});
-
-  @override
-  State<InputEmailRecovery> createState() => _InputEmailRecoveryState();
-}
-
-class _InputEmailRecoveryState extends State<InputEmailRecovery> {
+class ChangePasswordScreen extends StatelessWidget {
+   ChangePasswordScreen({super.key});
   final _inputEmailFormKey = GlobalKey<FormState>();
-
-  String? email;
-
   @override
   Widget build(BuildContext context) {
-    final userProvider =
-        Provider.of<UserServiceProvider>(context, listen: false);
-
-    return Scaffold(
-      body: Column(
+    return   Scaffold(
+      body:  Column(
         children: [
           Container(
             //  color: Colors.grey,
@@ -41,7 +26,7 @@ class _InputEmailRecoveryState extends State<InputEmailRecovery> {
               key: _inputEmailFormKey,
               child: Container(
                 width: 400.w,
-                height: 240.h,
+               // height: 240.h,
                 padding: EdgeInsets.all(8.sp),
                 decoration: BoxDecoration(
                     color: colorScheme.primary.withOpacity(0.4),
@@ -49,11 +34,11 @@ class _InputEmailRecoveryState extends State<InputEmailRecovery> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    AppText.title("Input Email Address here"),
+                    AppText.title("Change Your  password "),
                     Align(
                       alignment: Alignment.center,
                       child: AppText.caption(
-                        "enter the email address associated with your account ",
+                        "enter the new password you intend to use ",
                         style: const TextStyle(
                           overflow: TextOverflow.clip,
                         ),
@@ -64,32 +49,38 @@ class _InputEmailRecoveryState extends State<InputEmailRecovery> {
                       height: 20.h,
                     ),
                     Padding(
-                      padding:
-                          EdgeInsets.all(8.0.h).copyWith(bottom: 16.h, top: 0),
+                      padding: EdgeInsets.all(8.0.h).copyWith(bottom: 16.h,top: 0),
                       child: CustomTextField(
-                        onChanged: (value) {
-                          email = value;
-                          print(email);
-                        },
                         validator: (value) => FormValidator.validate(
                           value,
                           ValidatorType.email,
                           fieldName: "",
                         ),
-                        fieldName: 'emailAddress',
-                        hintText: "enter email address",
+                        fieldName: 'password',
+                        hintText: "enter password",
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(8.0.h).copyWith(bottom: 16.h,top: 0),
+                      child: CustomTextField(
+                        validator: (value) => FormValidator.validate(
+                          value,
+                          ValidatorType.email,
+                          fieldName: "",
+                        ),
+                        fieldName: 'confirm_password',
+                        hintText: "confirm your password",
                       ),
                     ),
                     CustomButton(
-                      text: "Recover Password",
+                      text: "Reset Password",
                       size: ButtonSize.large,
-                      onPressed: () {
+                      onPressed:(){
                         if (_inputEmailFormKey.currentState!.validate()) {
-                          context.pushNamed("/forgot_password_otp");
+
                         }
-                        userProvider.sendVerificationCode(context, email!);
-                        context.pushNamed("/forgot_password_otp");
-                      },
+
+                      } ,
                     ),
                     SizedBox(
                       height: 16.h,
@@ -104,3 +95,5 @@ class _InputEmailRecoveryState extends State<InputEmailRecovery> {
     );
   }
 }
+
+

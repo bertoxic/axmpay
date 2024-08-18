@@ -1,6 +1,6 @@
 import 'package:fintech_app/providers/user_service_provider.dart';
-import 'package:fintech_app/ui/%20widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/ui/%20widgets/custom_textfield.dart';
+import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:fintech_app/ui/widgets/custom_textfield.dart';
 import 'package:flutter/material.dart';
 
 class SearchBarPage extends StatefulWidget {

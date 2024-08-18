@@ -139,7 +139,23 @@ class UserServiceProvider extends ChangeNotifier {
      var  transactionData = SpecificTransactionData.fromJson(jsonData);
       return transactionData;
   }catch(e){
-      print("throoooooooooooowwwwwwwwwwwwwwwww");
+      print("throoooooooooooowwwwwwwwwwwwwwwww error");
+      handleGlobalError(context, e);
+      rethrow;
+  }
+  }
+
+  Future<String> sendVerificationCode(BuildContext context, String email)async {
+    try{
+      Map<String, dynamic> data = {"email":email};
+      String? token = await SharedPreferencesUtil.getString("auth_token");
+    final response = await apiService.post("sendVerificationCode.php?", data, token);
+    var jsonData = jsonDecode(response.data);
+    if (jsonData["status"]=="failed") {
+      throw Exception(jsonData["message"]);
+    }
+    return jsonData["status"].toString();
+  }catch(e){
       handleGlobalError(context, e);
       rethrow;
   }

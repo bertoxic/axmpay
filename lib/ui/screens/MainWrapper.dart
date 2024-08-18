@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../ widgets/custom_buttom_navbar.dart';
 import '../../utils/global_error_handler.dart';
+import '../widgets/custom_buttom_navbar.dart';
 
 class MainWrapperPage extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -97,7 +97,19 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
     }
     );
       return Scaffold(
-        body: Center(child: Text('Error: ${snapshot.error}')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+               Text('error: ${snapshot.error} '),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _retryInitialization,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
       );
     } else if (snapshot.connectionState == ConnectionState.done) {
      final  userProvider = Provider.of<UserServiceProvider>(context,listen: false);

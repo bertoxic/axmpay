@@ -1,7 +1,7 @@
 import 'package:fintech_app/models/user_model.dart';
-import 'package:fintech_app/ui/%20widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/ui/%20widgets/custom_text/custom_apptext.dart';
-import 'package:fintech_app/ui/%20widgets/transaction_card.dart';
+import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
+import 'package:fintech_app/ui/widgets/transaction_card.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';

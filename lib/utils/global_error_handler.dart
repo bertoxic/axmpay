@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -5,14 +7,35 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
  handleGlobalError(BuildContext context, dynamic error) {
   if (error is TokenExpiredException) {
     showReloginDialog(context);
-  } else {
+  }else if(
+  error is TimeoutException
+  ) {
+    showDialog(
+      context: navigatorKey.currentContext ?? context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Timeout'),
+          content: Text('Timeout. Please check your network connection .${error.toString()}'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+  }else {
     // Handle other types of errors
     showDialog(
       context: navigatorKey.currentContext ?? context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Error'),
-          content: Text('An unexpected error occurred. Please try again.${error.toString()}'),
+          content: Text('${error.toString()}'),
           actions: <Widget>[
             TextButton(
               child: Text('OK'),

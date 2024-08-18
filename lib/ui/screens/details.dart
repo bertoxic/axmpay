@@ -1,19 +1,19 @@
-import 'package:fintech_app/ui/%20widgets/custom_buttons.dart';
-import 'package:fintech_app/ui/%20widgets/custom_dialog.dart';
+import 'package:fintech_app/ui/widgets/custom_buttons.dart';
+import 'package:fintech_app/ui/widgets/custom_dialog.dart';
+import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:fintech_app/constants/app_colors.dart';
 import 'package:fintech_app/utils/form_validator.dart';
 
-import '../ widgets/custom_container.dart';
-import '../ widgets/custom_responsive_sizes/responsive_size.dart';
-import '../ widgets/custom_text/custom_apptext.dart';
-import '../ widgets/custom_textfield.dart';
 import '../../constants/text_constants.dart';
 import '../../main.dart';
 import '../../models/user_model.dart';
 import '../../providers/authentication_provider.dart';
+import '../widgets/custom_container.dart';
+import '../widgets/custom_text/custom_apptext.dart';
+import '../widgets/custom_textfield.dart';
 
 class DetailsPage extends StatelessWidget {
   final TextEditingController _nameController = TextEditingController();

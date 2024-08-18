@@ -4,20 +4,19 @@ import 'package:fintech_app/constants/app_colors.dart';
 import 'package:fintech_app/main.dart';
 import 'package:fintech_app/models/recepients_model.dart';
 import 'package:fintech_app/providers/user_service_provider.dart';
-import 'package:fintech_app/ui/%20widgets/custom_buttons.dart';
-import 'package:fintech_app/ui/%20widgets/custom_container.dart';
-import 'package:fintech_app/ui/%20widgets/custom_pop_up.dart';
-import 'package:fintech_app/ui/%20widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/ui/%20widgets/custom_text/custom_apptext.dart';
-import 'package:fintech_app/ui/%20widgets/custom_textfield.dart';
+import 'package:fintech_app/ui/widgets/custom_buttons.dart';
+import 'package:fintech_app/ui/widgets/custom_container.dart';
+import 'package:fintech_app/ui/widgets/custom_pop_up.dart';
+import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
+import 'package:fintech_app/ui/widgets/custom_textfield.dart';
 import 'package:fintech_app/utils/form_validator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../ widgets/transaction_butttom_sheet.dart';
 import '../../models/user_model.dart';
 import '../../utils/color_generator.dart';
+import '../widgets/transaction_butttom_sheet.dart';
 
 class TransferScreen extends StatefulWidget {
   TransferScreen({super.key});

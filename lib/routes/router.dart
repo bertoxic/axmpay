@@ -1,5 +1,6 @@
 import 'package:fintech_app/ui/screens/MainWrapper.dart';
 import 'package:fintech_app/ui/screens/details.dart';
+import 'package:fintech_app/ui/screens/forgot_password/input_password_screen.dart';
 import 'package:fintech_app/ui/screens/forgot_password/token_verification_screen.dart';
 import 'package:fintech_app/ui/screens/transaction_history.dart';
 import 'package:fintech_app/ui/screens/transaction_page.dart';
@@ -10,6 +11,7 @@ import 'package:go_router/go_router.dart';
 
 import '../models/user_model.dart';
 import '../ui/screens/detailed_transaction_page.dart';
+import '../ui/screens/forgot_password/change_password_screen.dart';
 import '../ui/screens/home_screen.dart';
 import '../ui/screens/login_page.dart';
 import '../ui/screens/register_page.dart';
@@ -153,12 +155,29 @@ final GoRouter  _router = GoRouter(
     ),
 
     GoRoute(
-      path: '/OTP_verification',
-      name: '/OTP_verification',
+      path: '/forgot_password_otp',
+      name: '/forgot_password_otp',
       builder: (BuildContext context, GoRouterState state) {
         return   OTPVerificationScreen();
       },
-    ),   GoRoute(
+    ),
+    GoRoute(
+      path: '/change_password_screen',
+      name: '/change_password_screen',
+      builder: (BuildContext context, GoRouterState state) {
+        return   ChangePasswordScreen();
+      },
+    ),
+
+    GoRoute(
+      path: '/forgot_password_input_mail',
+      name: '/forgot_password_input_mail',
+      builder: (BuildContext context, GoRouterState state) {
+        return    InputEmailRecovery();
+      },
+    ),
+
+    GoRoute(
       path: '/login',
       name: '/login',
       builder: (BuildContext context, GoRouterState state) {

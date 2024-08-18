@@ -1,9 +1,10 @@
 import 'package:fintech_app/constants/app_colors.dart';
-import 'package:fintech_app/ui/%20widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../ widgets/custom_text/custom_apptext.dart';
+import '../widgets/custom_text/custom_apptext.dart';
+
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
