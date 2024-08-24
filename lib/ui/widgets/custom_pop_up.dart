@@ -1,6 +1,4 @@
-import 'dart:math';
 
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
 
 class ScrollablePopup extends StatelessWidget {
@@ -11,13 +9,13 @@ class ScrollablePopup extends StatelessWidget {
   final double borderRadius;
 
   const ScrollablePopup({
-    Key? key,
+    super.key,
     required this.child,
     this.isDismissible = true,
     this.maxWidth = 0.8,
     this.maxHeight = 0.8,
     this.borderRadius = 0.0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -95,11 +93,11 @@ class ScrollablePopup extends StatelessWidget {
       barrierDismissible: isDismissible,
       builder: (BuildContext context) {
         return ScrollablePopup(
-          child: child,
           isDismissible: isDismissible,
           maxWidth: maxWidth,
           maxHeight: maxHeight,
           borderRadius: borderRadius,
+          child: child,
         );
       },
     );

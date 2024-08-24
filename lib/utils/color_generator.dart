@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 Color getRandomColor() {
-  final List<Color> _colors = [
+  final List<Color> colors = [
     Colors.red,
     Colors.blue,
     Colors.green,
@@ -17,6 +17,6 @@ Color getRandomColor() {
     Colors.indigo,
     Colors.lime,
   ];
-  final randomIndex = Random().nextInt(_colors.length);
-  return _colors[randomIndex];
+  final randomIndex = Random().nextInt(colors.length);
+  return colors[randomIndex];
 }

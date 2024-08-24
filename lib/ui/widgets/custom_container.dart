@@ -13,7 +13,7 @@ class SpacedContainer extends StatelessWidget {
  final  BorderRadius? borderRadius;
 
   const SpacedContainer({
-   Key? key,
+   super.key,
    required this.child,
     this.padding = const EdgeInsets.all(8.0),
     this.margin= const EdgeInsets.all(4.0),
@@ -21,7 +21,7 @@ class SpacedContainer extends StatelessWidget {
    this.borderRadius,
     this.height,
     this.width,
-}): super(key:key);
+});
 
 @override
   Widget build(BuildContext context){

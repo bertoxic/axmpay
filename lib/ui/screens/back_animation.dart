@@ -30,7 +30,7 @@ class _AnimationBackState extends State<AnimationBack> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Complex Stack Widget Example')),
+      appBar: AppBar(title: const Text('Complex Stack Widget Example')),
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -121,7 +121,7 @@ class BackgroundPainter extends CustomPainter {
       // ..shader = LinearGradient(
       //   colors: [Colors.blue[800]!, Colors.purple[800]!],
       // ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-  paint..color= colorScheme.primary;
+  paint.color= colorScheme.primary;
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
 
     final starPaint = Paint()

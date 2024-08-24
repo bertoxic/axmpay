@@ -30,13 +30,12 @@ class AppText extends StatelessWidget {
   final TextOverflow? overflow;
 
   const AppText._({
-    Key? key,
     required this.text,
      this.style,
     this.textAlign,
     this.maxLines,
     this.overflow,
-  }) : super(key: key);
+  });
 
   factory AppText.display(String text, {Color? color, TextStyle? style, TextAlign? textAlign, int? maxLines, TextOverflow? overflow}) {
     return AppText._(

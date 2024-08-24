@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:fintech_app/main.dart';
 import 'package:fintech_app/utils/global_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -86,13 +85,15 @@ class ApiService {
     try {
       final response = await _dio.get(
         endpoint,
-        options: _getOptions(token),
+        options: await _getOptions(token),
       );
       _handleResponse(response);
       return response;
     } on DioException catch (e) {
-      handleGlobalError(context, e);
-      rethrow;
+      if(context.mounted){
+        handleGlobalError(context, e);
+      }
+     rethrow;
     }
   }
 
@@ -103,7 +104,7 @@ class ApiService {
         endpoint,
         data: dat,
       //  options: _getOptions(token),
-        options: _getOptions(token),
+        options: await _getOptions(token),
       );
 
       _handleResponse(response);
@@ -115,13 +116,14 @@ class ApiService {
     }
   }
 
-  Options _getOptions(String? token) {
+  Future<Options> _getOptions(String? token) async{
+    String? token = await SharedPreferencesUtil.getString("auth_token");
     print("Token being sent: $token");
     return Options(
       followRedirects: false,
       method: "GET",
       headers: token !=null ?{
-        HttpHeaders.authorizationHeader: 'Bearer ' + token,
+        HttpHeaders.authorizationHeader: 'Bearer $token',
         'Content-Type': 'application/json',
       }: null,
     );

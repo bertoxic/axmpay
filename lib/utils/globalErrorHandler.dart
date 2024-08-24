@@ -1,3 +1,4 @@
+import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
 
 import 'global_error_handler.dart';
@@ -5,7 +6,7 @@ import 'global_error_handler.dart';
 class GlobalErrorHandler extends StatelessWidget {
   final Widget child;
 
-  const GlobalErrorHandler({Key? key, required this.child}) : super(key: key);
+  const GlobalErrorHandler({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +16,7 @@ class GlobalErrorHandler extends StatelessWidget {
       });
       return Scaffold(
         body: Center(
-          child: Container( height: 800, width:  double.maxFinite,
+          child: Container( height: 800.h, width:  double.maxFinite,
               color: Colors.red,
               child: Text('An error occurred. Please try again.${errorDetails.exception.toString()}')),
         ),

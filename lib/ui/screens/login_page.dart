@@ -1,8 +1,6 @@
-import 'dart:async';
 
 import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -10,13 +8,10 @@ import 'package:fintech_app/constants/text_constants.dart';
 import 'package:fintech_app/ui/widgets/custom_buttons.dart';
 import 'package:fintech_app/ui/widgets/custom_container.dart';
 import 'package:fintech_app/ui/widgets/custom_textfield.dart';
-import 'package:fintech_app/utils/form_validator.dart';
 
-import '../../constants/app_colors.dart';
 import '../../main.dart';
 import '../../models/user_model.dart';
 import '../../providers/authentication_provider.dart';
-import '../../providers/user_service_provider.dart';
 
 class LoginPage extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
@@ -45,7 +40,7 @@ class LoginPage extends StatelessWidget {
                    child: Align(
                      alignment: Alignment.topLeft,
                        child: Padding(
-                         padding: EdgeInsets.symmetric(horizontal: 20),
+                         padding: const EdgeInsets.symmetric(horizontal: 20),
                          child: AppText.subtitle("welcome back"),
                        )) ),
                SpacedContainer(
@@ -54,13 +49,13 @@ class LoginPage extends StatelessWidget {
                      labelText: "Email",
                      hintText: "enter email address",
                        fieldName: Fields.email,
-                     prefixIcon: Icon(Icons.email_outlined),
+                     prefixIcon: const Icon(Icons.email_outlined),
                      controller: _emailController,
                    //  validator: (value)=>FormValidator.validate(value, ValidatorType.email,fieldName:Fields.email),
                    )
                ),
                SpacedContainer(
-                 margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                 margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                    child: CustomTextField(
                      fieldName: Fields.password,
                      hintText: "enter password",

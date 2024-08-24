@@ -19,7 +19,7 @@ class CustomBottomNavBar extends StatefulWidget {
   final bool? extendBody;
 
   const CustomBottomNavBar({
-    Key? key,
+    super.key,
     required this.items,
     required this.onItemSelected,
     this.initialIndex = 0,
@@ -36,8 +36,7 @@ class CustomBottomNavBar extends StatefulWidget {
     this.animationDuration = const Duration(milliseconds: 300),
     this.extendBody,
   })  : assert(items.length >= 2 && items.length <= 5),
-        assert(initialIndex >= 0 && initialIndex < items.length),
-        super(key: key);
+        assert(initialIndex >= 0 && initialIndex < items.length);
 
   @override
   _CustomBottomNavBarState createState() => _CustomBottomNavBarState();

@@ -59,7 +59,7 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController? controller;
   final String? Function(String?)? validator;
   const CustomTextField({
-    Key? key,
+    super.key,
     this.initialValue,
     this.hintText,
     this.labelText,
@@ -114,7 +114,7 @@ class CustomTextField extends StatelessWidget {
     required this.fieldName,
      this.controller,
     this.validator,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +124,7 @@ class CustomTextField extends StatelessWidget {
       decoration: (decoration ??  InputDecoration(
           filled: true,
           fillColor: AppColors.lightgrey,
-          contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20.0),
             borderSide: const BorderSide(color: Colors.green),

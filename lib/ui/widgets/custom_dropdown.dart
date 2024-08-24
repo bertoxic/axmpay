@@ -1,6 +1,5 @@
 import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 class CustomDropdown<T> extends StatefulWidget {
   final List<T> items;
@@ -10,13 +9,13 @@ class CustomDropdown<T> extends StatefulWidget {
   final Widget Function(T) selectedItemBuilder;
 
   const CustomDropdown({
-    Key? key,
+    super.key,
     required this.items,
-      this.onChanged,
+    this.onChanged,
     required this.itemBuilder,
     required this.selectedItemBuilder,
     this.initialValue,
-  }) : super(key: key);
+  });
 
   @override
   _CustomDropdownState<T> createState() => _CustomDropdownState<T>();
@@ -31,7 +30,7 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> with SingleTicker
   bool _isOpen = false;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     _animationController = AnimationController(
       vsync: this,
@@ -83,11 +82,11 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> with SingleTicker
         child: CompositedTransformFollower(
           link: _layerLink,
           showWhenUnlinked: false,
-          offset: Offset(4.0.w, size.height),
+          offset: Offset(4.0.w, size.height +4),
           child: Material(
             color: Colors.grey.shade50,
-            borderRadius: BorderRadius.only(bottomLeft: Radius.circular(8),bottomRight: Radius.circular(8)),
-            elevation: 4,
+            borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8),bottomRight: Radius.circular(8)),
+            elevation: 8,
             child: SizeTransition(
               sizeFactor: CurvedAnimation(
                 parent: _animationController,
@@ -95,7 +94,7 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> with SingleTicker
               ),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.3,
+                  maxHeight: MediaQuery.of(context).size.height * 0.2,
                 ),
                 child: ListView.builder(
 

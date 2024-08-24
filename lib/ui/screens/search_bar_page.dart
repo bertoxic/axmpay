@@ -13,7 +13,7 @@ class SearchBarPage extends StatefulWidget {
 class _SearchBarPageState extends State<SearchBarPage> {
     List filteredList =[] ;
     List entireList =[] ;
-    bool _loading= false;
+    final bool _loading= false;
    late UserServiceProvider  _userServiceProvider;
   @override
   void initState() {
@@ -26,7 +26,7 @@ class _SearchBarPageState extends State<SearchBarPage> {
   }
   @override
   Widget build(BuildContext context) {
-    return !_loading?CircularProgressIndicator(): Container(
+    return !_loading?const CircularProgressIndicator(): Container(
       padding: EdgeInsets.all(8.sp),
       child: CustomTextField(
          fieldName: "search",

@@ -71,7 +71,7 @@ class SP {
 }
 
 extension SizeExtension on num {
-  double get w => W.get(this.toDouble());
-  double get h => H.get(this.toDouble());
-  double get sp => SP.get(this.toDouble());
+  double get w => W.get(toDouble());
+  double get h => H.get(toDouble());
+  double get sp => SP.get(toDouble());
 }

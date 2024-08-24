@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:fintech_app/constants/app_colors.dart';
-import 'package:fintech_app/utils/form_validator.dart';
 
 import '../../constants/text_constants.dart';
 import '../../main.dart';
@@ -15,7 +14,7 @@ import '../widgets/custom_container.dart';
 import '../widgets/custom_text/custom_apptext.dart';
 import '../widgets/custom_textfield.dart';
 
-class DetailsPage extends StatelessWidget {
+class UpdateUserDetailsPage extends StatelessWidget {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -33,11 +32,11 @@ class DetailsPage extends StatelessWidget {
 
   final _formKey = GlobalKey<FormState>();
 
-  DetailsPage({Key? key}) : super(key: key);
+  UpdateUserDetailsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    UserDetails  _userdetails = UserDetails(
+    UserDetails  userdetails = UserDetails(
         firstName: _first_name.value.text??"",
         lastName: _last_name.value.text??"",
         dateOfBirth: _date_of_birth.value.text??"",
@@ -80,15 +79,15 @@ class DetailsPage extends StatelessWidget {
 
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: AppColors.lightgrey),
+                                      borderSide: const BorderSide(color: AppColors.lightgrey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: Colors.green),
+                                      borderSide: const BorderSide(color: Colors.green),
                                     ),
                                     errorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: Colors.red),
+                                      borderSide: const BorderSide(color: Colors.red),
                                     ),
                                     fillColor: AppColors.lightgrey,
                                     filled: true
@@ -96,7 +95,7 @@ class DetailsPage extends StatelessWidget {
                                 validator: null,
                                 prefixIcon: const Icon(Icons.person), fieldName: Fields.name,
                                 onChanged: (value){
-                                  _userdetails.firstName = value;
+                                  userdetails.firstName = value;
                                 },
 
                               ),
@@ -109,15 +108,15 @@ class DetailsPage extends StatelessWidget {
 
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: AppColors.lightgrey),
+                                      borderSide: const BorderSide(color: AppColors.lightgrey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: Colors.green),
+                                      borderSide: const BorderSide(color: Colors.green),
                                     ),
                                     errorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: Colors.red),
+                                      borderSide: const BorderSide(color: Colors.red),
                                     ),
                                     fillColor: AppColors.lightgrey,
                                     filled: true
@@ -125,7 +124,7 @@ class DetailsPage extends StatelessWidget {
                                 validator:null,
                                 prefixIcon: const Icon(Icons.person), fieldName: Fields.name,
                                 onChanged: (value){
-                                  _userdetails.lastName = value;
+                                  userdetails.lastName = value;
                                 },
 
                               ),
@@ -139,11 +138,11 @@ class DetailsPage extends StatelessWidget {
 
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: AppColors.lightgrey),
+                                      borderSide: const BorderSide(color: AppColors.lightgrey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10.0),
-                                      borderSide: BorderSide(color: Colors.green),
+                                      borderSide: const BorderSide(color: Colors.green),
                                     ),
                                     errorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
@@ -153,7 +152,7 @@ class DetailsPage extends StatelessWidget {
                                     filled: true
                                 ),
                                 onChanged: (value){
-                                  _userdetails.email = value;
+                                  userdetails.email = value;
                                 },
                                 keyboardType: TextInputType.emailAddress,
                                 fieldName: Fields.email,
@@ -166,26 +165,26 @@ class DetailsPage extends StatelessWidget {
                                 border: InputBorder.none,
                                 labelText: 'Phone',
                                 hintText: 'Enter phone number',
-                                prefixIcon: Icon(Icons.phone),
+                                prefixIcon: const Icon(Icons.phone),
                                 decoration: InputDecoration(
                                     errorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: Colors.red),
+                                      borderSide: const BorderSide(color: Colors.red),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: AppColors.lightgrey),
+                                      borderSide: const BorderSide(color: AppColors.lightgrey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10.0),
-                                      borderSide: BorderSide(color: Colors.green),
+                                      borderSide: const BorderSide(color: Colors.green),
                                     ),
                                     fillColor: AppColors.lightgrey,
                                     filled: true
                                 ),
                                 obscureText: true, fieldName: Fields.password,
                                 onChanged: (value){
-                                  _userdetails.phone = value;
+                                  userdetails.phone = value;
                                 },
                                 controller: _phone_number,
                                 // validator: (value) => FormValidator.validate(value, ValidatorType.password, fieldName: "password"),
@@ -219,15 +218,15 @@ class DetailsPage extends StatelessWidget {
 
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: AppColors.lightgrey),
+                                      borderSide: const BorderSide(color: AppColors.lightgrey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: Colors.green),
+                                      borderSide: const BorderSide(color: Colors.green),
                                     ),
                                     errorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: Colors.red),
+                                      borderSide: const BorderSide(color: Colors.red),
                                     ),
                                     fillColor: AppColors.lightgrey,
                                     filled: true
@@ -235,7 +234,7 @@ class DetailsPage extends StatelessWidget {
                                 validator: null,
                                 prefixIcon: const Icon(Icons.location_history), fieldName: Fields.name,
                                 onChanged: (value){
-                                  _userdetails.address?.state = value;
+                                  userdetails.address?.state = value;
                                 },
 
                               ),
@@ -248,15 +247,15 @@ class DetailsPage extends StatelessWidget {
 
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: AppColors.lightgrey),
+                                      borderSide: const BorderSide(color: AppColors.lightgrey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: Colors.green),
+                                      borderSide: const BorderSide(color: Colors.green),
                                     ),
                                     errorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: Colors.red),
+                                      borderSide: const BorderSide(color: Colors.red),
                                     ),
                                     fillColor: AppColors.lightgrey,
                                     filled: true
@@ -264,7 +263,7 @@ class DetailsPage extends StatelessWidget {
                                 validator:null,
                                 prefixIcon: const Icon(Icons.location_city), fieldName: Fields.name,
                                 onChanged: (value){
-                                  _userdetails.address?.city = value;
+                                  userdetails.address?.city = value;
                                 },
 
                               ),
@@ -278,11 +277,11 @@ class DetailsPage extends StatelessWidget {
 
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: AppColors.lightgrey),
+                                      borderSide: const BorderSide(color: AppColors.lightgrey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10.0),
-                                      borderSide: BorderSide(color: Colors.green),
+                                      borderSide: const BorderSide(color: Colors.green),
                                     ),
                                     errorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
@@ -292,7 +291,7 @@ class DetailsPage extends StatelessWidget {
                                     filled: true
                                 ),
                                 onChanged: (value){
-                                  _userdetails.email = value;
+                                  userdetails.email = value;
                                 },
                                 keyboardType: TextInputType.emailAddress,
                                 fieldName: Fields.email,
@@ -309,11 +308,11 @@ class DetailsPage extends StatelessWidget {
 
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: BorderSide(color: AppColors.lightgrey),
+                                      borderSide: const BorderSide(color: AppColors.lightgrey),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10.0),
-                                      borderSide: BorderSide(color: Colors.green),
+                                      borderSide: const BorderSide(color: Colors.green),
                                     ),
                                     errorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(20.0),
@@ -323,7 +322,7 @@ class DetailsPage extends StatelessWidget {
                                     filled: true
                                 ),
                                 onChanged: (value){
-                                  _userdetails.email = value;
+                                  userdetails.email = value;
                                 },
                                 keyboardType: TextInputType.emailAddress,
                                 fieldName: Fields.email,
@@ -359,7 +358,7 @@ class DetailsPage extends StatelessWidget {
                                 validator: null,
                                 prefixIcon: const Icon(Icons.location_history), fieldName: Fields.name,
                                 onChanged: (value){
-                                  _userdetails.income = int.parse(value);
+                                  userdetails.income = int.parse(value);
                                 },
 
                               ),
@@ -371,7 +370,7 @@ class DetailsPage extends StatelessWidget {
                                 validator:null,
                                 prefixIcon: const Icon(Icons.location_city), fieldName: Fields.name,
                                 onChanged: (value){
-                                  _userdetails.employmentStatus = value;
+                                  userdetails.employmentStatus = value;
                                 },
 
                               ),

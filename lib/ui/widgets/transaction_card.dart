@@ -10,13 +10,13 @@ class NotificationCard extends StatelessWidget {
   final Color cardColor;
 
   const NotificationCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.message,
     required this.color,
     required this.icon,
      this.cardColor= Colors.red,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,26 +26,26 @@ class NotificationCard extends StatelessWidget {
         children: [
           // Main container
           Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               children: [
-                SizedBox(width: 40), // Space for the icon
+                const SizedBox(width: 40), // Space for the icon
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-                      SizedBox(height: 4),
+                      Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 4),
                       Text(message),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.close, size: 20),
+                  icon: const Icon(Icons.close, size: 20),
                   onPressed: () {},
                 ),
               ],
@@ -57,7 +57,7 @@ class NotificationCard extends StatelessWidget {
             top: 0,
             bottom: 0,
             child: ClipRRect(
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(8),
                 bottomLeft: Radius.circular(8),
               ),
@@ -94,10 +94,10 @@ class NotificationCard extends StatelessWidget {
 
 // Usage example
 class TransactionHistoryPage extends StatelessWidget {
-  TransactionHistoryPage({super.key});
+  const TransactionHistoryPage({super.key});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Padding(
         padding: EdgeInsets.all(16),
         child: Column(

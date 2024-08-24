@@ -121,7 +121,7 @@ class SettingsPage extends StatelessWidget {
                       children: [
                         ListTile(
                           leading: const Icon(Icons.ad_units_outlined,),
-                          title: Padding(padding: EdgeInsets.all(8),
+                          title: Padding(padding: const EdgeInsets.all(8),
                          child: AppText.body("Transaction History"),
                           ),
                           trailing: const Icon(Icons.arrow_forward_ios_sharp),
@@ -165,7 +165,7 @@ class SettingsPage extends StatelessWidget {
                       children: [
                         ListTile(
                           leading: const Icon(Icons.ad_units_outlined,),
-                          title: Padding(padding: EdgeInsets.all(8),
+                          title: Padding(padding: const EdgeInsets.all(8),
                          child: AppText.body("Transaction History"),
                           ),
                           trailing: const Icon(Icons.arrow_forward_ios_sharp),

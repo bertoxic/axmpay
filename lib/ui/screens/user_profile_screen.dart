@@ -1,5 +1,4 @@
   import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class UserProfileScreen extends StatelessWidget {
@@ -17,7 +16,7 @@ class UserProfileScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.grey.shade700
               ),
-              child: Text("obey"),
+              child: const Text("obey"),
             ),
           ),
           Positioned(

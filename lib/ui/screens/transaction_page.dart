@@ -1,4 +1,3 @@
-import 'dart:math';
 
 import 'package:fintech_app/constants/app_colors.dart';
 import 'package:fintech_app/main.dart';
@@ -11,15 +10,15 @@ import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.d
 import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
 import 'package:fintech_app/ui/widgets/custom_textfield.dart';
 import 'package:fintech_app/utils/form_validator.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../models/transaction_model.dart';
 import '../../models/user_model.dart';
 import '../../utils/color_generator.dart';
 import '../widgets/transaction_butttom_sheet.dart';
 
 class TransferScreen extends StatefulWidget {
-  TransferScreen({super.key});
+  const TransferScreen({super.key});
 
   @override
   State<TransferScreen> createState() => _TransferScreenState();
@@ -28,13 +27,12 @@ class TransferScreen extends StatefulWidget {
 final _transactionFormKey = GlobalKey<FormState>();
 
 class _TransferScreenState extends State<TransferScreen> {
-  final TextEditingController _bankSelectorcontroller = TextEditingController();
-  final TextEditingController _accountNumberController =
-      TextEditingController();
+  final TextEditingController _bankSelectorController = TextEditingController();
+  final TextEditingController _accountNumberController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _remarkController = TextEditingController();
-  List<Bank> filter_search = [];
-  List<Bank> total_items = [];
+  List<Bank> filterSearch = [];
+  List<Bank> totalItems = [];
   late Bank? selectedBank;
   late bool accountNumberSet = false;
   RecipientDetails? recipientDetails;
@@ -50,19 +48,19 @@ class _TransferScreenState extends State<TransferScreen> {
     final userProvider =
         Provider.of<UserServiceProvider>(context, listen: false);
     userProvider.getBankNames(context);
-    _bankSelectorcontroller.addListener(_filterItems);
+    _bankSelectorController.addListener(_filterItems);
     _accountNumberController.addListener(_accountNumberCheck);
     if (userProvider.bankListResponse?.bankList != null) {
-      total_items = userProvider.bankListResponse!.bankList;
+      totalItems = userProvider.bankListResponse!.bankList;
     }
-    filter_search = total_items;
-    selectedBank = total_items[21];
+    filterSearch = totalItems;
+    selectedBank = totalItems[21];
   }
 
   @override
   void dispose() {
-    _bankSelectorcontroller.removeListener(_filterItems);
-    _bankSelectorcontroller.dispose();
+    _bankSelectorController.removeListener(_filterItems);
+    _bankSelectorController.dispose();
     _accountNumberController.dispose();
     _amountController.dispose();
     super.dispose();
@@ -74,10 +72,10 @@ class _TransferScreenState extends State<TransferScreen> {
     return null;
   }
   void _filterItems() {
-    final query = _bankSelectorcontroller.value.text.toLowerCase();
+    final query = _bankSelectorController.value.text.toLowerCase();
     setState(() {
-      filter_search = total_items.where((item) {
-        return item.bankName!.toLowerCase()!.contains(query);
+      filterSearch = totalItems.where((item) {
+        return item.bankName!.toLowerCase().contains(query);
       }).toList();
     });
   }
@@ -101,7 +99,7 @@ class _TransferScreenState extends State<TransferScreen> {
   @override
   Widget build(BuildContext context) {
     final userp = Provider.of<UserServiceProvider>(context);
-    total_items = userp.bankListResponse?.bankList ?? [];
+    totalItems = userp.bankListResponse?.bankList ?? [];
     accountRequestDetails.senderAccountNumber =
         userp.userdata?.accountNumber.toString();
     userData = userp.userdata;
@@ -178,7 +176,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                                       width: 240.w,
                                                       child: CustomTextField(
                                                         controller:
-                                                            _bankSelectorcontroller,
+                                                            _bankSelectorController,
                                                         onChanged: (value) {
                                                           setState(() {
                                                             _filterItems();
@@ -193,26 +191,26 @@ class _TransferScreenState extends State<TransferScreen> {
                                                     height: 720.h,
                                                     child: ListView.builder(
                                                       itemCount:
-                                                          filter_search.length,
+                                                          filterSearch.length,
                                                       itemBuilder:
                                                           (BuildContext context,
                                                               int index) {
                                                         final item =
-                                                            filter_search[
+                                                            filterSearch[
                                                                 index];
                                                         Color itemColor =
                                                             getRandomColor();
                                                         return ListTile(
                                                           onTap: () {
                                                             var selectedIndex =
-                                                                filter_search.indexWhere(
+                                                                filterSearch.indexWhere(
                                                                     (element) =>
                                                                         element
                                                                             .bankName ==
                                                                         item.bankName);
                                                             setState(() {
                                                               selectedBank =
-                                                                  filter_search[
+                                                                  filterSearch[
                                                                       selectedIndex];
                                                             });
                                                             _accountNumberCheck();
@@ -242,7 +240,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                                               )),
                                                           iconColor: itemColor,
                                                           title: AppText.caption(
-                                                              item?.bankName ??
+                                                              item.bankName ??
                                                                   ""),
                                                           // Add more widgets (e.g., subtitle, trailing icon) as needed
                                                         );
@@ -351,18 +349,19 @@ class _TransferScreenState extends State<TransferScreen> {
                                                             .connectionState ==
                                                         ConnectionState
                                                             .waiting) {
-                                                      return const Center(
+                                                      return  Center(
                                                           child: SizedBox(
-                                                              height: 20,
-                                                              width: 15,
+                                                              height: 20.h,
+                                                              width: 15.w,
                                                               child:
-                                                                  CircularProgressIndicator(
+                                                                  const CircularProgressIndicator(
                                                                 strokeWidth: 2,
                                                               )));
                                                     } else if (snapshot
                                                         .hasError) {
                                                       String errorMessage =
-                                                          'An unexpected error occurred';
+
+                                                      'An unexpected error occurred';
                                                       if (snapshot.error
                                                           is Exception) {
                                                         errorMessage = (snapshot
@@ -494,7 +493,7 @@ class _TransferScreenState extends State<TransferScreen> {
                   width: 220.w,
                   onPressed: () {
                     if (_transactionFormKey.currentState!.validate()) {
-                      TransactionModel tranSactionModel = TransactionModel(
+                      TransactionModel transactionModel = TransactionModel(
                           amount: _transactionAmount!,
                           recipientAccount: recipientDetails?.account?.number,
                           recipientAccountName: recipientDetails?.account?.name,
@@ -503,8 +502,11 @@ class _TransferScreenState extends State<TransferScreen> {
                           senderAccountNumber: userp.userdata?.accountNumber,
                           senderAccountName: userp.userdata?.firstname,
                           narration: _transactionRemark!);
-                      //  userp.makeBankTransfer(tranSactionModel);
-                      _showBottomSheet(context, tranSactionModel);
+
+                      _showBottomSheet(context, transactionModel,(){
+                        userp.makeBankTransfer(transactionModel);
+                        print("user sent the money now");
+                      });
                     }
                   },
                 )
@@ -528,14 +530,14 @@ Widget _buildAccountDetails(int accountNumber, String accountName) {
           accountNumber.toString(),
           style: TextStyle(color: colorScheme.primary),
         ),
-        Text("$accountName"),
+        Text(accountName),
       ],
     ),
   );
 
 }
 
-void _showBottomSheet(BuildContext context, TransactionModel transactionModel) {
+void _showBottomSheet(BuildContext context, TransactionModel transactionModel, Function()?onTap) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -549,6 +551,7 @@ void _showBottomSheet(BuildContext context, TransactionModel transactionModel) {
       expand: false,
       builder: (_, controller) {
         return BottomTransactionConfirmSheetContent(
+          onTap: onTap,
           controller: controller,
           transactionModel: transactionModel, // corrected here
         );

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 enum ValidatorType { name, email, password, digits, remarks }
 
@@ -75,6 +74,6 @@ class FormValidator {
 
 extension StringExtension on String {
   String capitalize() {
-    return "${this[0].toUpperCase()}${this.substring(1)}";
+    return "${this[0].toUpperCase()}${substring(1)}";
   }
 }

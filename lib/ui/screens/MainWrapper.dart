@@ -1,6 +1,5 @@
 import 'package:fintech_app/main.dart';
 import 'package:fintech_app/providers/user_service_provider.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';

@@ -17,7 +17,7 @@ class CustomPopup extends StatelessWidget {
   final Color? backgroundColor;
 
   const CustomPopup({
-    Key? key,
+    super.key,
     required this.title,
     required this.message,
     this.type = PopupType.info,
@@ -28,7 +28,7 @@ class CustomPopup extends StatelessWidget {
     this.titleStyle,
     this.messageStyle,
     this.backgroundColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -122,13 +122,13 @@ class CustomPopup extends StatelessWidget {
               Navigator.of(context).pop();
               action.onPressed();
             },
-            child: Text(action.text),
             style: ElevatedButton.styleFrom(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8), // Adjust the radius as needed
               ),
               backgroundColor: action.color ?? Colors.grey,
             ),
+            child: Text(action.text),
           ),
         );
       }).toList(),

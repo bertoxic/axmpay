@@ -1,6 +1,6 @@
 import 'package:fintech_app/ui/screens/MainWrapper.dart';
-import 'package:fintech_app/ui/screens/details.dart';
-import 'package:fintech_app/ui/screens/forgot_password/input_password_screen.dart';
+import 'package:fintech_app/ui/screens/update_user_details_page.dart';
+import 'package:fintech_app/ui/screens/forgot_password/input_Email_Recovery_screen.dart';
 import 'package:fintech_app/ui/screens/forgot_password/token_verification_screen.dart';
 import 'package:fintech_app/ui/screens/transaction_history.dart';
 import 'package:fintech_app/ui/screens/transaction_page.dart';
@@ -9,12 +9,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
 
-import '../models/user_model.dart';
+import '../models/transaction_model.dart';
 import '../ui/screens/detailed_transaction_page.dart';
 import '../ui/screens/forgot_password/change_password_screen.dart';
 import '../ui/screens/home_screen.dart';
 import '../ui/screens/login_page.dart';
-import '../ui/screens/register_page.dart';
+import '../ui/screens/registration/register_page.dart';
 import '../ui/screens/settings_page.dart';
 
 final  _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -33,7 +33,7 @@ final GoRouter  _router = GoRouter(
       path: '/register',
       name: 'register',
       builder: (BuildContext context, GoRouterState state) {
-        return RegisterPage();
+        return const RegisterPage();
       },
     ),
     StatefulShellRoute.indexedStack(
@@ -97,7 +97,7 @@ final GoRouter  _router = GoRouter(
               path: '/user_details_page',
               name: '/user_details_page',
               builder: (BuildContext context, GoRouterState state) {
-                return   DetailsPage(
+                return   UpdateUserDetailsPage(
                   key: state.pageKey,
                 );
               },
@@ -155,17 +155,20 @@ final GoRouter  _router = GoRouter(
     ),
 
     GoRoute(
-      path: '/forgot_password_otp',
+      path: '/forgot_password_otp/:email',
       name: '/forgot_password_otp',
       builder: (BuildContext context, GoRouterState state) {
-        return   OTPVerificationScreen();
+        final String? email = state.pathParameters["email"];
+        return   OTPVerificationScreen(email: email!,);
       },
     ),
     GoRoute(
-      path: '/change_password_screen',
+      path: '/change_password_screen/:email/:otp',
       name: '/change_password_screen',
       builder: (BuildContext context, GoRouterState state) {
-        return   ChangePasswordScreen();
+        final String? otp = state.pathParameters['otp'];
+        final String? email = state.pathParameters['email'];
+        return   ChangePasswordScreen(email: email!, otp: otp!,);
       },
     ),
 
@@ -173,7 +176,7 @@ final GoRouter  _router = GoRouter(
       path: '/forgot_password_input_mail',
       name: '/forgot_password_input_mail',
       builder: (BuildContext context, GoRouterState state) {
-        return    InputEmailRecovery();
+        return    const InputEmailRecovery();
       },
     ),
 

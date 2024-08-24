@@ -1,15 +1,13 @@
-import 'package:fintech_app/main.dart';
 import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../models/user_model.dart';
+import '../../models/transaction_model.dart';
 
 class TransactionDetailScreen extends StatelessWidget {
   final SpecificTransactionData transaction;
 
-  const TransactionDetailScreen({Key? key, required this.transaction})
-      : super(key: key);
+  const TransactionDetailScreen({super.key, required this.transaction});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +29,7 @@ class TransactionDetailScreen extends StatelessWidget {
               children: [
                 _buildHeader(),
                 _buildDetailsList(),
-                SizedBox(height: 12,)
+                const SizedBox(height: 12,)
               ],
             ),
           ),
@@ -158,7 +156,7 @@ class TransactionDetailScreen extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.all(4).copyWith(left: 16.w, right: 16.w),
+      padding: const EdgeInsets.all(4).copyWith(left: 16.w, right: 16.w),
       // width: 20.w,
       decoration: BoxDecoration(
         color: color,

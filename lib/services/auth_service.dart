@@ -1,10 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../config/config.dart';
 import '../models/user_model.dart';
 import '../utils/sharedPrefernce.dart';
 import 'api_service.dart';
@@ -85,7 +82,7 @@ class AuthService {
       }
     } catch (e) {
       print("Error during registration: $e");
-      throw e;
+      rethrow;
     }
   }
 }

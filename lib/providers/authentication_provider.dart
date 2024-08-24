@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:fintech_app/services/auth_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,7 +5,6 @@ import 'package:fintech_app/models/user_model.dart';
 import 'package:fintech_app/services/api_service.dart';
 import 'package:fintech_app/utils/sharedPrefernce.dart';
 
-import '../config/config.dart';
 
 class AuthenticationProvider extends ChangeNotifier {
   String? _token;
@@ -37,7 +35,7 @@ class AuthenticationProvider extends ChangeNotifier {
          await _saveTokenTOPref();
         print("saved alllllllllll");
         }catch(e){
-          print("erorr occured in authenticationprovidder"+e.toString());
+          print("erorr occured in authenticationprovidder$e");
         }
     notifyListeners();
   }

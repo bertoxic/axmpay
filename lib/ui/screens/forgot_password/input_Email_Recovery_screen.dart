@@ -1,10 +1,10 @@
 import 'package:fintech_app/main.dart';
 import 'package:fintech_app/ui/widgets/custom_buttons.dart';
+import 'package:fintech_app/ui/widgets/custom_dialog.dart';
 import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
 import 'package:fintech_app/ui/widgets/custom_textfield.dart';
 import 'package:fintech_app/utils/form_validator.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/user_service_provider.dart';
 
 class InputEmailRecovery extends StatefulWidget {
-  InputEmailRecovery({super.key});
+  const InputEmailRecovery({super.key});
 
   @override
   State<InputEmailRecovery> createState() => _InputEmailRecoveryState();
@@ -83,12 +83,31 @@ class _InputEmailRecoveryState extends State<InputEmailRecovery> {
                     CustomButton(
                       text: "Recover Password",
                       size: ButtonSize.large,
-                      onPressed: () {
-                        if (_inputEmailFormKey.currentState!.validate()) {
-                          context.pushNamed("/forgot_password_otp");
+                      onPressed: () async{
+                        if (!mounted) return;
+                        String? status;
+                        try{
+                           status = await userProvider.sendVerificationCode(context, email!);
+                           if(status.toString() !="failed"){
+                             if (!mounted) return;
+                              await CustomPopup.show(backgroundColor:colorScheme.onBackground,type: PopupType.error ,title: "Check your email", message: "Inputted Email address was not found in the database", context: context);
+                           }
+                          if (_inputEmailFormKey.currentState!.validate()) {
+                            if (!mounted) return;
+                            context.pushNamed("/forgot_password_otp",
+                              pathParameters: {'email': email!},
+                            );
+
+                          }("/forgot_password_otp");
+
+                      }catch(e) {
+                          if (!mounted) return;
                         }
-                        userProvider.sendVerificationCode(context, email!);
-                        context.pushNamed("/forgot_password_otp");
+                        if (_inputEmailFormKey.currentState!.validate()) {
+                          context.pushNamed("/forgot_password_otp",
+                            pathParameters: {'email': email!},
+                          );
+                        }("/forgot_password_otp");
                       },
                     ),
                     SizedBox(

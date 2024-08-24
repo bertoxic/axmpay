@@ -1,6 +1,5 @@
 
 
-import 'package:fintech_app/models/user_model.dart';
 
 class Account {
   String? number;

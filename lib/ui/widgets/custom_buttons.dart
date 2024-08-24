@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 enum ButtonType { elevated, outlined, text }
 enum ButtonSize { small, medium, large }
@@ -24,7 +23,7 @@ class CustomButton extends StatefulWidget {
   final Widget? customChild;
 
   const CustomButton({
-    Key? key,
+    super.key,
     required this.text,
     this.onPressed,
     this.type = ButtonType.elevated,
@@ -42,7 +41,7 @@ class CustomButton extends StatefulWidget {
     this.textStyle,
     this.animationDuration = const Duration(milliseconds: 200),
     this.customChild,
-  }) : super(key: key);
+  });
 
   @override
   _CustomButtonState createState() => _CustomButtonState();
@@ -215,7 +214,7 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
 
     if (widget.prefixIcon != null) {
       children.add(Icon(widget.prefixIcon, size: 18));
-      children.add(SizedBox(width: 8));
+      children.add(const SizedBox(width: 8));
     }
 
     children.add(
@@ -226,7 +225,7 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
     );
 
     if (widget.suffixIcon != null) {
-      children.add(SizedBox(width: 8));
+      children.add(const SizedBox(width: 8));
       children.add(Icon(widget.suffixIcon, size: 18));
     }
 
@@ -240,11 +239,11 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
   TextStyle _getDefaultTextStyle() {
     switch (widget.size) {
       case ButtonSize.small:
-        return TextStyle(fontSize: 12);
+        return const TextStyle(fontSize: 12);
       case ButtonSize.medium:
-        return TextStyle(fontSize: 14);
+        return const TextStyle(fontSize: 14);
       case ButtonSize.large:
-        return TextStyle(fontSize: 16);
+        return const TextStyle(fontSize: 16);
     }
   }
 }
