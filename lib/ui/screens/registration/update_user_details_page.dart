@@ -1,41 +1,69 @@
+import 'package:fintech_app/ui/screens/registration/registration_controller.dart';
 import 'package:fintech_app/ui/widgets/custom_buttons.dart';
 import 'package:fintech_app/ui/widgets/custom_dialog.dart';
 import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:fintech_app/constants/app_colors.dart';
 
-import '../../constants/text_constants.dart';
-import '../../main.dart';
-import '../../models/user_model.dart';
-import '../../providers/authentication_provider.dart';
-import '../widgets/custom_container.dart';
-import '../widgets/custom_text/custom_apptext.dart';
-import '../widgets/custom_textfield.dart';
+import '../../../constants/text_constants.dart';
+import '../../../main.dart';
+import '../../../models/user_model.dart';
+import '../../../providers/authentication_provider.dart';
+import '../../widgets/custom_container.dart';
+import '../../widgets/custom_text/custom_apptext.dart';
+import '../../widgets/custom_textfield.dart';
 
-class UpdateUserDetailsPage extends StatelessWidget {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _date_of_birth = TextEditingController();
-  final TextEditingController _first_name = TextEditingController();
-  final TextEditingController _last_name = TextEditingController();
-  final TextEditingController _middle_name = TextEditingController();
-  final TextEditingController _phone_number = TextEditingController();
-  final TextEditingController _NIN = TextEditingController();
-  final TextEditingController _address = TextEditingController();
-  final TextEditingController _city = TextEditingController();
-  final TextEditingController _state = TextEditingController();
-  final TextEditingController _zip_code = TextEditingController();
-  final TextEditingController _employment_status = TextEditingController();
-
-  final _formKey = GlobalKey<FormState>();
+class UpdateUserDetailsPage extends StatefulWidget {
 
   UpdateUserDetailsPage({super.key});
 
   @override
+  State<UpdateUserDetailsPage> createState() => _UpdateUserDetailsPageState();
+}
+
+class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
+  final TextEditingController _nameController = TextEditingController();
+
+  final TextEditingController _emailController = TextEditingController();
+
+  final TextEditingController _passwordController = TextEditingController();
+
+  final TextEditingController _date_of_birth = TextEditingController();
+
+  final TextEditingController _first_name = TextEditingController();
+
+  final TextEditingController _last_name = TextEditingController();
+
+  final TextEditingController _gender = TextEditingController();
+
+  final TextEditingController _phone_number = TextEditingController();
+
+  final TextEditingController _NIN = TextEditingController();
+
+  final TextEditingController _bvn = TextEditingController();
+
+  final TextEditingController _street_address = TextEditingController();
+
+  final TextEditingController _city = TextEditingController();
+
+  final TextEditingController _state = TextEditingController();
+
+  final TextEditingController _zip_code = TextEditingController();
+
+  final _formKey = GlobalKey<FormState>();
+  late RegistrationController _controller;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _controller = RegistrationController(context);
+  }
+  @override
   Widget build(BuildContext context) {
+     DateTime selectedDate;
     UserDetails  userdetails = UserDetails(
         firstName: _first_name.value.text??"",
         lastName: _last_name.value.text??"",
@@ -68,31 +96,32 @@ class UpdateUserDetailsPage extends StatelessWidget {
                               alignment: Alignment.centerLeft,
                               child: Padding(
                                 padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.h),
-                                child: AppText.body("Personnal information",),),
+                                child: AppText.body("Basic information",),),
                             ),
 
                             SpacedContainer(
                               child: CustomTextField(
                                 labelText: 'First Name',
                                 hintText: 'Enter your First Name',
-                                decoration: InputDecoration(
-
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: AppColors.lightgrey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: Colors.green),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: Colors.red),
-                                    ),
-                                    fillColor: AppColors.lightgrey,
-                                    filled: true
-                                ),
+                                // decoration: InputDecoration(
+                                //
+                                //     enabledBorder: OutlineInputBorder(
+                                //       borderRadius: BorderRadius.circular(20.0),
+                                //       borderSide: const BorderSide(color: AppColors.lightgrey),
+                                //     ),
+                                //     focusedBorder: OutlineInputBorder(
+                                //       borderRadius: BorderRadius.circular(20.0),
+                                //       borderSide: const BorderSide(color: Colors.green),
+                                //     ),
+                                //     errorBorder: OutlineInputBorder(
+                                //       borderRadius: BorderRadius.circular(20.0),
+                                //       borderSide: const BorderSide(color: Colors.red),
+                                //     ),
+                                //     fillColor: AppColors.lightgrey,
+                                //     filled: true
+                                // ),
                                 validator: null,
+                                controller:  _controller.first_name,
                                 prefixIcon: const Icon(Icons.person), fieldName: Fields.name,
                                 onChanged: (value){
                                   userdetails.firstName = value;
@@ -104,23 +133,7 @@ class UpdateUserDetailsPage extends StatelessWidget {
                               child: CustomTextField(
                                 labelText: 'Last Name',
                                 hintText: 'Enter your Last Name',
-                                decoration: InputDecoration(
-
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: AppColors.lightgrey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: Colors.green),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: Colors.red),
-                                    ),
-                                    fillColor: AppColors.lightgrey,
-                                    filled: true
-                                ),
+                                controller:  _controller.last_name,
                                 validator:null,
                                 prefixIcon: const Icon(Icons.person), fieldName: Fields.name,
                                 onChanged: (value){
@@ -134,29 +147,12 @@ class UpdateUserDetailsPage extends StatelessWidget {
                                 labelText: 'Email',
                                 hintText: 'Enter your email',
                                 prefixIcon: const Icon(Icons.email_outlined),
-                                decoration: InputDecoration(
-
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: AppColors.lightgrey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      borderSide: const BorderSide(color: Colors.green),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: Colors.red),
-                                    ),
-                                    fillColor: AppColors.lightgrey,
-                                    filled: true
-                                ),
                                 onChanged: (value){
                                   userdetails.email = value;
                                 },
                                 keyboardType: TextInputType.emailAddress,
                                 fieldName: Fields.email,
-                                controller: _emailController,
+                                controller: _controller.emailController,
                                 // validator: (value)=>FormValidator.validate(value, ValidatorType.email,fieldName: Fields.email),
                               ),
                             ),
@@ -166,27 +162,12 @@ class UpdateUserDetailsPage extends StatelessWidget {
                                 labelText: 'Phone',
                                 hintText: 'Enter phone number',
                                 prefixIcon: const Icon(Icons.phone),
-                                decoration: InputDecoration(
-                                    errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: Colors.red),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: AppColors.lightgrey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      borderSide: const BorderSide(color: Colors.green),
-                                    ),
-                                    fillColor: AppColors.lightgrey,
-                                    filled: true
-                                ),
+
                                 obscureText: true, fieldName: Fields.password,
                                 onChanged: (value){
                                   userdetails.phone = value;
                                 },
-                                controller: _phone_number,
+                                controller: _controller.phone_number,
                                 // validator: (value) => FormValidator.validate(value, ValidatorType.password, fieldName: "password"),
                               ),
                             ),
@@ -214,23 +195,7 @@ class UpdateUserDetailsPage extends StatelessWidget {
                               child: CustomTextField(
                                 labelText: 'State',
                                 hintText: 'name of state',
-                                decoration: InputDecoration(
-
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: AppColors.lightgrey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: Colors.green),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: Colors.red),
-                                    ),
-                                    fillColor: AppColors.lightgrey,
-                                    filled: true
-                                ),
+                                controller: _controller.state,
                                 validator: null,
                                 prefixIcon: const Icon(Icons.location_history), fieldName: Fields.name,
                                 onChanged: (value){
@@ -243,23 +208,7 @@ class UpdateUserDetailsPage extends StatelessWidget {
                               child: CustomTextField(
                                 labelText: 'City',
                                 hintText: 'Enter name of your City',
-                                decoration: InputDecoration(
-
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: AppColors.lightgrey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: Colors.green),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: Colors.red),
-                                    ),
-                                    fillColor: AppColors.lightgrey,
-                                    filled: true
-                                ),
+                                controller: _controller.city,
                                 validator:null,
                                 prefixIcon: const Icon(Icons.location_city), fieldName: Fields.name,
                                 onChanged: (value){
@@ -270,32 +219,15 @@ class UpdateUserDetailsPage extends StatelessWidget {
                             ),
                             SpacedContainer(
                               child: CustomTextField(
-                                labelText: 'Street',
+                                labelText: 'Street address',
                                 hintText: 'Enter street name and number',
+                                controller: _controller.street_address,
                                 prefixIcon: const Icon(Icons.location_searching_outlined),
-                                decoration: InputDecoration(
-
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: AppColors.lightgrey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      borderSide: const BorderSide(color: Colors.green),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: Colors.red),
-                                    ),
-                                    fillColor: AppColors.lightgrey,
-                                    filled: true
-                                ),
                                 onChanged: (value){
-                                  userdetails.email = value;
+                                  userdetails.address?.street = value;
                                 },
-                                keyboardType: TextInputType.emailAddress,
+                                keyboardType: TextInputType.text,
                                 fieldName: Fields.email,
-                                controller: _emailController,
                                 // validator: (value)=>FormValidator.validate(value, ValidatorType.email,fieldName: Fields.email),
                               ),
                             ),
@@ -304,29 +236,12 @@ class UpdateUserDetailsPage extends StatelessWidget {
                                 labelText: 'Zip',
                                 hintText: 'Zip',
                                 prefixIcon: const Icon(Icons.location_on),
-                                decoration: InputDecoration(
-
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: AppColors.lightgrey),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      borderSide: const BorderSide(color: Colors.green),
-                                    ),
-                                    errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      borderSide: const BorderSide(color: Colors.red),
-                                    ),
-                                    fillColor: AppColors.lightgrey,
-                                    filled: true
-                                ),
+                                controller: _controller.zip_code,
                                 onChanged: (value){
-                                  userdetails.email = value;
+                                  userdetails.address?.zip = value;
                                 },
-                                keyboardType: TextInputType.emailAddress,
+                                keyboardType: TextInputType.text,
                                 fieldName: Fields.email,
-                                controller: _emailController,
                                 // validator: (value)=>FormValidator.validate(value, ValidatorType.email,fieldName: Fields.email),
                               ),
                             ),
@@ -335,8 +250,7 @@ class UpdateUserDetailsPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(height: 10.h,),
-                    Container(
+                    SizedBox(height: 10.h,), Container(
                       decoration: BoxDecoration(
                           color:  colorScheme.primaryContainer,
                           borderRadius: BorderRadius.circular(20.w)
@@ -348,31 +262,53 @@ class UpdateUserDetailsPage extends StatelessWidget {
                               alignment: Alignment.centerLeft,
                               child: Padding(
                                 padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.h),
-                                child: AppText.body("Financial Information",),),
+                                child: GestureDetector(
+                                    onTap: (){
+                                      _controller.selectDate(context);
+                                    },child: AppText.body("Personal information",)),),
                             ),
 
                             SpacedContainer(
+                              child: DatePickerTextField(context: context,onChange:(value){
+                                    print(value);
+                              }, dateController: _controller.date_of_birth,),
+                            ),
+                            SpacedContainer(
                               child: CustomTextField(
-                                labelText: 'Annual income',
-                                hintText: 'amount yearly: e.g 20 000 000  ',
-                                validator: null,
-                                prefixIcon: const Icon(Icons.location_history), fieldName: Fields.name,
+                                labelText: 'Gender',
+                                hintText: 'pick your gender',
+
+                                validator:null,
+                                prefixIcon: const Icon(Icons.location_city), fieldName: Fields.name,
                                 onChanged: (value){
-                                  userdetails.income = int.parse(value);
+                                  userdetails.address?.city = value;
                                 },
 
                               ),
                             ),
                             SpacedContainer(
                               child: CustomTextField(
-                                labelText: 'Employment status',
-                                hintText: 'employment status',
+                                labelText: 'BVN',
+                                hintText: 'input your valid BVN',
+
                                 validator:null,
                                 prefixIcon: const Icon(Icons.location_city), fieldName: Fields.name,
                                 onChanged: (value){
-                                  userdetails.employmentStatus = value;
                                 },
+                                controller: _controller.bvn,
+                              ),
+                            ),
+                            SpacedContainer(
+                              child: CustomTextField(
+                                labelText: 'NIN',
+                                hintText: 'include your NIN',
 
+                                validator:null,
+                                prefixIcon: const Icon(Icons.location_city), fieldName: Fields.name,
+                                onChanged: (value){
+                                  userdetails.nin = value;
+                                },
+                                  controller: _controller.NIN,
                               ),
                             ),
 
@@ -397,17 +333,18 @@ class UpdateUserDetailsPage extends StatelessWidget {
                                 isDisabled: false,
                                 type: ButtonType.elevated,
                                 onPressed: (){
-                                  print("object");
-                                  CustomPopup.show(
+                                _controller.updateUserDetailsModel();
+                                _controller.updateUserDetailsToServer();
+                                    CustomPopup.show(
                                       context: context, title: "Select  a new Page",
                                       message: "Do you want to move to the next page?",
                                     actions: [
                                       PopupAction(text: "no", onPressed: (){
                                        // context.goNamed("/home");
-                                        context.pushNamed("/home");
+                                        //context.pushNamed("/home");
                                       },color: Colors.green),
                                       PopupAction(text: "yes", onPressed: (){
-                                        context.pushNamed("/home");
+                                       // context.pushNamed("/home");
                                       }),
                                     ]
                                   );
@@ -421,12 +358,63 @@ class UpdateUserDetailsPage extends StatelessWidget {
               ),
             )
         ),
-        floatingActionButton: FloatingActionButton(onPressed: () {  },backgroundColor: Colors.orange, ),
       ),
     );
+
   }
 }
 
+
+class DatePickerTextField extends StatefulWidget {
+  BuildContext context;
+  Function(String?) onChange;
+   TextEditingController dateController;
+  String? Function(String?)? validator;
+   DatePickerTextField({super.key,
+     required this.context,
+     required this.onChange,
+     required this.dateController,
+     this.validator,
+   });
+
+  @override
+  _DatePickerTextFieldState createState() => _DatePickerTextFieldState();
+}
+
+class _DatePickerTextFieldState extends State<DatePickerTextField> {
+  DateTime? _selectedDate;
+
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+        widget.dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomTextField(
+      controller: widget.dateController,
+      labelText: 'Date of birth',
+      prefixIcon: Icon(Icons.calendar_today),
+      suffixIcon: Icon(Icons.arrow_drop_down),
+      hintText: _selectedDate != null? _selectedDate.toString():'YYYY-MM-DD',
+      readOnly: true,
+      onTap: _selectDate,
+      validator: validator,
+      // onChanged: ,
+      fieldName: '',
+    );
+  }
+}
 
 String? validator(String? input){
   if (input == null || input.isEmpty) {

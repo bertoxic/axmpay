@@ -11,8 +11,13 @@ void handleGlobalError(BuildContext context, dynamic error) {
     _showingErrorDialog = true;
 
     if (error is TokenExpiredException) {
+
       showReloginDialog(context);
     } else if (error.type == DioExceptionType.connectionError) {
+      showConnectionErrorDialog(context);
+    } else if (error.type == DioExceptionType.connectionTimeout) {
+      showConnectionErrorDialog(context);
+    }else if (error.type == DioExceptionType.receiveTimeout) {
       showConnectionErrorDialog(context);
     } else {
       showGeneralErrorDialog(context, error);

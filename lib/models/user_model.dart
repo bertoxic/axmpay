@@ -39,21 +39,24 @@ class User {
 }
 
 
-class RegisterDetails {
-  String name;
+class PreRegisterDetails {
+  String firstName;
+  String lastName;
   String password;
   String email;
 
-  RegisterDetails({required this.name, required this.password, required this.email});
+  PreRegisterDetails({required this.firstName,required this.lastName, required this.password, required this.email});
 
-  RegisterDetails.fromJSON(Map<String, dynamic> json)
-      : name = json["name"] as String? ?? '',
+  PreRegisterDetails.fromJSON(Map<String, dynamic> json)
+      : firstName = json["firstname"] as String? ?? '',
+      lastName = json["lastname"] as String? ?? '',
       email = json["email"] as String? ?? '',
         password = json["password"] as String? ?? '';
 
   Map<String, dynamic> toJSON() {
     return {
-      "name": name,
+      "firstname": firstName,
+      "lastname": lastName,
       "password": password,
       "email": email,
     };
@@ -91,68 +94,57 @@ class Address {
 class UserDetails {
   String firstName;
   String lastName;
-  String? middleName;
+  String? fullName;
   String dateOfBirth;
   String email;
   String? phone;
   String? nin;
+  String? bvn;
+  String? gender;
   Address? address;
-  int? income;
-  String? employmentStatus;
-  String? securityQuestion;
-  String? securityAnswer;
-  bool? termsAccepted;
-  bool? privacyAccepted;
+  Address? state;
+  Address? city;
+  Address? streetAddress;
+  Address? zip;
+
 
   UserDetails({
     required this.firstName,
     required this.lastName,
     required this.dateOfBirth,
     required this.email,
-    this.middleName,
+    this.fullName,
     this.phone,
     this.nin,
+    this.bvn,
     this.address,
-    this.income,
-    this.employmentStatus,
-    this.securityQuestion,
-    this.securityAnswer,
-    this.termsAccepted,
-    this.privacyAccepted,
+
   });
 
   UserDetails.fromJSON(Map<String, dynamic> json)
       : firstName = json["first_name"] as String? ?? '',
         lastName = json["last_name"] as String? ?? '',
-        middleName = json["middle_name"] as String? ?? '',
+        fullName = json["fullName"] as String? ?? '',
         email = json["email"] as String? ?? '',
         dateOfBirth = json["DOB"] as String? ?? '',
         phone = json["phone"] as String? ?? '',
         nin = json["NIN"] as String? ?? '',
+        bvn = json["BVN"] as String? ?? '',
         address = json["address"] != null ? Address.fromJSON(json["address"]) : null,
-        income = json["income"] as int? ?? 0,
-        employmentStatus = json["employment"] as String? ?? '',
-        securityQuestion = json["security_question"] as String? ?? '',
-        securityAnswer = json["security_answer"] as String? ?? '',
-        termsAccepted = json["terms"] as bool? ?? false,
-        privacyAccepted = json["privacy"] as bool? ?? false;
+        gender = json["gender"];
 
   Map<String, dynamic> toJSON() {
     return {
       "first_name": firstName,
       "last_name": lastName,
-      "middle_name": middleName,
+      "middle_name": "$firstName $lastName",
       "DOB": dateOfBirth,
       "email": email,
+      "gender": gender,
       "phone": phone,
       "NIN": nin,
+      "BVN": bvn,
       "address": address?.toJSON(),
-      "income": income,
-      "employment": employmentStatus,
-      "security_question": securityQuestion,
-      "security_answer": securityAnswer,
-      "terms": termsAccepted,
-      "privacy": privacyAccepted,
     };
   }
 }

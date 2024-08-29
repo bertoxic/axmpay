@@ -40,7 +40,7 @@ class UserServiceProvider extends ChangeNotifier {
         userRepo.insertUser(userdata!);
         if (userdata?.id != null) {
           UserData? usr = await userRepo.getUserById(userdata!.id);
-          print(userdata);
+          print("zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq$userdata");
         }
       } else {
         throw Exception("userdata is null ....user_service_provider.dart");
@@ -111,7 +111,6 @@ class UserServiceProvider extends ChangeNotifier {
     final response = await apiService.post("bankTransfer.php", data, token);
     if(response.data != null){
       var jsonData = jsonDecode(response.data);
-      print("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz$jsonData");
     }else {
       throw Exception("respose has no data for banktransfer");
     }
@@ -181,6 +180,23 @@ class UserServiceProvider extends ChangeNotifier {
       rethrow;
   }
   }
+  Future<String> emailVerification(BuildContext context, String otp)async {
+    try{
+      Map<String, dynamic> data = {"verification_code":otp};
+    final response = await apiService.post("emailVerification.php", data, null);
+    var jsonData = jsonDecode(response.data);
+    // if (jsonData["status"]=="failed") {
+    //   throw Exception(jsonData["message"]);
+    // }
+    return jsonData["status"].toString();
+  }catch(e){
+      if (!context.mounted) {
+        rethrow;
+      }
+      handleGlobalError(context, e);
+      rethrow;
+  }
+  }
 
   Future<String> changeUserPassword(BuildContext context, String email, String otp, String password)async {
     try{
@@ -203,16 +219,17 @@ class UserServiceProvider extends ChangeNotifier {
       rethrow;
   }
   }
-  Future<String> createAccount(BuildContext context, String email, String password)async {
+  Future<String> createAccount(BuildContext context, PreRegisterDetails userDetails)async {
     try{
-      Map<String, dynamic> data = {"email":email,"password":password};
-      String? token = await SharedPreferencesUtil.getString("auth_token");
-    final response = await apiService.post("createAccount.php?", data, token);
+
+      Map<String, dynamic> data = userDetails.toJSON();
+    final response = await apiService.post("createAccount.php?", data, null);
+
       if (response.data == null) {
         throw Exception("no response from the server");
       }
     var jsonData = jsonDecode(response.data);
-    // if (jsonData["status"]=="failed") {
+      // if (jsonData["status"]=="failed") {
     //   throw Exception(jsonData["message"]);
     // }
     return jsonData["status"].toString();
@@ -229,6 +246,28 @@ Future<String> updateUserDetails(BuildContext context, String email, String pass
       Map<String, dynamic> data = {"email":email,"password":password};
       String? token = await SharedPreferencesUtil.getString("auth_token");
     final response = await apiService.post("updateUserDetails.php?", data, token);
+      if (response.data == null) {
+        throw Exception("no response from the server");
+      }
+    var jsonData = jsonDecode(response.data);
+    // if (jsonData["status"]=="failed") {
+    //   throw Exception(jsonData["message"]);
+    // }
+    return jsonData["status"].toString();
+  }catch(e){
+      if (!context.mounted) {
+        rethrow;
+      }
+ handleExceptionGlobally(context, e);
+      rethrow;
+    }}
+
+Future<String> updateUserRegistrationDetails(BuildContext context, UserDetails userDetails)async {
+    try{
+      Map<String, dynamic> data = userDetails.toJSON();
+      print(data);
+      String? token = await SharedPreferencesUtil.getString("auth_token");
+    final response = await apiService.post("updateUserDetails.php?", data, null);
       if (response.data == null) {
         throw Exception("no response from the server");
       }

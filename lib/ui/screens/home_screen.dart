@@ -141,6 +141,7 @@ class _HomePageState extends State<HomePage> {
                                     child: AppText.title(
                                   "\$ ${userProvider.userdata?.availableBalance}",
                                   color: colorScheme.onPrimary,
+                                      style: TextStyle(fontSize: 18.sp, color: Colors.white, fontWeight: FontWeight.bold),
                                 )),
                               ],
                             )))
@@ -174,17 +175,20 @@ class _HomePageState extends State<HomePage> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           _buildColumn(
-                            Icons.message,
-                            "pay bill",
+                            Icons.telegram,
+                            "transfer",
+                              onTap: () {
+                                context.pushNamed("/transferPage");
+                              }
                           ),
-                          _buildColumn(Icons.food_bank_outlined, "recharge",
+                          _buildColumn(Icons.upload, "recharge",
                               onTap: () {
                             context.pushNamed("/forgot_password_input_mail");
                           }),
-                          _buildColumn(Icons.widgets, "buy ticket", onTap: () {
-                            context.pushNamed("/user_profile_page");
+                          _buildColumn(Icons.widgets, "history", onTap: () {
+                            context.pushNamed("/transaction_history_page");
                           }),
-                          _buildColumn(Icons.face, "transfer", onTap: () {
+                          _buildColumn(Icons.face, "profile", onTap: () {
                             context.pushNamed("/transaction_history_page");
                           }),
                         ],
@@ -248,6 +252,8 @@ class _HomePageState extends State<HomePage> {
                                       phoneNumberValue = value.toString();
                                       _checkPhoneNumber();
                                     },
+                                    cursorHeight: 18.h,
+
                                     decoration: InputDecoration(
                                         fillColor: Colors.grey.shade100,
                                         filled: true,
@@ -329,6 +335,8 @@ class _HomePageState extends State<HomePage> {
                               child: CustomTextField(
                                 fieldName: "amount",
                                 // textStyle: TextStyle(height: 20),
+                                cursorHeight: 24.7.h,
+
                                 controller: amountController,
                                 decoration: InputDecoration(
                                     fillColor: Colors.grey.shade100,
@@ -461,16 +469,17 @@ class _HomePageState extends State<HomePage> {
                         height: 40.h,
                         text: "Top up",
                         width: double.maxFinite,
-                        onPressed: () => _showBottomSheet(context,onTap: (){
+                        onPressed: () {
                           TopUpPayload topup= TopUpPayload(
-                              phoneNumber: phoneNumberValue!,
-                              amount: amountController.text,
-                              network: serviceProviderNetwork!,
-                                productId:isData?dataBundle?.productId??"":"",
+                            phoneNumber: phoneNumberValue!,
+                            amount: amountController.text,
+                            network: serviceProviderNetwork!,
+                            productId:isData?dataBundle?.productId??"":"",
                           );
+                          _showBottomSheet(context,topup,onTap: (){
                           print(dataBundle);
                           print(topup.toJson());
-                        }),
+                        });}
                       ),
                     )
                   ],
@@ -532,10 +541,10 @@ class _HomePageState extends State<HomePage> {
         try {
           String? status = await userProvider.getNetworkProvider(context, phoneNumber);
 
-          // Decode JSON string to a Map
+          // Decode JSON string to a Map oh
           Map<String, dynamic> jsonResponse = jsonDecode(status!);
 
-          // Extract data (e.g., network)
+          // Extract data
           data = jsonResponse['data']['network'];
 
           return data;
@@ -544,6 +553,12 @@ class _HomePageState extends State<HomePage> {
             if (e.type == DioExceptionType.connectionError) {
               return "No internet connection";
             }else if (e.type == DioExceptionType.connectionTimeout) {
+                return "poor connection";
+
+            }else if (e.type == DioExceptionType.receiveTimeout) {
+                return "poor connection";
+
+            }else if (e.type == DioExceptionType.sendTimeout) {
                 return "poor connection";
 
             }
@@ -567,6 +582,7 @@ Widget _buildColumn(IconData icon, String text, {void Function()? onTap}) {
   return InkWell(
     onTap: onTap,
     child: Container(
+      width: 60.w,
       decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(4),
@@ -613,7 +629,7 @@ Widget _buildColumn(IconData icon, String text, {void Function()? onTap}) {
   );
 }
 
-void _showBottomSheet(BuildContext context,  {void Function()? onTap}) {
+void _showBottomSheet(BuildContext context, TopUpPayload topUpPayload, {void Function()? onTap}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -625,7 +641,7 @@ void _showBottomSheet(BuildContext context,  {void Function()? onTap}) {
       minChildSize: 0.1,
       maxChildSize: 0.65,
       expand: false,
-      builder: (_, controller) => BottomSheetContent(controller: controller, onTap:onTap),
+      builder: (_, controller) => BottomSheetContent(topUpPayload,controller: controller, onTap:onTap),
     ),
   );
 }
@@ -633,7 +649,8 @@ void _showBottomSheet(BuildContext context,  {void Function()? onTap}) {
 class BottomSheetContent extends StatelessWidget {
   final ScrollController controller;
   final Function()? onTap;
-  const BottomSheetContent({super.key, required this.controller, this.onTap});
+  TopUpPayload topUpPayload;
+   BottomSheetContent(this.topUpPayload, {super.key, required this.controller, this.onTap});
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -662,7 +679,7 @@ class BottomSheetContent extends StatelessWidget {
             child: Column(
               children: [
                 Center(
-                  child: AppText.headline("800"),
+                  child: AppText.headline(topUpPayload.amount),
                 ),
                 SizedBox(
                   height: 16.h,
@@ -673,10 +690,10 @@ class BottomSheetContent extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       AppText.body(
-                        "Account number",
+                        "Phone number",
                         color: Colors.grey.shade500,
                       ),
-                      AppText.body("700 9890 8977"),
+                      AppText.body(topUpPayload.phoneNumber),
                     ],
                   ),
                 ),
@@ -686,10 +703,10 @@ class BottomSheetContent extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       AppText.body(
-                        "Recipient's Name",
+                        "Network's detail",
                         color: Colors.grey.shade500,
                       ),
-                      AppText.body("Barry felix king"),
+                      AppText.body(topUpPayload.network),
                     ],
                   ),
                 ),
@@ -702,7 +719,7 @@ class BottomSheetContent extends StatelessWidget {
                         "Amount",
                         color: Colors.grey.shade500,
                       ),
-                      AppText.body(" 700 "),
+                      AppText.body(topUpPayload.amount),
                     ],
                   ),
                 ),

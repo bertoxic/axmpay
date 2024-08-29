@@ -43,6 +43,8 @@ class CustomTextField extends StatelessWidget {
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final FocusNode? focusNode;
+  final bool? readOnly;
+  final Function()? onTap;
   final Color? fillColor;
   final InputBorder? border;
   final InputBorder? focusedBorder;
@@ -111,6 +113,8 @@ class CustomTextField extends StatelessWidget {
     this.counterText,
     this.counter,
     this.errorText,
+    this.readOnly,
+    this.onTap,
     required this.fieldName,
      this.controller,
     this.validator,
@@ -119,9 +123,12 @@ class CustomTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      onTap: onTap,
       controller: controller??TextEditingController(text: initialValue),
       focusNode: focusNode,
+      readOnly:  readOnly??false,
       decoration: (decoration ??  InputDecoration(
+
           filled: true,
           fillColor: AppColors.lightgrey,
           contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),

@@ -25,24 +25,27 @@ class AuthenticationProvider extends ChangeNotifier {
   }
 
 
-  Future<void> Login(LoginDetails userdetails) async {
+  Future<Map<String, dynamic>?> login(BuildContext context ,LoginDetails userdetails) async {
+    Map<String, dynamic>? data;
         try {
-          String? token = await authService.login(userdetails);
+           data = await authService.login(context,userdetails);
+          String? token = data?["obtainedToken"];
           await SharedPreferencesUtil.saveString('auth_token', token??"");
           await SharedPreferencesUtil.saveString(
               "isAuthenticated", _isAuthenticated.toString());
           setToken(token);
          await _saveTokenTOPref();
-        print("saved alllllllllll");
+         return data;
         }catch(e){
           print("erorr occured in authenticationprovidder$e");
         }
     notifyListeners();
+        return data;
   }
 
 
-  Future<void> Register(RegisterDetails userdetails) async {
-    Map<String, dynamic> details = userdetails.toJSON();
+  Future<void> register(PreRegisterDetails userDetails) async {
+    Map<String, dynamic> details = userDetails.toJSON();
     final res = await apiService.post("/signup", details, "");
     if (res.statusCode == 200 || res.statusCode == 201) {
       _isAuthenticated = true;

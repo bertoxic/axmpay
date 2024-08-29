@@ -71,12 +71,19 @@ class LoginPage extends StatelessWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: CustomButton(onPressed: (){
+                        child: CustomButton(onPressed: () async {
                           if(_formKey.currentState!.validate()){}
                           userdetails.email = _emailController.value.text;
                           userdetails.password = _passwordController.value.text;
-                          authProvider.Login(userdetails);
-                          context.goNamed("/home");
+                         var data = await authProvider.login(context, userdetails);
+                         if(data!=null){
+                          if( data["phoneStatus"] == "Verified"){
+                            context.goNamed("user_details_page");
+                          }else if(data["phoneStatus"] == "unVerified"){
+                                      context.goNamed("/home");
+                          }
+                         }
+
                         },
                           type: ButtonType.elevated,
                           backgroundColor: colorScheme.primary,

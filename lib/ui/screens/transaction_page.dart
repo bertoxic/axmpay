@@ -15,6 +15,7 @@ import 'package:provider/provider.dart';
 import '../../models/transaction_model.dart';
 import '../../models/user_model.dart';
 import '../../utils/color_generator.dart';
+import '../widgets/custom_dialog.dart';
 import '../widgets/transaction_butttom_sheet.dart';
 
 class TransferScreen extends StatefulWidget {
@@ -24,9 +25,10 @@ class TransferScreen extends StatefulWidget {
   State<TransferScreen> createState() => _TransferScreenState();
 }
 
-final _transactionFormKey = GlobalKey<FormState>();
+
 
 class _TransferScreenState extends State<TransferScreen> {
+  final _transactionFormKey = GlobalKey<FormState>();
   final TextEditingController _bankSelectorController = TextEditingController();
   final TextEditingController _accountNumberController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
@@ -41,7 +43,7 @@ class _TransferScreenState extends State<TransferScreen> {
   String? _transactionRemark;
   UserData? userData;
   AccountRequestDetails accountRequestDetails = AccountRequestDetails();
-
+  Future<RecipientDetails?>? _recipientDetailsFuture;
   @override
   void initState() {
     super.initState();
@@ -65,11 +67,24 @@ class _TransferScreenState extends State<TransferScreen> {
     _amountController.dispose();
     super.dispose();
   }
+
+  void _updateRecipientDetailsFuture() {
+    if (accountNumberSet && selectedBank != null) {
+      final userServiceProvider = Provider.of<UserServiceProvider>(context, listen: false);
+      _recipientDetailsFuture = userServiceProvider.getReceiversAccountDetails(accountRequestDetails);
+    } else {
+      _recipientDetailsFuture = null;
+    }
+  }
   String? bankValidator(String? value) {
-    if (selectedBank == null || recipientDetails ==null) {
-      return 'Please select a valid bank';
+    if (value == null || value.isEmpty) {
+      return 'Please select a bank';
     }
     return null;
+  }
+
+  bool isRecipientValid() {
+    return selectedBank != null && recipientDetails != null;
   }
   void _filterItems() {
     final query = _bankSelectorController.value.text.toLowerCase();
@@ -88,10 +103,12 @@ class _TransferScreenState extends State<TransferScreen> {
         _receiverAccountNumber = query;
         accountRequestDetails.accountNumber = _receiverAccountNumber;
         accountRequestDetails.bankCode = selectedBank!.bankCode.toString();
+        _updateRecipientDetailsFuture();
       });
     } else {
       setState(() {
         accountNumberSet = false;
+        _recipientDetailsFuture = null;
       });
     }
   }
@@ -324,7 +341,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                         onChanged: (value) {
                                           _accountNumberController;
                                         },
-                                        hintText: "Receipient's account number",
+                                        hintText: "Recipient's account number",
                                         fieldName: "accountNumber"),
                                   ),
                                   accountNumberSet
@@ -333,58 +350,56 @@ class _TransferScreenState extends State<TransferScreen> {
                                             SizedBox(
                                               height: 10.h,
                                             ),
-                                            Consumer<UserServiceProvider>(
-                                                builder: (context,
-                                                    userServiceProvider,
-                                                    child) {
-                                              //accountRequestDetails.senderAccountNumber =  userServiceProvider.userdata?.accountNumber.toString();
-                                              return FutureBuilder(
-                                                  future: userServiceProvider
-                                                      .getReceiversAccountDetails(
-                                                          accountRequestDetails),
-                                                  builder: (context, snapshot) {
-                                                    recipientDetails =
-                                                        snapshot.data;
-                                                    if (snapshot
-                                                            .connectionState ==
-                                                        ConnectionState
-                                                            .waiting) {
-                                                      return  Center(
-                                                          child: SizedBox(
-                                                              height: 20.h,
-                                                              width: 15.w,
-                                                              child:
-                                                                  const CircularProgressIndicator(
-                                                                strokeWidth: 2,
-                                                              )));
-                                                    } else if (snapshot
-                                                        .hasError) {
-                                                      String errorMessage =
+                                            _recipientDetailsFuture == null
+                                                ? const SizedBox(
+                                              child: Text("input a valid account details"),
+                                            )  // or some placeholder widget
+                                                :
+                                            FutureBuilder(
+                                                future: _recipientDetailsFuture,
+                                                builder: (context, snapshot) {
+                                                  recipientDetails =
+                                                      snapshot.data;
+                                                  if (snapshot
+                                                          .connectionState ==
+                                                      ConnectionState
+                                                          .waiting) {
+                                                    return  Center(
+                                                        child: SizedBox(
+                                                            height: 20.h,
+                                                            width: 15.w,
+                                                            child:
+                                                                const CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                            )));
+                                                  } else if (snapshot
+                                                      .hasError) {
+                                                    String errorMessage =
 
-                                                      'An unexpected error occurred';
-                                                      if (snapshot.error
-                                                          is Exception) {
-                                                        errorMessage = (snapshot
-                                                                    .error
-                                                                as Exception)
-                                                            .toString()
-                                                            .replaceFirst(
-                                                                'Exception: ',
-                                                                '');
-                                                      }
-                                                      return Center(
-                                                          child: Text(
-                                                        ' $errorMessage',
-                                                        style: const TextStyle(
-                                                            color: Colors.red),
-                                                      ));
-                                                    } else {
-                                                      return Center(
-                                                          child: Text(
-                                                              'Receiver: ${snapshot.data?.account?.name}'));
+                                                    'An unexpected error occurred';
+                                                    if (snapshot.error
+                                                        is Exception) {
+                                                      errorMessage = (snapshot
+                                                                  .error
+                                                              as Exception)
+                                                          .toString()
+                                                          .replaceFirst(
+                                                              'Exception: ',
+                                                              '');
                                                     }
-                                                  });
-                                            })
+                                                    return Center(
+                                                        child: Text(
+                                                      ' $errorMessage',
+                                                      style: const TextStyle(
+                                                          color: Colors.red),
+                                                    ));
+                                                  } else {
+                                                    recipientDetails = snapshot.data;
+                                                    return Center(
+                                                        child: Text(
+                                                            'Receiver: ${snapshot.data?.account?.name}'));
+                                                  }
+                                                })
                                           ],
                                         )
                                       : const SizedBox(),
@@ -492,7 +507,7 @@ class _TransferScreenState extends State<TransferScreen> {
                   size: ButtonSize.large,
                   width: 220.w,
                   onPressed: () {
-                    if (_transactionFormKey.currentState!.validate()) {
+                    if (_transactionFormKey.currentState!.validate()&&accountNumberSet && isRecipientValid()) {
                       TransactionModel transactionModel = TransactionModel(
                           amount: _transactionAmount!,
                           recipientAccount: recipientDetails?.account?.number,
@@ -507,6 +522,9 @@ class _TransferScreenState extends State<TransferScreen> {
                         userp.makeBankTransfer(transactionModel);
                         print("user sent the money now");
                       });
+                    }else{
+                      CustomPopup.show(context: context, title: 'incomplete details',message: "please confirm your details are complete");
+                      print("receipient is not valid");
                     }
                   },
                 )

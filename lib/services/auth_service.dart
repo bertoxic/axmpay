@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:fintech_app/providers/user_service_provider.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../models/user_model.dart';
 import '../utils/sharedPrefernce.dart';
@@ -8,8 +10,8 @@ import 'api_service.dart';
 
 class AuthService {
   ApiService apiService = ApiService();
-
-  Future<String?> login(LoginDetails userLoginDetails) async {
+  UserServiceProvider userServiceProvider = UserServiceProvider();
+  Future<Map<String,dynamic>?>? login(BuildContext context, LoginDetails userLoginDetails) async {
     try {
       Map<String, dynamic> userlogindetails = userLoginDetails.toJSON();
 
@@ -18,13 +20,13 @@ class AuthService {
 
       // API call
       Response response = await apiService.post("login.php", userlogindetails,"");
-
       // Log the full response
-      print("Full response: $response");
-      print("Response status code: ${response.statusCode}");
-      print("Response data: ${response.data.toString()}");
+      print("Full responsexlogin: $response");
+      print("Response status codexlogin: ${response.statusCode}");
+      print("Response dataxlogin: ${response.data.toString()}");
 
       if (response.statusCode == 200) {
+
         // Check if response.data is a String, if so, try to parse it
         if (response.data is String) {
 
@@ -46,8 +48,9 @@ class AuthService {
 
           String? savedToken = await SharedPreferencesUtil.getString('auth_token');
           print("Retrieved token from SharedPreferences: $savedToken");
-
-          return obtainedToken;
+          await userServiceProvider.getUserDetails(context);
+          String? status = userServiceProvider.userdata?.phoneStatus;
+          return {"obtainedToken":obtainedToken, "phoneStatus":status};
         } else {
           print("Error: 'token' key not found in response data");
           print("Response data structure: ${response.data.runtimeType}");
@@ -69,7 +72,7 @@ class AuthService {
     }
   }
 
-  Future<void> Register(RegisterDetails userdetails) async {
+  Future<void> Register(PreRegisterDetails userdetails) async {
     try {
       Map<String, dynamic> details = userdetails.toJSON();
       final res = await apiService.post("signup", details,"");

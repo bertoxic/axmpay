@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fintech_app/main.dart';
 import 'package:fintech_app/providers/user_service_provider.dart';
 import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
@@ -29,13 +31,13 @@ class _RegisterPageState extends State<RegisterPage> {
 
   final TextEditingController _passwordController2 = TextEditingController();
 
-  final TextEditingController _last_name = TextEditingController();
+   final TextEditingController _last_name = TextEditingController();
 
-  final TextEditingController _middle_name = TextEditingController();
-
+  final TextEditingController _first_name = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   late UserServiceProvider userServiceProvider;
-   String? passwordOne;
+  PreRegisterDetails  registerDetails= PreRegisterDetails(lastName:"",firstName: "", password: "", email:"");
+  String? passwordOne;
   @override
   void initState() {
     // TODO: implement initState
@@ -45,7 +47,6 @@ class _RegisterPageState extends State<RegisterPage> {
   }
   @override
   Widget build(BuildContext context) {
-     RegisterDetails  registerDetails= RegisterDetails(name: "", password: "", email:"");
     AuthenticationProvider authProvider = Provider.of<AuthenticationProvider>(context);
     return Form(
       key: _formKey,
@@ -74,10 +75,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: CustomTextField(
                           labelText: 'First Name',
                           hintText: 'Enter your First Name',
+                          controller: _first_name,
                           validator: null,
                           prefixIcon: const Icon(Icons.person), fieldName: Fields.name,
                           onChanged: (value){
-                            registerDetails.name = value;
+                            registerDetails.firstName = value;
                           },
 
                         ),
@@ -86,11 +88,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: CustomTextField(
                           labelText: 'Last Name',
                           hintText: 'Enter your Last Name',
-
+                          controller: _last_name,
                           validator:null,
                           prefixIcon: const Icon(Icons.person), fieldName: Fields.name,
                           onChanged: (value){
-                            registerDetails.name = "${registerDetails.name} $value";
+                            registerDetails.lastName = "${registerDetails.firstName} $value";
                           },
 
                         ),
@@ -149,10 +151,23 @@ class _RegisterPageState extends State<RegisterPage> {
                     onPressed: () async {
                     // authProvider.Register(registerDetails);
 
+                      registerDetails.firstName = _first_name.text;
+                      registerDetails.lastName = _last_name.text;
+                      registerDetails.email = _emailController.text;
+                      registerDetails.password = _passwordController2.text;
+                      final jsonString = jsonEncode(registerDetails.toJSON());
+                      // context.pushNamed("verify_new_user_email_screen",
+                      //   pathParameters: {'preRegistrationString': jsonString},
+                      // );
+
                      if (_formKey.currentState!.validate()) {
-                       String status = await userServiceProvider.createAccount(context, registerDetails.email, registerDetails.password);
-                       print(status);
-                       context.goNamed("/login");
+                      String status = await userServiceProvider.createAccount(
+                          context,
+                          registerDetails);
+                       //print(status);
+                       context.pushNamed("verify_new_user_email_screen",
+                         pathParameters: {'preRegistrationString': jsonString},
+                       );
                         } else {
                           print('Form is not valid');
 

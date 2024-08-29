@@ -12,7 +12,7 @@ import '../utils/sharedPrefernce.dart';
 
 class ApiService {
   late Dio _dio;
-
+  String? sessionCookie;
   ApiService() {
     String baseUrl = _getBaseUrl();
 
@@ -27,18 +27,19 @@ class ApiService {
 
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async{
-        String? token = await SharedPreferencesUtil.getString("auth_token");
-        if (token != null) {
-          options.headers[HttpHeaders.authorizationHeader] = 'Bearer $token';
-        }
+       // String? token = await SharedPreferencesUtil.getString("auth_token");
+       //  if (token != null) {
+       //    options.headers[HttpHeaders.authorizationHeader] = 'Bearer $token';
+       //  }
         print('Request: ${options.method} ${options.uri}');
-        print('Headers: ${options.headers}');
+        print('Headers 1: ${options.headers}');
         print('Data: ${options.data}');
         return handler.next(options);
       },
       onResponse: (response, handler) {
         print('Response code 1: ${response.statusCode}');
         print('Response Data 2: ${response.data}');
+        print('Response header xxx izzzzz 2: ${response.headers.toString()}');
         return handler.next(response);
       },
       onError: (DioException e, handler) {
@@ -55,7 +56,6 @@ class ApiService {
       case TargetPlatform.android:
       case TargetPlatform.iOS:
         return 'https://www.axmpay.com/app/api/v1/';
-       // return 'https://www.axmpay.com/api/v1/';
       default:
         return 'https://www.axmpay.com/app/api/v1/';
     }
@@ -85,13 +85,30 @@ class ApiService {
     try {
       final response = await _dio.get(
         endpoint,
-        options: await _getOptions(token),
+        options: await _getOptions(token,"GET"),
       );
       _handleResponse(response);
       return response;
     } on DioException catch (e) {
       if(context.mounted){
-        handleGlobalError(context, e);
+        if (e is DioException) {
+          if (e.type == DioExceptionType.connectionError) {
+            handleGlobalError(context, e);
+            //rethrow;
+          }else if (e.type == DioExceptionType.connectionTimeout) {
+            handleGlobalError(context, e);
+            //rethrow;
+          }else if (e.type == DioExceptionType.receiveTimeout) {
+            handleGlobalError(context, e);
+            //rethrow;
+          }else if (e.type == DioExceptionType.badResponse) {
+            handleGlobalError(context, e);
+            //rethrow;
+          }else{
+          handleGlobalError(context, e);}
+         // rethrow;
+        }
+       // handleGlobalError(context, e);
       }
      rethrow;
     }
@@ -104,56 +121,87 @@ class ApiService {
         endpoint,
         data: dat,
       //  options: _getOptions(token),
-        options: await _getOptions(token),
+        options: await _getOptions(token,"POST"),
       );
+      if (response.statusCode == 200){
+        // Extract session cookie
+        List<String>? cookies = response.headers['set-cookie'];
+        if (cookies != null && cookies.isNotEmpty) {
+          for (String cookie in cookies) {
+            if (cookie.contains('PHPSESSID')) {
+              int index = cookie.indexOf(';');
+              sessionCookie = (index == -1) ? cookie : cookie.substring(0, index);
+              await SharedPreferencesUtil.saveString("sessionCookie", sessionCookie);
+              break;
+            }
+          }
+        }
+      }
 
       _handleResponse(response);
       return response;
     } on DioException catch (e) {
-      handleGlobalError(navigatorKey.currentContext!, e);
+      if (e is DioException) {
+        if (e.type == DioExceptionType.connectionError) {
+          handleGlobalError(navigatorKey.currentContext!, e);
+          //rethrow;
+        }else if (e.type == DioExceptionType.connectionTimeout) {
+          handleGlobalError(navigatorKey.currentContext!, e);
+          //rethrow;
+        }else{
+          handleGlobalError(navigatorKey.currentContext!, e);}
+        // rethrow;
+      }
       rethrow;
       //throw _handleError(e);
     }
   }
 
-  Future<Options> _getOptions(String? token) async{
-    String? token = await SharedPreferencesUtil.getString("auth_token");
+  // Future<Options> _getOptions(String? token, String method) async {
+  //   String? sessionId = await SharedPreferencesUtil.getString("session_id");
+  //
+  //   print("Token being sent: $token");
+  //   print("sessionid being sent: $sessionId");
+  //   return Options(
+  //       followRedirects: false,
+  //       method: method,
+  //       headers: {
+  //         HttpHeaders.authorizationHeader: 'Bearer $token',
+  //         'Content-Type': 'application/json',
+  //         'Cookie': "PHPSESSID=$sessionId",
+  //       }
+  //   );
+  // }
+  Future<Options> _getOptions(String? token, String method) async {
+    String? prefsSessionCookie = await SharedPreferencesUtil.getString("sessionCookie");
     print("Token being sent: $token");
+    print("sessionid being sent: $prefsSessionCookie");
+
+    Map<String, String> headers = {
+      HttpHeaders.authorizationHeader: 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+
+    if (prefsSessionCookie != null && prefsSessionCookie.isNotEmpty) {
+      headers['Cookie'] = prefsSessionCookie??"";
+    }
+
     return Options(
       followRedirects: false,
-      method: "GET",
-      headers: token !=null ?{
-        HttpHeaders.authorizationHeader: 'Bearer $token',
-        'Content-Type': 'application/json',
-      }: null,
+      method: method,
+      headers: headers,
     );
   }
 
-  Future<String?> poster(String token) async{
-    var headers = {
-      'authorization': ' Bearer $token'
-    };
-    var request = http.Request('GET', Uri.parse(
-      'https://www.axmpay.com/api/v1/getUserDetails.php'
-    ));
-    request.headers.addAll(headers);
-    http.StreamedResponse response = await request.send();
-    if (response.statusCode ==200){
-      print(await response.stream.bytesToString());
-      return response.stream.bytesToString();
-    }else {
-      print("ohhh, ${response.statusCode}");
-      print("ohhh, ${response.headers}");
-      print("ohhh, ${response.reasonPhrase}");
-      return null;
-    }
-  }
-  void _handleResponse(Response response) {
+  Future<void> _handleResponse(Response response) async {
     if (response.statusCode != 200) {
       if (response.statusCode == 400) {
         var  jsondata = jsonDecode(response.data);
         throw BadRequestException('Bad request ohh: ');
       }else if (response.statusCode == 401) {
+       var prefs = await SharedPreferencesUtil.getInstance();
+       prefs.remove("auth_token");
+       prefs.remove("sessionCookie");
         throw TokenExpiredException();
       }
 

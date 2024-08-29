@@ -1,5 +1,9 @@
+import 'dart:convert';
+
+import 'package:fintech_app/models/user_model.dart';
 import 'package:fintech_app/ui/screens/MainWrapper.dart';
-import 'package:fintech_app/ui/screens/update_user_details_page.dart';
+import 'package:fintech_app/ui/screens/registration/verify_newUser_email_otp_screen.dart';
+import 'package:fintech_app/ui/screens/registration/update_user_details_page.dart';
 import 'package:fintech_app/ui/screens/forgot_password/input_Email_Recovery_screen.dart';
 import 'package:fintech_app/ui/screens/forgot_password/token_verification_screen.dart';
 import 'package:fintech_app/ui/screens/transaction_history.dart';
@@ -89,21 +93,21 @@ final GoRouter  _router = GoRouter(
                 ),
 
               ]),
-      StatefulShellBranch(
-          navigatorKey: _rootNavigatorSettings,
-          initialLocation: "/user_details_page",
-          routes: [
-            GoRoute(
-              path: '/user_details_page',
-              name: '/user_details_page',
-              builder: (BuildContext context, GoRouterState state) {
-                return   UpdateUserDetailsPage(
-                  key: state.pageKey,
-                );
-              },
-            ),
-
-      ]),
+      // StatefulShellBranch(
+      //     navigatorKey: _rootNavigatorSettings,
+      //     initialLocation: "/user_details_page",
+      //     routes: [
+      //       GoRoute(
+      //         path: '/user_details_page',
+      //         name: '/user_details_page',
+      //         builder: (BuildContext context, GoRouterState state) {
+      //           return   UpdateUserDetailsPage(
+      //             key: state.pageKey,
+      //           );
+      //         },
+      //       ),
+      //
+      // ]),
 
           StatefulShellBranch(
               initialLocation: "/settings",
@@ -143,6 +147,15 @@ final GoRouter  _router = GoRouter(
     //   },
     // ),
     GoRoute(
+      path: '/user_details_page',
+      name: 'user_details_page',
+      builder: (BuildContext context, GoRouterState state) {
+        return   UpdateUserDetailsPage(
+          key: state.pageKey,
+        );
+      },
+    ),
+    GoRoute(
       path: '/transaction_details/:trxID',
       name: 'transaction_details',
       builder: (BuildContext context, GoRouterState state) {
@@ -153,13 +166,24 @@ final GoRouter  _router = GoRouter(
         );
       },
     ),
+    GoRoute(
+      path: '/verify_new_user_email_screen/:preRegistrationString',
+      name: 'verify_new_user_email_screen',
+      builder: (BuildContext context, GoRouterState state) {
+        final String? jsonString = state.pathParameters["preRegistrationString"];
+        final PreRegisterDetails? details = jsonString != null
+            ? PreRegisterDetails.fromJSON(jsonDecode(jsonString))
+            : null;
+        return  NewUserOTPVerificationScreen(preRegisterDetails: details!,);
+      },
+    ),
 
     GoRoute(
       path: '/forgot_password_otp/:email',
       name: '/forgot_password_otp',
       builder: (BuildContext context, GoRouterState state) {
         final String? email = state.pathParameters["email"];
-        return   OTPVerificationScreen(email: email!,);
+        return   OTPVerificationScreen(email: email??"",);
       },
     ),
     GoRoute(
