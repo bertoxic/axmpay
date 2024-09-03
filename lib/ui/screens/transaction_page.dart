@@ -71,7 +71,7 @@ class _TransferScreenState extends State<TransferScreen> {
   void _updateRecipientDetailsFuture() {
     if (accountNumberSet && selectedBank != null) {
       final userServiceProvider = Provider.of<UserServiceProvider>(context, listen: false);
-      _recipientDetailsFuture = userServiceProvider.getReceiversAccountDetails(accountRequestDetails);
+      _recipientDetailsFuture = userServiceProvider.getReceiversAccountDetails( context,accountRequestDetails);
     } else {
       _recipientDetailsFuture = null;
     }
@@ -519,7 +519,7 @@ class _TransferScreenState extends State<TransferScreen> {
                           narration: _transactionRemark!);
 
                       _showBottomSheet(context, transactionModel,(){
-                        userp.makeBankTransfer(transactionModel);
+                        userp.makeBankTransfer(context, transactionModel);
                         print("user sent the money now");
                       });
                     }else{

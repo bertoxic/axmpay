@@ -2,6 +2,7 @@
 import 'package:fintech_app/providers/Custom_Widget_State_Provider.dart';
 import 'package:fintech_app/providers/user_service_provider.dart';
 import 'package:fintech_app/ui/screens/registration/registration_provider.dart';
+import 'package:fintech_app/ui/screens/upgrade_account/upgrade_account_provider.dart';
 import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:fintech_app/utils/globalErrorHandler.dart';
 import 'package:flutter/material.dart';
@@ -42,6 +43,7 @@ await configProvider.loadConfig();
         ChangeNotifierProvider<ConfigProvider>(create: (context)=>ConfigProvider()),
         ChangeNotifierProvider<UserServiceProvider>(create: (context)=>UserServiceProvider()),
         ChangeNotifierProvider<RegistrationProvider>(create: (context)=>RegistrationProvider()),
+        ChangeNotifierProvider<UpgradeAccountProvider>(create: (context)=>UpgradeAccountProvider()),
       ],
       child:  const GlobalErrorHandler(child: MyApp())));
 }

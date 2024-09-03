@@ -71,7 +71,7 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
           BottomNavItem(icon: Icons.home, label: "Home"),
           BottomNavItem(icon: Icons.send_and_archive_rounded, label: "transfer"),
           BottomNavItem(icon: Icons.sentiment_dissatisfied, label: "profile"),
-          BottomNavItem(icon: Icons.format_align_center, label: "blog"),
+          BottomNavItem(icon: Icons.format_align_center, label: "history"),
         ],
         onItemSelected: (int value) {
           setState(() {

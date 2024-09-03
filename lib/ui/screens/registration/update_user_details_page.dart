@@ -18,40 +18,13 @@ import '../../widgets/custom_textfield.dart';
 
 class UpdateUserDetailsPage extends StatefulWidget {
 
-  UpdateUserDetailsPage({super.key});
+  const UpdateUserDetailsPage({super.key});
 
   @override
   State<UpdateUserDetailsPage> createState() => _UpdateUserDetailsPageState();
 }
 
 class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
-  final TextEditingController _nameController = TextEditingController();
-
-  final TextEditingController _emailController = TextEditingController();
-
-  final TextEditingController _passwordController = TextEditingController();
-
-  final TextEditingController _date_of_birth = TextEditingController();
-
-  final TextEditingController _first_name = TextEditingController();
-
-  final TextEditingController _last_name = TextEditingController();
-
-  final TextEditingController _gender = TextEditingController();
-
-  final TextEditingController _phone_number = TextEditingController();
-
-  final TextEditingController _NIN = TextEditingController();
-
-  final TextEditingController _bvn = TextEditingController();
-
-  final TextEditingController _street_address = TextEditingController();
-
-  final TextEditingController _city = TextEditingController();
-
-  final TextEditingController _state = TextEditingController();
-
-  final TextEditingController _zip_code = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
   late RegistrationController _controller;
@@ -65,10 +38,10 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
   Widget build(BuildContext context) {
      DateTime selectedDate;
     UserDetails  userdetails = UserDetails(
-        firstName: _first_name.value.text??"",
-        lastName: _last_name.value.text??"",
-        dateOfBirth: _date_of_birth.value.text??"",
-        email: _emailController.value.text??"",
+        firstName: "",
+        lastName:"",
+        dateOfBirth: "",
+        email: "",
        );
     final authProvider = Provider.of<AuthenticationProvider>(context);
     return Form(
@@ -233,15 +206,14 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                             ),
                             SpacedContainer(
                               child: CustomTextField(
-                                labelText: 'Zip',
-                                hintText: 'Zip',
+                                labelText: 'country',
+                                hintText: 'country',
                                 prefixIcon: const Icon(Icons.location_on),
-                                controller: _controller.zip_code,
+                                controller: _controller.country,
                                 onChanged: (value){
-                                  userdetails.address?.zip = value;
                                 },
                                 keyboardType: TextInputType.text,
-                                fieldName: Fields.email,
+                                fieldName: "country",
                                 // validator: (value)=>FormValidator.validate(value, ValidatorType.email,fieldName: Fields.email),
                               ),
                             ),
@@ -276,8 +248,8 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                             SpacedContainer(
                               child: CustomTextField(
                                 labelText: 'Gender',
-                                hintText: 'pick your gender',
-
+                                  hintText: 'pick your gender',
+                                    controller: _controller.gender,
                                 validator:null,
                                 prefixIcon: const Icon(Icons.location_city), fieldName: Fields.name,
                                 onChanged: (value){
@@ -300,15 +272,28 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                             ),
                             SpacedContainer(
                               child: CustomTextField(
-                                labelText: 'NIN',
-                                hintText: 'include your NIN',
+                                labelText: 'place of birth',
+                                hintText: 'your place of birth',
 
                                 validator:null,
                                 prefixIcon: const Icon(Icons.location_city), fieldName: Fields.name,
                                 onChanged: (value){
                                   userdetails.nin = value;
                                 },
-                                  controller: _controller.NIN,
+                                  controller: _controller.placeOfBirthController,
+                              ),
+                            ),
+                            SpacedContainer(
+                              child: CustomTextField(
+                                labelText: 'referrer id',
+                                hintText: 'who referred you',
+
+                                validator:null,
+                                prefixIcon: const Icon(Icons.location_city), fieldName: Fields.name,
+                                onChanged: (value){
+                                  userdetails.nin = value;
+                                },
+                                  controller: _controller.refby,
                               ),
                             ),
 
@@ -334,7 +319,8 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                                 type: ButtonType.elevated,
                                 onPressed: (){
                                 _controller.updateUserDetailsModel();
-                                _controller.updateUserDetailsToServer();
+                               // _controller.updateUserDetailsToServer();
+                                _controller.walletPayloadToServer();
                                     CustomPopup.show(
                                       context: context, title: "Select  a new Page",
                                       message: "Do you want to move to the next page?",
@@ -394,7 +380,7 @@ class _DatePickerTextFieldState extends State<DatePickerTextField> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
-        widget.dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+        widget.dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
       });
     }
   }

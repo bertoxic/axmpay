@@ -19,7 +19,7 @@ class AuthService {
       print("Login request details: $userlogindetails");
 
       // API call
-      Response response = await apiService.post("login.php", userlogindetails,"");
+      Response response = await apiService.post( context,"login.php", userlogindetails,"");
       // Log the full response
       print("Full responsexlogin: $response");
       print("Response status codexlogin: ${response.statusCode}");
@@ -49,8 +49,8 @@ class AuthService {
           String? savedToken = await SharedPreferencesUtil.getString('auth_token');
           print("Retrieved token from SharedPreferences: $savedToken");
           await userServiceProvider.getUserDetails(context);
-          String? status = userServiceProvider.userdata?.phoneStatus;
-          return {"obtainedToken":obtainedToken, "phoneStatus":status};
+          String? status = userServiceProvider.userdata?.status;
+          return {"obtainedToken":obtainedToken, "status":status};
         } else {
           print("Error: 'token' key not found in response data");
           print("Response data structure: ${response.data.runtimeType}");
@@ -72,10 +72,10 @@ class AuthService {
     }
   }
 
-  Future<void> Register(PreRegisterDetails userdetails) async {
+  Future<void> Register(BuildContext context,PreRegisterDetails userdetails) async {
     try {
       Map<String, dynamic> details = userdetails.toJSON();
-      final res = await apiService.post("signup", details,"");
+      final res = await apiService.post( context,"signup", details,"");
       if (res.statusCode == 200 || res.statusCode == 201) {
         var u = User.fromJSON(res.data);
         print("User registered successfully: $u");

@@ -126,7 +126,7 @@ class TransactionHistoryPage extends StatelessWidget {
                                       crossAxisAlignment: CrossAxisAlignment.end,
                                       children: [
                                         Text(
-                                          '${snapshot.data![index].action == 'Receive' ? '+' : '-'}\$${snapshot.data![index].amount}',
+                                          '${snapshot.data![index].action == 'Receive' ? '+' : '-'}\₦${snapshot.data![index].amount}',
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 12.sp,

@@ -38,6 +38,8 @@ class _RegisterPageState extends State<RegisterPage> {
   late UserServiceProvider userServiceProvider;
   PreRegisterDetails  registerDetails= PreRegisterDetails(lastName:"",firstName: "", password: "", email:"");
   String? passwordOne;
+
+  bool isLoading= false;
   @override
   void initState() {
     // TODO: implement initState
@@ -143,42 +145,74 @@ class _RegisterPageState extends State<RegisterPage> {
                    // validator: (value) => FormValidator.validate(value, ValidatorType.password, fieldName: "password"),
                   ),
                 ),
-                const SizedBox(height: 20),
+                 SizedBox(height: 80.h),
                 SpacedContainer(
-                  margin: const EdgeInsets.symmetric(horizontal: 10),
+                  margin:  EdgeInsets.symmetric(horizontal: 10.w,vertical: 10.h),
+                  width: double.maxFinite,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: colorScheme.primary,padding: const EdgeInsets.symmetric(vertical: 20)),
-                    onPressed: () async {
-                    // authProvider.Register(registerDetails);
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.primary,
+                     //padding: const EdgeInsets.symmetric(vertical: 20),
+                    ),
+                    onPressed: isLoading ? null : () async {
+                      if (_formKey.currentState!.validate()) {
+                        setState(() {
+                          isLoading = true;
+                        });
 
-                      registerDetails.firstName = _first_name.text;
-                      registerDetails.lastName = _last_name.text;
-                      registerDetails.email = _emailController.text;
-                      registerDetails.password = _passwordController2.text;
-                      final jsonString = jsonEncode(registerDetails.toJSON());
-                      // context.pushNamed("verify_new_user_email_screen",
-                      //   pathParameters: {'preRegistrationString': jsonString},
-                      // );
+                        // Update registerDetails
+                        registerDetails.firstName = _first_name.text;
+                        registerDetails.lastName = _last_name.text;
+                        registerDetails.email = _emailController.text;
+                        registerDetails.password = _passwordController2.text;
 
-                     if (_formKey.currentState!.validate()) {
-                      String status = await userServiceProvider.createAccount(
-                          context,
-                          registerDetails);
-                       //print(status);
-                       context.pushNamed("verify_new_user_email_screen",
-                         pathParameters: {'preRegistrationString': jsonString},
-                       );
-                        } else {
-                          print('Form is not valid');
+                        final jsonString = jsonEncode(registerDetails.toJSON());
 
+                        try {
+                          String status = await userServiceProvider.createAccount(
+                              context,
+                              registerDetails
+                          );
+
+                          print(status);
+
+                          if (mounted) {
+                            context.pushNamed(
+                              "verify_new_user_email_screen",
+                              pathParameters: {'preRegistrationString': jsonString},
+                            );
+                          }
+                        } catch (e) {
+                          print('Error creating account: $e');
+                          // Show an error message to the user
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to create account: $e')),
+                          );
+                        } finally {
+                          if (mounted) {
+                            setState(() {
+                              isLoading = false;
+                            });
+                          }
+                        }
+                      } else {
+                        print('Form is not valid');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                           SnackBar(backgroundColor: colorScheme.onPrimary,
+                              showCloseIcon: true,
+                              content: Text('Please fill all fields correctly')),
+                        );
                       }
-                      print(registerDetails.toJSON());
-                      // _emailController.clear();
-                      // _passwordController.clear();
-                      // _nameController.clear();
                     },
-                    child: const Center(child: Text('Sign Up', style: TextStyle(color: Colors.white),)),
-
+                    child: isLoading
+                        ?  Padding(
+                            padding:  EdgeInsets.symmetric(vertical: 1.0.h),
+                            child: SizedBox(  height: 24.h, width: 24.w,
+                                child: CircularProgressIndicator(color: Colors.white)))
+                        : Padding(
+                          padding:  EdgeInsets.symmetric(vertical: 12.0.h),
+                          child: const Text('Sign Up', style: TextStyle(color: Colors.white)),
+                        ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -186,7 +220,15 @@ class _RegisterPageState extends State<RegisterPage> {
                 Center(
                   child: GestureDetector(
                     onTap: () {
+                      setState(() {
+                        isLoading = true;
+                      });
+
+                      isLoading? const CircularProgressIndicator():SizedBox();
                       context.pushNamed("/login");
+                      setState(() {
+                        isLoading = false;
+                      });
                     },
                     child: const Text(
                       'Already have an account? Sign in',

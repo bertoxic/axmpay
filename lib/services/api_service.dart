@@ -114,7 +114,7 @@ class ApiService {
     }
   }
 
-  Future<Response> post(String endpoint, Map<String, dynamic> data, String? token) async {
+  Future<Response> post( BuildContext context, String endpoint, Map<String, dynamic> data, String? token) async {
    var dat = jsonEncode(data);
     try {
       final response = await _dio.post(
@@ -143,35 +143,28 @@ class ApiService {
     } on DioException catch (e) {
       if (e is DioException) {
         if (e.type == DioExceptionType.connectionError) {
-          handleGlobalError(navigatorKey.currentContext!, e);
+          handleGlobalError(context, e);
           //rethrow;
         }else if (e.type == DioExceptionType.connectionTimeout) {
-          handleGlobalError(navigatorKey.currentContext!, e);
+          handleGlobalError(context, e);
+          //rethrow;
+         }else if (e.type == DioExceptionType.badResponse) {
+          print("gggggggggggggggggggggggggggggggggggggggggggggggg");
+          handleGlobalError(context, e);
+          //rethrow;
+        }else if (e.type == DioExceptionType.unknown) {
+          handleGlobalError(context, e);
           //rethrow;
         }else{
-          handleGlobalError(navigatorKey.currentContext!, e);}
+          handleGlobalError(context, e);}
         // rethrow;
       }
+      handleGlobalError(context, e);
       rethrow;
       //throw _handleError(e);
     }
   }
 
-  // Future<Options> _getOptions(String? token, String method) async {
-  //   String? sessionId = await SharedPreferencesUtil.getString("session_id");
-  //
-  //   print("Token being sent: $token");
-  //   print("sessionid being sent: $sessionId");
-  //   return Options(
-  //       followRedirects: false,
-  //       method: method,
-  //       headers: {
-  //         HttpHeaders.authorizationHeader: 'Bearer $token',
-  //         'Content-Type': 'application/json',
-  //         'Cookie': "PHPSESSID=$sessionId",
-  //       }
-  //   );
-  // }
   Future<Options> _getOptions(String? token, String method) async {
     String? prefsSessionCookie = await SharedPreferencesUtil.getString("sessionCookie");
     print("Token being sent: $token");

@@ -19,6 +19,8 @@ void handleGlobalError(BuildContext context, dynamic error) {
       showConnectionErrorDialog(context);
     }else if (error.type == DioExceptionType.receiveTimeout) {
       showConnectionErrorDialog(context);
+    } else if (error.type == DioExceptionType.badResponse) {
+      showConnectionErrorDialog(context);
     } else {
       showGeneralErrorDialog(context, error);
     }

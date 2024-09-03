@@ -13,11 +13,23 @@ import '../../main.dart';
 import '../../models/user_model.dart';
 import '../../providers/authentication_provider.dart';
 
-class LoginPage extends StatelessWidget {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+class LoginPage extends StatefulWidget {
+
    LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _emailController = TextEditingController();
+
+  final TextEditingController _passwordController = TextEditingController();
+
+  final _formKey = GlobalKey<FormState>();
+
+  bool _isLoading = false;
+
   @override
   Widget build(BuildContext context) {
      LoginDetails userdetails =LoginDetails(email: "oyehbaze@gmail.com", password: "1234");
@@ -68,29 +80,38 @@ class LoginPage extends StatelessWidget {
                ),
                 SpacedContainer(
                 margin:  EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: CustomButton(onPressed: () async {
-                          if(_formKey.currentState!.validate()){}
+                  child: Center(
+                    child: Row(
+                      children: [
+                        _isLoading? SizedBox(  height: 12.h, width: 12.w,
+                            child: const CircularProgressIndicator(color: Colors.grey)):CustomButton(
+                          onPressed:_isLoading?null: () async {
+                            setState(() {
+                              _isLoading = true;
+                            });
+                          if(_formKey.currentState!.validate()){
+
+                          }
                           userdetails.email = _emailController.value.text;
                           userdetails.password = _passwordController.value.text;
                          var data = await authProvider.login(context, userdetails);
                          if(data!=null){
-                          if( data["phoneStatus"] == "Verified"){
+                          if( data["status"] == "Verified"){
+                            context.goNamed("/home");
+                          }else{
                             context.goNamed("user_details_page");
-                          }else if(data["phoneStatus"] == "unVerified"){
-                                      context.goNamed("/home");
                           }
                          }
-
+                              setState(() {
+                                _isLoading=false;
+                              });
                         },
                           type: ButtonType.elevated,
                           backgroundColor: colorScheme.primary,
                         text: "Login",
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 )
              ],

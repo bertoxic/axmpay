@@ -202,3 +202,97 @@ class DataBundleList {
     return DataBundleList(dataBundles: bundles);
   }
 }
+class Address {
+  String street;
+  String city;
+  String state;
+  String zip;
+
+  Address({
+    required this.street,
+    required this.city,
+    required this.state,
+    required this.zip,
+  });
+
+  Address.fromJSON(Map<String, dynamic> json)
+      : street = json["street"] as String? ?? '',
+        city = json["city"] as String? ?? '',
+        state = json["state"] as String? ?? '',
+        zip = json["zip"] as String? ?? '';
+
+  Map<String, dynamic> toJSON() {
+    return {
+      "street": street,
+      "city": city,
+      "state": state,
+      "zip": zip,
+    };
+  }
+
+  @override
+  String toString() {
+    return '$street, $city, $state zip: $zip';
+  }
+}
+class WalletPayload {
+  String firstName;
+  String lastName;
+  String userName;
+  String dateOfBirth;
+  String? refby;
+  String BVN;
+  String gender;
+  String phone;
+  String country;
+  String placeOfBirth;
+  Address address;
+
+  WalletPayload({
+    required this.firstName,
+    required this.lastName,
+    required this.userName,
+    required this.dateOfBirth,
+    this.refby,
+    required this.gender,
+    required this.BVN ,
+    required this.phone ,
+    required this.country,
+    required this.placeOfBirth,
+    required this.address,
+  });
+
+  WalletPayload.fromJSON(Map<String, dynamic> json)
+      : firstName = json['firstName'] as String? ?? '',
+        lastName = json['lastName'] as String? ?? '',
+        userName = json['userName'] as String? ?? '',
+        dateOfBirth = json['dateOfBirth'] as String? ?? '',
+        refby = json['refby'] as String? ?? '',
+        BVN = json['BVN'] as String? ?? '',
+        gender = json['gender'] as String? ?? '',
+        phone = json['phone'] as String? ?? '',
+        country = json['country'] as String? ?? '',
+        placeOfBirth = json['placeOfBirth'] as String? ?? '',
+        address = Address.fromJSON(json['address'] as Map<String, dynamic>? ?? {});
+
+  Map<String, dynamic> toJSON() {
+    return {
+      'firstName': firstName,
+      'lastName': lastName,
+      'userName': userName,
+      'dateOfBirth': dateOfBirth,
+      'refby': refby,
+      'gender': gender,
+      'phone': phone,
+      "BVN": BVN,
+      'country': country,
+      'placeOfBirth': placeOfBirth,
+      'address': address.toString(),
+    };
+  }
+
+  @override
+  String toString() {
+    return 'WalletPayload(firstName: $firstName, lastName: $lastName, userName: $userName, dateOfBirth: $dateOfBirth, refby: $refby, gender: $gender, phone: $phone, country: $country, placeOfBirth: $placeOfBirth, address: $address)';
+  }
+}

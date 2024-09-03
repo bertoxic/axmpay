@@ -1,4 +1,5 @@
 import 'package:fintech_app/main.dart';
+import 'package:fintech_app/models/user_model.dart';
 import 'package:fintech_app/providers/user_service_provider.dart';
 import 'package:fintech_app/ui/widgets/custom_buttons.dart';
 import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
@@ -20,12 +21,12 @@ class OTPVerificationScreen extends StatefulWidget {
 }
 
 class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
-  final List<TextEditingController> _controllers = List.generate(4, (_) => TextEditingController());
-  final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
+  final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
+  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   final _inputOTPFormKey = GlobalKey<FormState>();
   String? otp;
   @override
-  void dispose() {
+  void dispose(){
     for (var controller in _controllers) {
       controller.dispose();
     }
@@ -37,10 +38,12 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
   void _onChanged(int index) {
     if (_controllers[index].text.length == 1) {
-      if (index < 3) {
+      if (index < 5) {
         _focusNodes[index + 1].requestFocus();
       } else {
-         otp = _controllers.map((c) => c.text).join();
+        setState(() {
+          otp = _controllers.map((c) => c.text).join();
+        });
         print('otp entered: $otp');
       }
     }
@@ -64,7 +67,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                 width: 400.w,
                 height: 240.h,
                 decoration: BoxDecoration(
-                  color: colorScheme.primary.withOpacity(0.4),
+                    color: colorScheme.primary.withOpacity(0.4),
                     borderRadius:  const BorderRadius.all(Radius.circular(20))
                 ),
                 child: Column(
@@ -81,7 +84,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                               child: Column(
                                 children: [
                                   AppText.body("Please input code sent to your email:"),
-                                      AppText.body(widget.email,color: colorScheme.onBackground,),
+                                  AppText.body(widget.email,color: colorScheme.onBackground,),
                                 ],
                               ),
                             ),
@@ -92,7 +95,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(
-                        4,
+                        6,
                             (index) => Container(
                           width: 50,
                           margin: const EdgeInsets.symmetric(horizontal: 5),
@@ -115,42 +118,42 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                       ),
                     ),
                     SizedBox(height: 30.h,),
-                     CustomButton(size: ButtonSize.large,
+                    CustomButton(size: ButtonSize.large,
                       text: "confirm",
                       onPressed: ()async{
 
-                       if (!mounted) return;
-                       String? status;
-                       try{
-                         status = await userProvider.verifyOTPForPasswordChange(context, widget.email, otp!);
-                         if(status.toString() !="failed"){
-                           if (!mounted) return;
-                           await CustomPopup.show(backgroundColor:colorScheme.onBackground,type: PopupType.error ,title: "Check your email", message: "Inputted otp might be wrong", context: context);
-                         }
-                         if (_inputOTPFormKey.currentState!.validate()) {
-                           if (!mounted) return;
-                           context.pushNamed("/change_password_screen",
-                             pathParameters: {"email":widget.email, "otp":otp!}
-                           );
+                        if (!mounted) return;
+                        String? status;
+                        try{
+                          status = await userProvider.emailVerification(context,otp!);
+                          if(status.toString() =="failed"){
+                            if (!mounted) return;
+                            await CustomPopup.show(backgroundColor:colorScheme.onBackground,type: PopupType.error ,title: "Check your email", message: "Inputted otp might be wrong", context: context);
+                          }else
+                          if (_inputOTPFormKey.currentState!.validate()) {
+                            if (!mounted) return;
+                            // context.pushNamed("/user_details_page",
+                            //     pathParameters: {"email":widget.preRegisterDetails.email, "otp":otp!}
+                            // );
 
-                         }("/change_password_screen");
+                          }("/user_details_page");
 
-                       }catch(e) {
-                         if (!mounted) return;
-                       }
-                       if (_inputOTPFormKey.currentState!.validate()) {
-                         if (!mounted) return;
-                         context.pushNamed("/change_password_screen",
-                             pathParameters: {"email":widget.email, "otp":otp!}
-                         );
-                       }
+                        }catch(e) {
+                          if (!mounted) return;
+                        }
+                        if (_inputOTPFormKey.currentState!.validate()) {
+                          if (!mounted) return;
+                          // context.pushNamed("/user_details_page",
+                          //    pathParameters: {"email":widget.preRegisterDetails.email, "otp":otp!}
+                          // );
+                        }
 
-                       if (otp!=null) {
-                         if (otp?.length != 4){
-                         }
-              }
-                       context.pushNamed("/change_password_screen");
-                       }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ,)
+                        if (otp!=null) {
+                          if (otp?.length != 6){
+                          }
+                        }
+                        context.pushNamed("/login");
+                      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ,)
                   ],
                 ),
               ),

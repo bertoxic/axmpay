@@ -1,4 +1,6 @@
 
+import 'package:fintech_app/models/transaction_model.dart';
+
 class LoginDetails {
   String email;
   String password;
@@ -63,34 +65,7 @@ class PreRegisterDetails {
   }
 }
 
-class Address {
-  String street;
-  String city;
-  String state;
-  String zip;
 
-  Address({
-    required this.street,
-    required this.city,
-    required this.state,
-    required this.zip,
-  });
-
-  Address.fromJSON(Map<String, dynamic> json)
-      : street = json["street"] as String? ?? '',
-        city = json["city"] as String? ?? '',
-        state = json["state"] as String? ?? '',
-        zip = json["zip"] as String? ?? '';
-
-  Map<String, dynamic> toJSON() {
-    return {
-      "street": street,
-      "city": city,
-      "state": state,
-      "zip": zip,
-    };
-  }
-}
 class UserDetails {
   String firstName;
   String lastName;
@@ -118,6 +93,7 @@ class UserDetails {
     this.nin,
     this.bvn,
     this.address,
+    this.gender,
 
   });
 
@@ -126,7 +102,7 @@ class UserDetails {
         lastName = json["last_name"] as String? ?? '',
         fullName = json["fullName"] as String? ?? '',
         email = json["email"] as String? ?? '',
-        dateOfBirth = json["DOB"] as String? ?? '',
+        dateOfBirth = json["dateofbirth"] as String? ?? '',
         phone = json["phone"] as String? ?? '',
         nin = json["NIN"] as String? ?? '',
         bvn = json["BVN"] as String? ?? '',
@@ -135,16 +111,16 @@ class UserDetails {
 
   Map<String, dynamic> toJSON() {
     return {
-      "first_name": firstName,
-      "last_name": lastName,
-      "middle_name": "$firstName $lastName",
+      "firstname": firstName,
+      "lastname": lastName,
+      "fullname": "$firstName $lastName",
       "DOB": dateOfBirth,
       "email": email,
       "gender": gender,
       "phone": phone,
-      "NIN": nin,
+      //"NIN": nin,
       "BVN": bvn,
-      "address": address?.toJSON(),
+      "address": address.toString(),
     };
   }
 }
@@ -179,6 +155,7 @@ class UserData {
   final String gender;
   final String email;
   final String phone;
+  final String status;
   final String country;
   final String address;
   final String username;
@@ -188,6 +165,7 @@ class UserData {
   UserData({
    // required this.status,
     required this.id,
+    required this.status,
     required this.apiKey,
     required this.refby,
     required this.refLink,
@@ -224,6 +202,7 @@ class UserData {
     return UserData(
       //status: json['status'],
       id: json['data']['id'],
+      status: json['data']['status'],
       apiKey: json['data']['api_key'],
       refby: json['data']['refby'],
       refLink: json['data']['refLink'],
@@ -261,6 +240,7 @@ class UserData {
     return UserData(
       //status: json['status'],
       id: json['id'],
+      status: json['status'],
       apiKey: json['api_key'],
       refby: json['refby'],
       refLink: json['refLink'],
@@ -300,6 +280,7 @@ class UserData {
       //'status': status,
 
         'id': id,
+        'status': status,
         'api_key': apiKey,
         'refby': refby,
         'refLink': refLink,
@@ -339,6 +320,7 @@ class UserData {
       //'status': status,
       'data': {
         'id': id,
+        'status': status,
         'api_key': apiKey,
         'refby': refby,
         'refLink': refLink,

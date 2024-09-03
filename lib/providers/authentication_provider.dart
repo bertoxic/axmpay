@@ -44,9 +44,9 @@ class AuthenticationProvider extends ChangeNotifier {
   }
 
 
-  Future<void> register(PreRegisterDetails userDetails) async {
+  Future<void> register(BuildContext context,PreRegisterDetails userDetails) async {
     Map<String, dynamic> details = userDetails.toJSON();
-    final res = await apiService.post("/signup", details, "");
+    final res = await apiService.post( context,"/signup", details, "");
     if (res.statusCode == 200 || res.statusCode == 201) {
       _isAuthenticated = true;
 
