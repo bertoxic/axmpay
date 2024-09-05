@@ -1,6 +1,7 @@
 
 import 'package:fintech_app/models/transaction_model.dart';
 import 'package:fintech_app/models/user_model.dart';
+import 'package:fintech_app/providers/user_service_provider.dart';
 import 'package:fintech_app/ui/screens/upgrade_account/upgrade_account_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -8,27 +9,34 @@ import 'package:provider/provider.dart';
 class UpgradeAccountController {
   final BuildContext context;
   final formKey = GlobalKey<FormState>();
-  final TextEditingController userNameController = TextEditingController();
+  final TextEditingController accountNumberController = TextEditingController();
+  final TextEditingController bvnController = TextEditingController();
+  final TextEditingController accountNameController = TextEditingController();
+  final TextEditingController phoneNumberController = TextEditingController();
+  final TextEditingController tierController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController refby = TextEditingController();
-  final TextEditingController country = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController date_of_birth = TextEditingController();
-  final TextEditingController first_name = TextEditingController();
-  final TextEditingController last_name = TextEditingController();
-  final TextEditingController gender = TextEditingController();
-  final TextEditingController phone_number = TextEditingController();
+  final TextEditingController userPhotoController = TextEditingController();
+  final TextEditingController idTypeController = TextEditingController();
+  final TextEditingController idNumberController = TextEditingController();
+  final TextEditingController idIssueDateController = TextEditingController();
+  final TextEditingController idExpiryDateController = TextEditingController();
+  final TextEditingController idCardFrontController = TextEditingController();
+  final TextEditingController idCardBackController = TextEditingController();
+  final TextEditingController houseNumberController = TextEditingController();
+  final TextEditingController streetNameController = TextEditingController();
+  final TextEditingController stateController = TextEditingController();
+  final TextEditingController cityController = TextEditingController();
+  final TextEditingController localGovernmentController = TextEditingController();
+  final TextEditingController pepController = TextEditingController();
+  final TextEditingController customerSignatureController = TextEditingController();
+  final TextEditingController utilityBillController = TextEditingController();
+  final TextEditingController nearestLandMarkController = TextEditingController();
   final TextEditingController placeOfBirthController = TextEditingController();
-  final TextEditingController bvn = TextEditingController();
-  final TextEditingController street_address = TextEditingController();
-  final TextEditingController city = TextEditingController();
-  final TextEditingController state = TextEditingController();
-  final TextEditingController zip_code = TextEditingController();
-  final TextEditingController imageDisplayContoller = TextEditingController();
-  final TextEditingController imageInputController = TextEditingController();
+  final TextEditingController proofOfAddressController = TextEditingController();
+
   late UserDetails? userDetails;
   late UserData? preRegDetails;
-  late WalletPayload? walletPayload;
+  late UpgradeWalletPayload? upgradeWalletPayload;
   UpgradeAccountController(this.context){
     _initializeController();
   }
@@ -36,11 +44,20 @@ class UpgradeAccountController {
 void _initializeController() {
       final provider = Provider.of<UpgradeAccountProvider>(context, listen: false);
       userDetails = provider.userDetails;
-      walletPayload = provider.walletPayload;
-      // Assuming provider.userProvider.userdata?.email is the email you want to prefill
-      final email = provider.userProvider.userdata?.email;
-      emailController.text = email ?? ''; // Set the initial text
+      upgradeWalletPayload = provider.walletPayload;
+      _initializeFormDetails();
+
 }
+
+  _initializeFormDetails(){
+    final providerx = Provider.of<UserServiceProvider>(context, listen: false);
+    final email = providerx.userdata?.email;
+    emailController.text = email ?? '';
+    accountNameController.text = "${providerx.userdata?.firstname} ${providerx.userdata?.lastname}" ?? '';
+    accountNumberController.text = "${providerx.userdata?.accountNumber}";
+    bvnController.text = "${providerx.userdata?.bvn}" ?? '';
+   // email.text = "${providerx.userdata?.firstname} ${providerx.userdata?.lastname}" ?? '';
+  }
   Future<void> selectDate(BuildContext context) async {
     final provider = Provider.of<UpgradeAccountProvider>(context, listen: false);
     final DateTime? pickedDate = await showDatePicker(
@@ -56,56 +73,89 @@ void _initializeController() {
 
 
 
-  void updateUserDetailsModel(){
-     userDetails = UserDetails(
-        lastName: last_name.text,
-        dateOfBirth: date_of_birth.text,
-        email: emailController.text,
-        firstName: first_name.text,
-        address: Address(street: street_address.text, city: city.text, state: state.text, zip: zip_code.text),
-        bvn: bvn.text,
-        nin: placeOfBirthController.text,
-        phone: phone_number.text,
-        gender: gender.text,
-
-
-    );
-     print("userDetails");
-    final provider = Provider.of<UpgradeAccountProvider>(context, listen: false);
-    createUserWalletPayload();
-    print(userDetails?.toJSON());
-  }
+  // void updateUserDetailsModel(){
+  //    userDetails = UserDetails(
+  //       lastName: account_number.text,
+  //       dateOfBirth: date_of_birth.text,
+  //       email: emailController.text,
+  //       firstName: first_name.text,
+  //       address: Address(street: streetNameController.text, city: cityController.text, state: stateController.text, zip:""),
+  //       bvn: bvn.text,
+  //       nin: placeOfBirthController.text,
+  //       phone: phone_number.text,
+  //       gender: gender.text,
+  //
+  //
+  //   );
+  //    print("userDetails");
+  //   final provider = Provider.of<UpgradeAccountProvider>(context, listen: false);
+  //   createUserWalletPayload();
+  //   print(userDetails?.toJSON());
+  // }
   void createUserWalletPayload(){
-    var address = Address(street: street_address.text, city: city.text, state: state.text, zip: zip_code.text);
-    walletPayload = WalletPayload(
-        lastName: last_name.text,
-        dateOfBirth: date_of_birth.text,
-        firstName: first_name.text,
-        address: address,
-        BVN: bvn.text,
+    upgradeWalletPayload = UpgradeWalletPayload(
+        accountNumber: accountNumberController.text,
+        bvn: bvnController.text,
+        accountName: accountNameController.text,
+        phoneNumber: phoneNumberController.text,
+        email: emailController.text,
+        userPhoto: userPhotoController.text,
+        idNumber: idNumberController.text,
+        idIssueDate: idIssueDateController.text,
+        idExpiryDate: idExpiryDateController.text,
+        idCardFront: idCardFrontController.text,
+        idCardBack: idCardBackController.text,
+        houseNumber: houseNumberController.text,
+        streetName: streetNameController.text,
+        state: stateController.text,
+        city: cityController.text,
+        localGovernment: localGovernmentController.text,
+        customerSignature: customerSignatureController.text,
+        utilityBill: utilityBillController.text,
+        nearestLandMark: nearestLandMarkController.text,
         placeOfBirth: placeOfBirthController.text,
-        phone: phone_number.text,
-        refby: refby.text??"1208",
-        country: country.text,
-        userName: "${first_name.text}${last_name.text}",
-        gender: gender.text
-
-
-    );
+        proofOfAddress: proofOfAddressController.text);
     final provider = Provider.of<UpgradeAccountProvider>(context, listen: false);
 
-    print(walletPayload?.toJSON());
+    print(upgradeWalletPayload?.toJson());
   }
-  void updateUserDetailsToServer(){
+  void upgradeUserWalletInServer(){
     final provider = Provider.of<UpgradeAccountProvider>(context, listen: false);
-    provider.userProvider.updateUserRegistrationDetails(context,userDetails!);
+    provider.userProvider.upgradeUserWallet(context,upgradeWalletPayload!);
 
   }
 
-  Future<String?> walletPayloadToServer() async {
-    String? status;
-    final provider = Provider.of<UpgradeAccountProvider>(context, listen: false);
-    status = await provider.userProvider.createUserWallet(context,walletPayload!);
-    return status;
+  // Future<String?> walletPayloadToServer() async {
+  //   String? status;
+  //   final provider = Provider.of<UpgradeAccountProvider>(context, listen: false);
+  //   status = await provider.userProvider.createUserWallet(context,upgradeWalletPayload!);
+  //   return status;
+  // }
+  void dispose() {
+    // Dispose all controllers
+    accountNumberController.dispose();
+    bvnController.dispose();
+    accountNameController.dispose();
+    phoneNumberController.dispose();
+    tierController.dispose();
+    emailController.dispose();
+    userPhotoController.dispose();
+    idTypeController.dispose();
+    idNumberController.dispose();
+    idIssueDateController.dispose();
+    idExpiryDateController.dispose();
+    idCardFrontController.dispose();
+    idCardBackController.dispose();
+    houseNumberController.dispose();
+    streetNameController.dispose();
+    stateController.dispose();
+    cityController.dispose();
+    localGovernmentController.dispose();
+    pepController.dispose();
+    customerSignatureController.dispose();
+    utilityBillController.dispose();
+    nearestLandMarkController.dispose();
+    placeOfBirthController.dispose();
+    proofOfAddressController.dispose();
   }
 }

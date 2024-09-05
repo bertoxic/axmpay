@@ -42,6 +42,14 @@ class TokenExpiredException implements Exception {
     return message ?? 'Token expired';
   }
 }
+class BadRequestException implements Exception {
+  final String message;
+
+  BadRequestException(this.message);
+
+  @override
+  String toString() => message;
+}
 void showConnectionErrorDialog(BuildContext context) {
   showDialog(
     context: navigatorKey.currentContext ?? context,

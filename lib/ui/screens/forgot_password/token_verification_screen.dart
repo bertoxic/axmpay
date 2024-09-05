@@ -1,21 +1,21 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:fintech_app/main.dart';
-import 'package:fintech_app/models/user_model.dart';
+import 'package:fintech_app/models/ResponseModel.dart';
 import 'package:fintech_app/providers/user_service_provider.dart';
 import 'package:fintech_app/ui/widgets/custom_buttons.dart';
 import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
 import 'package:fintech_app/utils/form_validator.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-
-import '../../widgets/custom_dialog.dart';
-import '../../widgets/custom_textfield.dart';
+import 'package:fintech_app/ui/widgets/custom_dialog.dart';
+import 'package:fintech_app/ui/widgets/custom_textfield.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
   final String email;
-  const OTPVerificationScreen({super.key, required this.email});
+  const OTPVerificationScreen({Key? key, required this.email}) : super(key: key);
+
   @override
   _OTPVerificationScreenState createState() => _OTPVerificationScreenState();
 }
@@ -25,8 +25,9 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   final _inputOTPFormKey = GlobalKey<FormState>();
   String? otp;
+
   @override
-  void dispose(){
+  void dispose() {
     for (var controller in _controllers) {
       controller.dispose();
     }
@@ -44,7 +45,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
         setState(() {
           otp = _controllers.map((c) => c.text).join();
         });
-        print('otp entered: $otp');
+        print('OTP entered: $otp');
       }
     }
   }
@@ -54,53 +55,48 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
 
     return Scaffold(
-      body: Column(
-        children: [
-          Container(
-            height: 500.h,
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0.w, vertical: 16.h),
-            child: Form(
-              key: _inputOTPFormKey,
-              child: Container(
-                width: 400.w,
-                height: 240.h,
-                decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.4),
-                    borderRadius:  const BorderRadius.all(Radius.circular(20))
-                ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          AppText.title("Enter Otp code"),
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                children: [
-                                  AppText.body("Please input code sent to your email:"),
-                                  AppText.body(widget.email,color: colorScheme.onBackground,),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child:  Container(
+            height: MediaQuery.of(context).size.height,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [colorScheme.primary, colorScheme.secondary],
+              ),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 40.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(height: 40.h),
+                  Icon(Icons.lock_outline, size: 80, color: colorScheme.onPrimary),
+                  SizedBox(height: 24.h),
+                  AppText.headline("OTP Verification", color: Colors.grey.shade300,),
+                  SizedBox(height: 16.h),
+                  AppText.body(
+                    "Please enter the 6-digit code sent to:",
+                    textAlign: TextAlign.center,
+                    color: Colors.grey.shade300,
+                  ),
+                  SizedBox(height: 8.h),
+                  AppText.body(
+                    widget.email,
+                    color: Color(0xebcacdff),
+                  ),
+                  SizedBox(height: 40.h),
+                  Form(
+                    key: _inputOTPFormKey,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: List.generate(
                         6,
-                            (index) => Container(
-                          width: 50,
-                          margin: const EdgeInsets.symmetric(horizontal: 5),
+                            (index) => SizedBox(
+                          width: 50.w,
                           child: CustomTextField(
-                            validator: (value)=>FormValidator.validate(value, ValidatorType.digits,fieldName: "$index"),
+                            validator: (value) => FormValidator.validate(value, ValidatorType.digits, fieldName: "Digit ${index + 1}"),
                             controller: _controllers[index],
                             focusNode: _focusNodes[index],
                             textAlign: TextAlign.center,
@@ -109,57 +105,69 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                               LengthLimitingTextInputFormatter(1),
                               FilteringTextInputFormatter.digitsOnly,
                             ],
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: colorScheme.primary),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                              ),
                             ),
-                            onChanged: (_) => _onChanged(index), fieldName: '$index',
+                            onChanged: (_) => _onChanged(index),
+                            fieldName: 'Digit ${index + 1}',
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(height: 30.h,),
-                    CustomButton(size: ButtonSize.large,
-                      text: "confirm",
-                      onPressed: ()async{
-
-                        if (!mounted) return;
-                        String? status;
-                        try{
-                          status = await userProvider.emailVerification(context,otp!);
-                          if(status.toString() =="failed"){
-                            if (!mounted) return;
-                            await CustomPopup.show(backgroundColor:colorScheme.onBackground,type: PopupType.error ,title: "Check your email", message: "Inputted otp might be wrong", context: context);
-                          }else
-                          if (_inputOTPFormKey.currentState!.validate()) {
-                            if (!mounted) return;
-                            // context.pushNamed("/user_details_page",
-                            //     pathParameters: {"email":widget.preRegisterDetails.email, "otp":otp!}
-                            // );
-
-                          }("/user_details_page");
-
-                        }catch(e) {
-                          if (!mounted) return;
-                        }
-                        if (_inputOTPFormKey.currentState!.validate()) {
-                          if (!mounted) return;
-                          // context.pushNamed("/user_details_page",
-                          //    pathParameters: {"email":widget.preRegisterDetails.email, "otp":otp!}
-                          // );
-                        }
-
-                        if (otp!=null) {
-                          if (otp?.length != 6){
+                  ),
+                  SizedBox(height: 40.h),
+                  CustomButton(
+                    size: ButtonSize.large,
+                    text: "Verify OTP",
+                    onPressed: () async {
+                      if (_inputOTPFormKey.currentState!.validate()) {
+                        try {
+                          final resp = await userProvider.verifyOTPForPasswordChange(context, widget.email, otp!);
+                          if (resp.status == "failed") {
+                            await CustomPopup.show(
+                              backgroundColor: colorScheme.error,
+                              type: PopupType.error,
+                              title: "Verification Failed",
+                              message: "The OTP you entered is incorrect. Please try again.",
+                              context: context,
+                            );
+                          } else {
+                            context.pushNamed("/login");
                           }
+                        } catch (e) {
+                          await CustomPopup.show(
+                            backgroundColor: colorScheme.error,
+                            type: PopupType.error,
+                            title: "Error",
+                            message: "An unexpected error occurred. Please try again later.",
+                            context: context,
+                          );
                         }
-                        context.pushNamed("/login");
-                      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ,)
-                  ],
-                ),
+                      }
+                    },
+                  ),
+                  SizedBox(height: 24.h),
+                  TextButton(
+                    onPressed: () {
+                      // TODO: Implement resend OTP functionality
+                    },
+                    child: Text(
+                      "Resend OTP",
+                      style: TextStyle(color: colorScheme.primary),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

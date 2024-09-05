@@ -224,7 +224,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         isLoading = true;
                       });
 
-                      isLoading? const CircularProgressIndicator():SizedBox();
+                      isLoading? const CircularProgressIndicator():const SizedBox();
                       context.pushNamed("/login");
                       setState(() {
                         isLoading = false;

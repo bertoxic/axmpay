@@ -84,13 +84,12 @@ class _LoginPageState extends State<LoginPage> {
                     child: Row(
                       children: [
                         _isLoading? SizedBox(  height: 12.h, width: 12.w,
-                            child: const CircularProgressIndicator(color: Colors.grey)):CustomButton(
+                            child: const CircularProgressIndicator(color: Colors.purple)):CustomButton(
                           onPressed:_isLoading?null: () async {
                             setState(() {
                               _isLoading = true;
                             });
                           if(_formKey.currentState!.validate()){
-
                           }
                           userdetails.email = _emailController.value.text;
                           userdetails.password = _passwordController.value.text;
@@ -113,7 +112,28 @@ class _LoginPageState extends State<LoginPage> {
                       ],
                     ),
                   ),
-                )
+                ),
+               Center(
+                 child: GestureDetector(
+                   onTap: () {
+                     setState(() {
+                       _isLoading = true;
+                     });
+
+                     _isLoading? const CircularProgressIndicator():SizedBox();
+                     context.pushNamed("/change_password_screen");
+                     setState(() {
+                       _isLoading = false;
+                     });
+                   },
+                   child: const Text(
+                     'forgot password?',
+                     style: TextStyle(
+                       color: Colors.blue,
+                     ),
+                   ),
+                 ),
+               )
              ],
            ),
          ),

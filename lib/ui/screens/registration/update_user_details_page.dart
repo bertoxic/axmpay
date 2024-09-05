@@ -1,3 +1,4 @@
+import 'package:fintech_app/models/ResponseModel.dart';
 import 'package:fintech_app/ui/screens/registration/registration_controller.dart';
 import 'package:fintech_app/ui/widgets/custom_buttons.dart';
 import 'package:fintech_app/ui/widgets/custom_dialog.dart';
@@ -33,6 +34,12 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
     // TODO: implement initState
     super.initState();
     _controller = RegistrationController(context);
+  }
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _controller.dispose();
+    super.dispose();
   }
   @override
   Widget build(BuildContext context) {
@@ -313,27 +320,20 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                               size: ButtonSize.large,
                                 backgroundColor: Colors.green,
                                 foregroundColor: Colors.white,
-                                borderRadius: 12,
+                                borderRadius: 12, //pirkofalto@gufum.com
                                 isLoading: false,
                                 isDisabled: false,
                                 type: ButtonType.elevated,
-                                onPressed: (){
-                                _controller.updateUserDetailsModel();
-                               // _controller.updateUserDetailsToServer();
-                                _controller.walletPayloadToServer();
-                                    CustomPopup.show(
-                                      context: context, title: "Select  a new Page",
-                                      message: "Do you want to move to the next page?",
-                                    actions: [
-                                      PopupAction(text: "no", onPressed: (){
-                                       // context.goNamed("/home");
-                                        //context.pushNamed("/home");
-                                      },color: Colors.green),
-                                      PopupAction(text: "yes", onPressed: (){
-                                       // context.pushNamed("/home");
-                                      }),
-                                    ]
-                                  );
+                                onPressed: ()async{
+                                ResponseResult? resp = await _controller.createNewUserWallet();
+                                if(resp?.status == ResponseStatus.failed){
+                                  CustomPopup.show(context: context, title: resp?.status.toString()??"error", message: resp?.message??"an error occured");
+                                }else if(resp?.status==ResponseStatus.success){
+                                 CustomPopup.show(context: context, title: resp?.status.toString()??"success", message: resp?.message??"");
+                                 await  Future.delayed(Duration(seconds: 1));
+                                 Navigator.pop(context);
+                                 context.goNamed("/home");
+                                }
                                 },
                               ),
                             )

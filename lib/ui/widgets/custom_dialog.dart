@@ -1,6 +1,7 @@
+import 'package:fintech_app/main.dart';
+import 'package:flutter/material.dart';
 import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
-import 'package:flutter/material.dart';
 
 enum PopupType { info, success, warning, error }
 
@@ -17,7 +18,7 @@ class CustomPopup extends StatelessWidget {
   final Color? backgroundColor;
 
   const CustomPopup({
-    super.key,
+    Key? key,
     required this.title,
     required this.message,
     this.type = PopupType.info,
@@ -28,12 +29,12 @@ class CustomPopup extends StatelessWidget {
     this.titleStyle,
     this.messageStyle,
     this.backgroundColor,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       elevation: 0,
       backgroundColor: Colors.transparent,
       child: _buildDialogContent(context),
@@ -42,64 +43,52 @@ class CustomPopup extends StatelessWidget {
 
   Widget _buildDialogContent(BuildContext context) {
     return Stack(
+      clipBehavior: Clip.none,
       children: <Widget>[
         Container(
-          width: 500.sp,
-          padding: EdgeInsets.only(top: 30.h, bottom: 16.h, left: 16.w, right: 16.w),
-          margin: EdgeInsets.only(top: 66.h),
+          width: 550.sp,
+          padding: EdgeInsets.fromLTRB(24.w, 40.h, 24.w, 24.h),
+          margin: EdgeInsets.only(top: 45.h),
           decoration: BoxDecoration(
             color: backgroundColor ?? Theme.of(context).cardColor,
             shape: BoxShape.rectangle,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow:  [
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
               BoxShadow(
-                color: Colors.black26,
-                blurRadius: 10.0,
-                offset: Offset(0.0.sp, 10.0.sp),
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 15,
+                offset: Offset(0, 10),
               ),
             ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w,vertical: 10.h),
-                        child: Center(
-                          child: Text(
-                            title,
-                            style: titleStyle ?? Theme.of(context).textTheme.titleLarge,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              Text(
+                title,
+                style: titleStyle ?? Theme.of(context).textTheme.headline6?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: _getIconColor(),
+                ),
               ),
-              SizedBox(height: 16.0.sp),
-              AppText.caption(
+              SizedBox(height: 16.h),
+              AppText.body(
                 message,
                 textAlign: TextAlign.center,
+                style: messageStyle ?? Theme.of(context).textTheme.bodyText2,
               ),
-              const SizedBox(height: 24.0),
+              SizedBox(height: 24.h),
               _buildActionButtons(context),
             ],
           ),
         ),
         Positioned(
-          top: 16.h,
-          left: 16.w,
-          right: 16.w,
+          top: 50.h,
+          left: 0,
+          right: 260.w,
           child: CircleAvatar(
             backgroundColor: _getIconBackgroundColor(),
-            radius: 36.sp,
+            radius: 12.sp,
             child: customIcon ?? _getDefaultIcon(),
           ),
         ),
@@ -109,26 +98,29 @@ class CustomPopup extends StatelessWidget {
 
   Widget _buildActionButtons(BuildContext context) {
     if (actions == null || actions!.isEmpty) {
-      return const SizedBox.shrink();
+      return SizedBox.shrink();
     }
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8.w,
+      runSpacing: 8.h,
       children: actions!.map((action) {
-        return Padding(
-          padding:  EdgeInsets.symmetric(horizontal: 4.0.w),
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              action.onPressed();
-            },
-            style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8), // Adjust the radius as needed
-              ),
-              backgroundColor: action.color ?? Colors.grey,
+        return ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+            action.onPressed();
+          },
+          style: ElevatedButton.styleFrom(
+            primary: action.color ?? _getIconColor(),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
             ),
-            child: Text(action.text),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+          ),
+          child: Text(
+            action.text,
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         );
       }).toList(),
@@ -138,7 +130,20 @@ class CustomPopup extends StatelessWidget {
   Color _getIconBackgroundColor() {
     switch (type) {
       case PopupType.info:
-        return Colors.blue;
+        return Colors.blue.shade100;
+      case PopupType.success:
+        return Colors.green.shade100;
+      case PopupType.warning:
+        return Colors.orange.shade100;
+      case PopupType.error:
+        return Colors.red.shade100;
+    }
+  }
+
+  Color _getIconColor() {
+    switch (type) {
+      case PopupType.info:
+        return colorScheme.primary;
       case PopupType.success:
         return Colors.green;
       case PopupType.warning:
@@ -164,10 +169,10 @@ class CustomPopup extends StatelessWidget {
         iconData = Icons.error_outline;
         break;
     }
-    return Icon(iconData, size: 30.sp, color: Colors.white);
+    return Icon(iconData, size: 45.sp, color: _getIconColor());
   }
 
-  static Future<Future<Object?>> show({
+  static Future<T?> show<T>({
     required BuildContext context,
     required String title,
     required String message,
@@ -179,14 +184,14 @@ class CustomPopup extends StatelessWidget {
     TextStyle? titleStyle,
     TextStyle? messageStyle,
     Color? backgroundColor,
-  }) async {
-    return showGeneralDialog(
+  }) {
+    return showGeneralDialog<T>(
       context: context,
       barrierDismissible: dismissible,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
       barrierColor: Colors.black38,
       transitionDuration: animationDuration,
-      pageBuilder: (BuildContext buildContext, Animation animation, Animation secondaryAnimation) {
+      pageBuilder: (BuildContext buildContext, Animation<double> animation, Animation<double> secondaryAnimation) {
         return CustomPopup(
           title: title,
           message: message,

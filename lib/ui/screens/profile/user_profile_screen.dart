@@ -119,6 +119,35 @@ class UserProfileScreen extends StatelessWidget {
                           children: [
                             GestureDetector(
                               onTap: (){
+                                context.pushNamed("upgrade_account_page");
+                              },
+                              child:      Container(
+                                padding:  EdgeInsets.all(8.0.sp ),
+                                margin: EdgeInsets.symmetric(vertical:
+                                4.h),
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.all(Radius.circular(28)),
+                                  color: colorScheme.onPrimary,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                      children: [
+                                         CircleAvatar(backgroundColor: colorScheme.primary,
+                                            child: Icon(Icons.upgrade_rounded)),//lutrozesp
+                                        const SizedBox(width: 10,),// u@gufum.com
+                                        AppText.body("Upgrade your account"),
+                                      ],
+                                    ),
+                                    const Icon(Icons.arrow_forward_ios_sharp)
+                                  ],
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: (){
                                 context.pushNamed("forgot_password_input_mail");
                               },
                               child:      Container(

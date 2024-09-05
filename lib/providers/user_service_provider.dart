@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:fintech_app/database/user_repository.dart';
+import 'package:fintech_app/models/ResponseModel.dart';
 import 'package:fintech_app/services/api_service.dart';
 import 'package:fintech_app/utils/sharedPrefernce.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,6 +12,7 @@ import '../models/recepients_model.dart';
 import '../models/transaction_model.dart';
 import '../models/user_model.dart';
 import '../utils/global_error_handler.dart';
+
 
 class UserServiceProvider extends ChangeNotifier {
   UserData? userdata;
@@ -36,6 +38,7 @@ class UserServiceProvider extends ChangeNotifier {
         throw TokenExpiredException();
       }
       userdata = UserData.fromJson(jsonDecode(response.data));
+      notifyListeners();
       // await getWalletDetails();
       await getBankNames(context);
       if (userdata != null) {
@@ -181,36 +184,73 @@ class UserServiceProvider extends ChangeNotifier {
     }
   }
 
-  Future<String> verifyOTPForPasswordChange(
+  Future<ResponseResult> verifyOTPForPasswordChange(
       BuildContext context, String email, String otp) async {
     try {
       Map<String, dynamic> data = {"email": email, "code": otp};
       String? token = await SharedPreferencesUtil.getString("auth_token");
       final response =
-          await apiService.post(context, "verifyCode.php?", data, token);
+      await apiService.post(context, "verifyCode.php?", data, token);
       var jsonData = jsonDecode(response.data);
-      // if (jsonData["status"]=="failed") {
-      //   throw Exception(jsonData["message"]);
-      // }
-      return jsonData["status"].toString();
+
+      if (jsonData["status"] == "failed") {
+        return ResponseResult(
+          status: ResponseStatus.failed,
+          message: jsonData["message"] ?? "Verification failed",
+          data: jsonData["data"] as Map<String, dynamic>?,
+        );
+      }
+
+      return ResponseResult(
+        status: ResponseStatus.success,
+        message: jsonData["message"] ?? "Verification successful",
+        data: jsonData["data"] as Map<String, dynamic>?,
+      );
     } catch (e) {
       if (!context.mounted) {
-        rethrow;
+        throw e;
       }
       handleGlobalError(context, e);
-      rethrow;
+      throw e;
     }
   }
 
-  Future<String> emailVerification(BuildContext context, String otp) async {
+  Future<ResponseResult> emailVerification(BuildContext context, String otp) async {
+    try {
+      Map<String, dynamic> requestData = {"verification_code": otp};
+      final response = await apiService.post(context, "emailVerification.php", requestData, null);
+      var   jsonData = jsonDecode(response.data);
+
+      if (jsonData["status"] == "failed") {
+        return ResponseResult(
+          status: ResponseStatus.failed,
+          message: jsonData["message"] ?? "Verification failed",
+          data: jsonData["data"] as Map<String, dynamic>?,
+        );
+      }
+
+      return ResponseResult(
+        status: ResponseStatus.success,
+        message: jsonData["message"] ?? "Verification successful",
+        data: jsonData["data"] as Map<String, dynamic>?,
+      );
+    } catch (e) {
+      if (!context.mounted) {
+        throw e;
+      }
+      handleGlobalError(context, e);
+      throw e;
+    }
+    }
+  Future<String> xemailVerification(BuildContext context, String otp) async {
     try {
       Map<String, dynamic> data = {"verification_code": otp};
       final response =
           await apiService.post(context, "emailVerification.php", data, null);
       var jsonData = jsonDecode(response.data);
-      // if (jsonData["status"]=="failed") {
-      //   throw Exception(jsonData["message"]);
-      // }
+      if (jsonData["status"]=="failed") {
+        throw Exception(jsonData["message"]);
+      }
       return jsonData["status"].toString();
     } catch (e) {
       if (!context.mounted) {
@@ -321,7 +361,7 @@ class UserServiceProvider extends ChangeNotifier {
     }
   }
 
-  Future<String> createUserWallet(
+  Future<ResponseResult?> createUserWallet(
       BuildContext context, WalletPayload walletPayload) async {
     try {
       Map<String, dynamic> data = walletPayload.toJSON();
@@ -329,6 +369,39 @@ class UserServiceProvider extends ChangeNotifier {
       String? token = await SharedPreferencesUtil.getString("auth_token");
       final response =
           await apiService.post(context, "createWallet.php?", data, token);
+      Map<String, dynamic> jsonData;
+      if (response.data is String) {
+        jsonData = jsonDecode(response.data);
+      } else {
+        jsonData = response.data;
+      }
+      if (jsonData["status"] == "failed") {
+        return ResponseResult(
+          status: ResponseStatus.failed,
+          message: jsonData["message"] ?? "Verification failed",
+          data: jsonData["data"] as Map<String, dynamic>?,
+        );
+      }
+      return ResponseResult(
+        status: ResponseStatus.success,
+        message: jsonData["message"] ?? "Verification successful",
+        data: jsonData["data"] as Map<String, dynamic>?,
+      );
+    } catch (e) {
+      if (!context.mounted) {
+        rethrow;
+      }
+      handleExceptionGlobally(context, e);
+      rethrow;
+    }
+  }
+  Future<String> upgradeUserWallet(
+      BuildContext context, UpgradeWalletPayload walletPayload) async {
+    try {
+      Map<String, dynamic> data = walletPayload.toJson();
+      String? token = await SharedPreferencesUtil.getString("auth_token");
+      final response =
+      await apiService.post(context, "upgradeWallet.php", data, token);
       if (response.data == null) {
         throw Exception("no response from the server");
       }

@@ -235,6 +235,7 @@ class Address {
     return '$street, $city, $state zip: $zip';
   }
 }
+
 class WalletPayload {
   String firstName;
   String lastName;
@@ -294,5 +295,118 @@ class WalletPayload {
   @override
   String toString() {
     return 'WalletPayload(firstName: $firstName, lastName: $lastName, userName: $userName, dateOfBirth: $dateOfBirth, refby: $refby, gender: $gender, phone: $phone, country: $country, placeOfBirth: $placeOfBirth, address: $address)';
+  }
+}
+
+class UpgradeWalletPayload {
+  String accountNumber;
+  String bvn;
+  String accountName;
+  String phoneNumber;
+  String? tier;
+  String? email;
+  String userPhoto;
+  String? idType;
+  String idNumber;
+  String idIssueDate;
+  String idExpiryDate;
+  String idCardFront;
+  String idCardBack;
+  String houseNumber;
+  String streetName;
+  String state;
+  String city;
+  String localGovernment;
+  String? pep;
+  String customerSignature;
+  String utilityBill;
+  String nearestLandMark;
+  String placeOfBirth;
+  String proofOfAddress;
+
+  UpgradeWalletPayload({
+    required this.accountNumber,
+    required this.bvn,
+    required this.accountName,
+    required this.phoneNumber,
+    this.tier = "",
+    required this.email,
+    required this.userPhoto,
+    this.idType = "1",
+    required this.idNumber,
+    required this.idIssueDate,
+    required this.idExpiryDate,
+    required this.idCardFront,
+    required this.idCardBack,
+    required this.houseNumber,
+    required this.streetName,
+    required this.state,
+    required this.city,
+    required this.localGovernment,
+    this.pep = "NO",
+    required this.customerSignature,
+    required this.utilityBill,
+    required this.nearestLandMark,
+    required this.placeOfBirth,
+    required this.proofOfAddress,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'accountNumber': accountNumber,
+      'bvn': bvn,
+      'accountName': accountName,
+      'phoneNumber': phoneNumber,
+      'tier': tier,
+      'email': email,
+      'userPhoto': userPhoto,
+      'idType': idType,
+      'idNumber': idNumber,
+      'idIssueDate': idIssueDate,
+      'idExpiryDate': idExpiryDate,
+      'idCardFront': idCardFront,
+      'idCardBack': idCardBack,
+      'houseNumber': houseNumber,
+      'streetName': streetName,
+      'state': state,
+      'city': city,
+      'localGovernment': localGovernment,
+      'pep': pep,
+      'customerSignature': customerSignature,
+      'utilityBill': utilityBill,
+      'nearestLandMark': nearestLandMark,
+      'placeOfBirth': placeOfBirth,
+      'proofOfAddress': proofOfAddress,
+    };
+  }
+
+  // Create a UpgradeWalletPayload instance from a JSON map
+  factory UpgradeWalletPayload.fromJson(Map<String, dynamic> json) {
+    return UpgradeWalletPayload(
+      accountNumber: json['accountNumber'],
+      bvn: json['bvn'],
+      accountName: json['accountName'],
+      phoneNumber: json['phoneNumber'],
+      tier: json['tier'],
+      email: json['email'],
+      userPhoto: json['userPhoto'],
+      idType: json['idType'],
+      idNumber: json['idNumber'],
+      idIssueDate: json['idIssueDate'],
+      idExpiryDate: json['idExpiryDate'],
+      idCardFront: json['idCardFront'],
+      idCardBack: json['idCardBack'],
+      houseNumber: json['houseNumber'],
+      streetName: json['streetName'],
+      state: json['state'],
+      city: json['city'],
+      localGovernment: json['localGovernment'],
+      pep: json['pep'],
+      customerSignature: json['customerSignature'],
+      utilityBill: json['utilityBill'],
+      nearestLandMark: json['nearestLandMark'],
+      placeOfBirth: json['placeOfBirth'],
+      proofOfAddress: json['proofOfAddress'],
+    );
   }
 }

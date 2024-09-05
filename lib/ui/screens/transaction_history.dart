@@ -19,6 +19,7 @@ class TransactionHistoryPage extends StatelessWidget {
         future: userProvider.fetchTransactionHistory(context),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
+
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             // The error has already been handled by the API service,
@@ -60,7 +61,7 @@ class TransactionHistoryPage extends StatelessWidget {
                     child: ListView.builder(
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
-                    
+
                         return InkWell(
                            onTap: ()async{
                             SpecificTransactionData transactionData= await userProvider.fetchTransactionDetails(context, snapshot.data![index].trxID.toString());

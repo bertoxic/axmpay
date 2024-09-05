@@ -1,5 +1,6 @@
 
 
+import 'package:fintech_app/models/ResponseModel.dart';
 import 'package:fintech_app/models/transaction_model.dart';
 import 'package:fintech_app/models/user_model.dart';
 import 'package:fintech_app/ui/screens/registration/registration_provider.dart';
@@ -67,8 +68,6 @@ void _initializeController() {
     );
      print("userDetails");
     final provider = Provider.of<RegistrationProvider>(context, listen: false);
-    createUserWalletPayload();
-    print(userDetails?.toJSON());
   }
   void createUserWalletPayload(){
     var address = Address(street: street_address.text, city: city.text, state: state.text, zip: zip_code.text);
@@ -97,10 +96,33 @@ void _initializeController() {
 
   }
 
-  Future<String?> walletPayloadToServer() async {
-    String? status;
+  Future<ResponseResult?> createNewUserWallet() async {
+    createUserWalletPayload();
+    ResponseResult? responseResult;
     final provider = Provider.of<RegistrationProvider>(context, listen: false);
-    status = await provider.userProvider.createUserWallet(context,walletPayload!);
-    return status;
+    responseResult = await provider.userProvider.createUserWallet(context,walletPayload!);
+    return responseResult;
+  }
+
+  void dispose() {
+    // Dispose of all the TextEditingController instances
+    userNameController.dispose();
+    emailController.dispose();
+    refby.dispose();
+    country.dispose();
+    passwordController.dispose();
+    date_of_birth.dispose();
+    first_name.dispose();
+    last_name.dispose();
+    gender.dispose();
+    phone_number.dispose();
+    placeOfBirthController.dispose();
+    bvn.dispose();
+    street_address.dispose();
+    city.dispose();
+    state.dispose();
+    zip_code.dispose();
+    // imageDisplayContoller.dispose();
+   // imageInputController.dispose();
   }
 }

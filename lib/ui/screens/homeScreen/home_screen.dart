@@ -10,8 +10,10 @@ import 'package:fintech_app/ui/widgets/custom_dropdown.dart';
 import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
 import 'package:fintech_app/ui/widgets/custom_textfield.dart';
+import 'package:fintech_app/ui/widgets/svg_maker/svg_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -34,6 +36,7 @@ class _HomePageState extends State<HomePage> {
   late UserServiceProvider userProvider;
   Future<DataBundleList?>? _dataBundleList;
   bool phoneIsValid = false;
+  bool _isLoadingHistory = false;
 
   bool isData = false;
 
@@ -84,7 +87,9 @@ class _HomePageState extends State<HomePage> {
                                     horizontal: 8.w, vertical: 0),
                                 child: Text(
                                     "${userProvider.userdata?.firstname} ${userProvider.userdata?.lastname}"),
-                              )
+                              ),
+                              Container(width: 50, height: 50,
+                                  child: SvgIcon("assets/images/9mobile_logo.svg", color: Colors.red,))
                             ],
                           ),
                         ),
@@ -155,40 +160,51 @@ class _HomePageState extends State<HomePage> {
                               ),
                               SizedBox(height: 10.h,),
                               Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Padding(
-                                    padding: EdgeInsets.all(0.w).copyWith(left: 10.w),
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(horizontal: 4.w),
-                                      decoration: BoxDecoration(
-                                        color: Colors.purple.shade300.withOpacity(0.5),
-                                        borderRadius: BorderRadius.circular(8)
-                                      ),
-                                      child: AppText.caption(
-                                        "A/C no: ${userProvider.userdata?.accountNumber}",
-                                        color: colorScheme.onPrimary,
-                                        style: TextStyle(
-                                            fontSize: 9.sp,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.normal),
-                                      ),
+                                  SizedBox(
+                                    child: Row(
+                                      children: [
+                                        Padding(
+                                          padding: EdgeInsets.all(0.w).copyWith(left: 10.w),
+                                          child: Container(
+                                            padding: EdgeInsets.symmetric(horizontal: 4.w),
+                                            decoration: BoxDecoration(
+                                              color: Colors.purple.shade300.withOpacity(0.5),
+                                              borderRadius: BorderRadius.circular(8)
+                                            ),
+                                            child: AppText.caption(
+                                              "A/C no: ${userProvider.userdata?.accountNumber}",
+                                              color: colorScheme.onPrimary,
+                                              style: TextStyle(
+                                                  fontSize: 9.sp,
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.normal),
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 2.w,),
+                                        Container(
+                                            padding: EdgeInsets.all( 1.w),
+                                            decoration: BoxDecoration(
+                                                color: Colors.purple.shade300.withOpacity(0.5),
+                                                borderRadius: BorderRadius.circular(4)
+                                            ),
+                                             child: GestureDetector(
+                                               onTap: (){
+                                                 Clipboard.setData(ClipboardData(text: userProvider.userdata!.accountNumber));
+                                                 ScaffoldMessenger.of(context).showSnackBar(
+                                                   const SnackBar(content: Text('Copied to clipboard')),
+                                                 );
+                                               },
+                                                 child: Icon(Icons.copy, size: 16,color: colorScheme.onPrimary.withOpacity(0.7),)))
+                                      ],
                                     ),
                                   ),
-                                  SizedBox(width: 2.w,),
-                                  Container(
-                                      padding: EdgeInsets.all( 1.w),
-                                      decoration: BoxDecoration(
-                                          color: Colors.purple.shade300.withOpacity(0.5),
-                                          borderRadius: BorderRadius.circular(4)
-                                      ),
-                                       child: GestureDetector(
-                                         onTap: (){
-                                           Clipboard.setData(ClipboardData(text: userProvider.userdata!.accountNumber));
-                                           ScaffoldMessenger.of(context).showSnackBar(
-                                             const SnackBar(content: Text('Copied to clipboard')),
-                                           );
-                                         },
-                                           child: Icon(Icons.copy, size: 16,color: colorScheme.onPrimary.withOpacity(0.7),)))
+                                  Padding(
+                                    padding:  EdgeInsets.only(right: 12.0.w),
+                                    child: AppText.caption("earnings:${userProvider.userdata?.earn??" "}", color: colorScheme.onPrimary,),
+                                  )
                                 ],
                               ),
                             ],
@@ -203,9 +219,9 @@ class _HomePageState extends State<HomePage> {
                     height: 60.h,
                     padding: EdgeInsets.all(10.w),
                     margin: EdgeInsets.all(8.w).copyWith(bottom: 0,top: 0),
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.all(Radius.circular(8)),
-                      color: const Color(0xB25C4DE5),
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      color: Color(0xB25C4DE5),
                     ),
                     child: const Text(""),
                   ),
@@ -659,6 +675,11 @@ class _HomePageState extends State<HomePage> {
                                           pathParameters: {'trxID': snapshot.data![index].trxID.toString()},
                                           extra: transactionData,
                                         );
+                                          setState(() {
+                                            _isLoadingHistory = false;
+                                          });
+
+                                       // setState((){_isLoadingHistory=false;});
                                       },
                                       child: SizedBox(
                                         child: Container(
@@ -709,7 +730,8 @@ class _HomePageState extends State<HomePage> {
                                                 Column(
                                                   crossAxisAlignment: CrossAxisAlignment.end,
                                                   children: [
-                                                    Text(
+                                                   //_isLoadingHistory?CircularProgressIndicator(color:snapshot.data![index].action == 'Receive' ? Colors.green : Colors.red,):
+                                                   AppText.body(
                                                       '${snapshot.data![index].action == 'Receive' ? '+' : '-'}\₦${snapshot.data![index].amount}',
                                                       style: TextStyle(
                                                         fontWeight: FontWeight.bold,
@@ -766,8 +788,9 @@ class _HomePageState extends State<HomePage> {
                 SizedBox(height: 10.0.h),
                 AppText.body("${userProvider.userdata?.firstname.toUpperCase()} ${userProvider.userdata?.lastname.toUpperCase()}"),
                 SizedBox(height: 4.0.h),
-                AppText.title("9 Payment service bank"),
+                AppText.body("9 Payment service bank"),
                 AppText.title("${userProvider.userdata?.accountNumber}"),
+                AppText.caption("transfer to this account number"),
 
                 TextButton(
                   onPressed:() => Navigator.of(context).pop(),

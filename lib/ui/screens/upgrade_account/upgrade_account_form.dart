@@ -1,5 +1,5 @@
 import 'package:fintech_app/providers/user_service_provider.dart';
-import 'package:fintech_app/ui/screens/upgrade_account/update_user_details_field.dart';
+import 'package:fintech_app/ui/screens/upgrade_account/upgrade_user_details_field.dart';
 import 'package:fintech_app/ui/screens/upgrade_account/upgrade_account_controller.dart';
 import 'package:fintech_app/ui/widgets/custom_buttons.dart';
 import 'package:fintech_app/ui/widgets/custom_dialog.dart';
@@ -24,17 +24,25 @@ class UpgradeAccountPage extends StatefulWidget {
   State<UpgradeAccountPage> createState() => _UpdateUserDetailsPageState();
 }
 
-class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> {
+class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleTickerProviderStateMixin{
+  late TabController _tabController;
   final _formKey = GlobalKey<FormState>();
   late UpgradeAccountController _controller;
   late UserServiceProvider userprovider;
+  late UserData userData;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    _tabController = TabController(length: 5, vsync: this);
     _controller = UpgradeAccountController(context);
      userprovider = Provider.of<UserServiceProvider>(context, listen: false);
-
+     userData = userprovider.userdata!;
+  }
+  void dispose() {
+    _tabController.dispose();
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -47,347 +55,430 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> {
       email: "",
     );
     final authProvider = Provider.of<AuthenticationProvider>(context);
-    return Form(
-      key: _formKey,
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Update user details')),
-        body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SizedBox(
-              height: 1200.h,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Container(
-                      decoration: BoxDecoration(
-                          color: colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(20.w)),
-                      child: SpacedContainer(
-                        child: Column(
-                          children: [
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 8.h, horizontal: 16.h),
-                                child: AppText.body(
-                                  "Basic information",
-                                ),
-                              ),
-                            ),
-                            SpacedContainer(
-                              child: UpdateUserDetailsField(
-                                labelText: 'First Name',
-                                hintText: 'Enter your First Name',
-                                // decoration: InputDecoration(
-                                //
-                                //     enabledBorder: OutlineInputBorder(
-                                //       borderRadius: BorderRadius.circular(20.0),
-                                //       borderSide: const BorderSide(color: AppColors.lightgrey),
-                                //     ),
-                                //     focusedBorder: OutlineInputBorder(
-                                //       borderRadius: BorderRadius.circular(20.0),
-                                //       borderSide: const BorderSide(color: Colors.green),
-                                //     ),
-                                //     errorBorder: OutlineInputBorder(
-                                //       borderRadius: BorderRadius.circular(20.0),
-                                //       borderSide: const BorderSide(color: Colors.red),
-                                //     ),
-                                //     fillColor: AppColors.lightgrey,
-                                //     filled: true
-                                // ),
-                                validator: null,
-                              fieldController: _controller.first_name,
-                                prefixIcon: const Icon(Icons.person),
-                                fieldName: Fields.name,
-                                onChanged: (value) {
-                                  userdetails.firstName = value;
-                                },
-                              ),
-                            ),
-                            SpacedContainer(
-                              child: UpdateUserDetailsField(
-                                labelText: 'Last Name',
-                                hintText: 'Enter your Last Name',
-                              fieldController: _controller.last_name,
-                                validator: null,
-                                prefixIcon: const Icon(Icons.person),
-                                fieldName: Fields.name,
-                                onChanged: (value) {
-                                  userdetails.lastName = value;
-                                },
-                              ),
-                            ),
-                            SpacedContainer(
-                              child: UpdateUserDetailsField(
-                                labelText: 'Email',
-                                hintText: 'Enter your email',
-                                prefixIcon: const Icon(Icons.email_outlined),
-                                 readOnly: true,
-                                onChanged: (value) {
-                                  userdetails.email = value;
-                                },
-                                keyboardType: TextInputType.emailAddress,
-                                fieldName: Fields.email,
-                              fieldController: _controller.emailController,
-                                // validator: (value)=>FormValidator.validate(value, ValidatorType.email,fieldName: Fields.email),
-                              ),
-                            ),
-                            SpacedContainer(
-                              child: UpdateUserDetailsField(
-                                labelText: 'Phone',
-                                hintText: 'Enter phone number',
-                                prefixIcon: const Icon(Icons.phone),
-                                fieldName: Fields.password,
-                                onChanged: (value) {
-                                  userdetails.phone = value;
-                                },
-                              fieldController: _controller.phone_number,
-                                // validator: (value) => FormValidator.validate(value, ValidatorType.password, fieldName: "password"),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10.h,
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                          color: colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(20.w)),
-                      child: SpacedContainer(
-                        child: Column(
-                          children: [
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 8.h, horizontal: 16.h),
-                                child: AppText.body(
-                                  "Address",
-                                ),
-                              ),
-                            ),
-                            SpacedContainer(
-                              child: UpdateUserDetailsField(
-                                labelText: 'State',
-                                hintText: 'name of state',
-                              fieldController: _controller.state,
-                                validator: null,
-                                prefixIcon: const Icon(Icons.location_history),
-                                fieldName: Fields.name,
-                                onChanged: (value) {
-                                  userdetails.address?.state = value;
-                                },
-                              ),
-                            ),
-                            SpacedContainer(
-                              child: UpdateUserDetailsField(
-                                labelText: 'City',
-                                hintText: 'Enter name of your City',
-                              fieldController: _controller.city,
-                                validator: null,
-                                prefixIcon: const Icon(Icons.location_city),
-                                fieldName: Fields.name,
-                                onChanged: (value) {
-                                  userdetails.address?.city = value;
-                                },
-                              ),
-                            ),
-                            SpacedContainer(
-                              child: UpdateUserDetailsField(
-                                labelText: 'Street address',
-                                hintText: 'Enter street name and number',
-                              fieldController: _controller.street_address,
-                                prefixIcon: const Icon(
-                                    Icons.location_searching_outlined),
-                                onChanged: (value) {
-                                  userdetails.address?.street = value;
-                                },
-                                keyboardType: TextInputType.text,
-                                fieldName: Fields.email,
-                                // validator: (value)=>FormValidator.validate(value, ValidatorType.email,fieldName: Fields.email),
-                              ),
-                            ),
-                            SpacedContainer(
-                              child: UpdateUserDetailsField(
-                                labelText: 'country',
-                                hintText: 'country',
-                                prefixIcon: const Icon(Icons.location_on),
-                              fieldController: _controller.country,
-                                onChanged: (value) {},
-                                keyboardType: TextInputType.text,
-                                fieldName: "country",
-                                validator: (value) => FormValidator.validate(
-                                    value, ValidatorType.email,
-                                    fieldName: Fields.email),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10.h,
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                          color: colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(20.w)),
-                      child: SpacedContainer(
-                        child: Column(
-                          children: [
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 8.h, horizontal: 16.h),
-                                child: GestureDetector(
-                                    onTap: () {
-                                      _controller.selectDate(context);
-                                    },
-                                    child: AppText.body(
-                                      "Personal information",
-                                    )),
-                              ),
-                            ),
-                            SpacedContainer(
-                              child: DatePickerTextField(
-                                context: context,
-                                onChange: (value) {
-                                  print(value);
-                                },
-                                dateController: _controller.date_of_birth,
-                              ),
-                            ),
-                            SpacedContainer(
-                              child: UpdateUserDetailsField(
-                                labelText: 'Gender',
-                                hintText: 'pick your gender',
-                              fieldController: _controller.gender,
-                                validator: null,
-                                prefixIcon: const Icon(Icons.location_city),
-                                fieldName: Fields.name,
-                                onChanged: (value) {
-                                  userdetails.address?.city = value;
-                                },
-                              ),
-                            ),
-                            SpacedContainer(
-                              child: UpdateUserDetailsField(
-                                labelText: 'BVN',
-                                hintText: 'input your valid BVN',
-                                validator: null,
-                                prefixIcon: const Icon(Icons.location_city),
-                                fieldName: Fields.name,
-                                onChanged: (value) {},
-                              fieldController: _controller.bvn,
-                              ),
-                            ),
-                            SpacedContainer(
-                              child: UpdateUserDetailsField(
-                                labelText: "place of birth",
-                                 hintText: "where were you born?",
-                                fieldController: _controller.placeOfBirthController,
-                                fieldName: Fields.name,),
-                            ),
-                            SpacedContainer(
-                              child: UpdateUserDetailsField(
-                                labelText: 'referrer id',
-                                hintText: 'who referred you',
-                                validator: null,
-                                prefixIcon: const Icon(Icons.location_city),
-                                fieldName: Fields.name,
-                                onChanged: (value) {
-                                  userdetails.nin = value;
-                                },
-                              fieldController: _controller.refby,
-                              ),
-                            ),
-                            SpacedContainer(
-                              child:PhotoPicker(
-                                  hintText: "docs",
-                                  labelText: "docs",
-                                  prefixIcon: const Icon(Icons.file_copy),
-                                  context: context,
-                                  onChange: (value){
-                                    print(value);
-                                  },
-                                  controller: _controller.imageInputController,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10.h,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SpacedContainer(
-                          child: CustomButton(
-                            text: "Submit",
-                            size: ButtonSize.large,
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            borderRadius: 12,
-                            isLoading: false,
-                            isDisabled: false,
-                            type: ButtonType.elevated,
-                            onPressed: () {
-                              _controller.updateUserDetailsModel();
-                              _controller.updateUserDetailsToServer();
-                              //_controller.walletPayloadToServer();
-                              CustomPopup.show(
-                                  context: context,
-                                  title: "Select  a new Page",
-                                  message:
-                                      "Do you want to move to the next page?",
-                                  actions: [
-                                    PopupAction(
-                                        text: "no",
-                                        onPressed: () {
-                                          // context.goNamed("/home");
-                                          //context.pushNamed("/home");
-                                        },
-                                        color: Colors.green),
-                                    PopupAction(
-                                        text: "yes",
-                                        onPressed: () {
-                                          // context.pushNamed("/home");
-                                        }),
-                                  ]);
-                            },
-                          ),
-                        )
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            )),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Upgrade Wallet'),
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          tabs: [
+            Tab(text: 'Basic Info'),
+            Tab(text: 'Identification'),
+            Tab(text: 'Address'),
+            Tab(text: 'Additional Info'),
+            Tab(text: 'Documents'),
+          ],
+        ),
+      ),
+      body: Form(
+        key: _formKey,
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            _buildBasicInfoTab(),
+            _buildIdentificationTab(),
+            _buildAddressTab(),
+            _buildAdditionalInfoTab(),
+            _buildDocumentsTab(),
+          ],
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ElevatedButton(
+          child: Text('Submit'),
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              // Process data
+            }
+          },
+        ),
       ),
     );
   }
-}
+
+  Widget _buildBasicInfoTab() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SizedBox(height: 10.h),
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 12.w),
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(20.w),
+            ),
+            child:  SpacedContainer(
+              child: Column(
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.h),
+                      child: AppText.body("Basic information"),
+                    ),
+                  ),
+                  SpacedContainer(
+                    child: UpdateUserDetailsField(
+                      labelText: 'Account Number',
+                      fieldController: _controller.accountNumberController,
+                      readOnly: true,
+                      onChanged: (value) {}, fieldName: '',
+                    ),
+                  ),
+                  SpacedContainer(
+                    child: UpdateUserDetailsField(
+                      labelText: 'BVN',
+                      fieldController: _controller.bvnController,
+                      onChanged: (value) {}, fieldName: '',
+                    ),
+                  ),
+                  SpacedContainer(
+                    child: UpdateUserDetailsField( 
+                      labelText: 'Account Name',
+                      fieldController: _controller.accountNameController,
+                      onChanged: (value) {}, fieldName: '',
+                      readOnly: true,
+                    ),
+                  ),
+                  SpacedContainer(  
+                    child: UpdateUserDetailsField(
+                      labelText: 'Phone Number',
+                      fieldController: _controller.phoneNumberController,
+                      onChanged: (value) {}, fieldName: '',
+                    ),
+                  ),
+                  SpacedContainer(  
+                    child: UpdateUserDetailsField(
+                      labelText: 'Tier',
+                      fieldController: _controller.tierController,
+                      onChanged: (value) {}, fieldName: '',
+                    ),
+                  ),
+                  SpacedContainer(
+                    child: UpdateUserDetailsField(
+                      labelText: 'Email',
+                      fieldController: _controller.emailController,
+                      onChanged: (value) {}, fieldName: '',
+                      readOnly: true,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIdentificationTab() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SizedBox(height: 10.h,),
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 12.w),
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(20.w),
+            ),
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.h),
+                    child: AppText.body("identification"),
+                  ),
+                ),
+                SpacedContainer(
+                  child: Column(
+                    children: [
+                      SpacedContainer(
+                        child: UpdateUserDetailsField(
+                          labelText: 'ID Type',
+                          fieldController: _controller.idTypeController,
+                          onChanged: (value) {}, fieldName: '',
+                        ),
+                      ),
+                      SpacedContainer(
+                        child: UpdateUserDetailsField(
+                          labelText: 'ID Number',
+                          fieldController: _controller.idNumberController,
+                          onChanged: (value) {}, fieldName: '',
+                        ),
+                      ),
+                      SpacedContainer(
+                        child: DatePickerTextField(
+                          labelText: 'ID Issue Date',
+                          dateController: _controller.idIssueDateController,
+                          context: context,
+                          onChange: (value) {},
+                          //fieldName: '',
+                        ),
+                      ),
+                      SpacedContainer(
+                        child: DatePickerTextField(
+                          labelText: 'ID Expiry Date',
+                          dateController: _controller.idExpiryDateController,
+                          onChange: (value) {},
+                          context: context,
+                          //fieldName: '',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddressTab() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        child:   Container(
+          margin: EdgeInsets.symmetric(horizontal: 12.w),
+          decoration: BoxDecoration(
+            color: colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(20.w),
+          ),
+          child: Column(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.h),
+                  child: AppText.body("User Address"),
+                ),
+              ),
+              SpacedContainer(
+                child: Column(
+                  children: [
+                    SpacedContainer(  
+                      child: UpdateUserDetailsField(
+                        labelText: 'House Number',
+                        fieldController: _controller.houseNumberController,
+                        onChanged: (value) {},
+                        fieldName: '',
+                      ),
+                    ),
+                    SpacedContainer(
+                      child: UpdateUserDetailsField(
+                        labelText: 'Street Name',
+                        fieldController: _controller.streetNameController,
+                        onChanged: (value) {},
+                        fieldName: '',
+                      ),
+                    ),
+                    SpacedContainer(
+                      child: UpdateUserDetailsField( 
+                        labelText: 'State',
+                        fieldController: _controller.stateController,
+                        onChanged: (value) {}, fieldName: '',
+                      ),
+                    ),
+                    SpacedContainer(
+                      child: UpdateUserDetailsField( 
+                        labelText: 'City',
+                        fieldController: _controller.cityController,
+                        onChanged: (value) {}, fieldName: '',
+                      ),
+                    ),
+                    SpacedContainer(
+                      child: UpdateUserDetailsField( 
+                        labelText: 'Local Government',
+                        fieldController: _controller.localGovernmentController,
+                        onChanged: (value) {}, fieldName: '',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdditionalInfoTab() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        child:   Container(
+          margin: EdgeInsets.symmetric(horizontal: 12.w),
+          decoration: BoxDecoration(
+            color: colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(20.w),
+          ),
+          child: Column(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.h),
+                  child: AppText.body("Additional information"),
+                ),
+              ),
+              SpacedContainer(
+                child: Column(
+                  children: [
+                    SpacedContainer(  
+                      child: UpdateUserDetailsField(
+                        labelText: 'PEP',
+                        fieldController: _controller.pepController,
+                        onChanged: (value) {}, fieldName: '',
+                      ),
+                    ),
+                    SpacedContainer(  
+                      child: UpdateUserDetailsField(
+                        labelText: 'Nearest Landmark',
+                        fieldController: _controller.nearestLandMarkController,
+                        onChanged: (value) {}, fieldName: '',
+                      ),
+                    ),
+                    SpacedContainer(
+                      child: UpdateUserDetailsField(
+                        labelText: 'Place of Birth',
+                        fieldController: _controller.placeOfBirthController,
+                        onChanged: (value) {}, fieldName: '',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDocumentsTab() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding:  EdgeInsets.symmetric(vertical: 16.0.h),
+        child:   Container(
+          margin: EdgeInsets.symmetric(horizontal: 12.w),
+          decoration: BoxDecoration(
+            color: colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(20.w),
+          ),
+          child: Column(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.h),
+                  child: AppText.body("Documents"),
+                ),
+              ),
+              SpacedContainer(
+                child: Column(
+                  children: [
+                    SpacedContainer(
+                      child: PhotoPicker(
+                        hintText: "User Photo",
+                        labelText: "User Photo",
+                        prefixIcon: const Icon(Icons.photo),
+                        context: context,
+                        onChange: (value) {
+                          print(value);
+                        },
+                        controller: _controller.userPhotoController,
+                      ),
+                    ),
+                    SpacedContainer(
+                      child: PhotoPicker(  
+                        hintText: "ID Card Front",
+                        labelText: "ID Card Front",
+                        prefixIcon: const Icon(Icons.credit_card),
+                        context: context,
+                        onChange: (value) {
+                          print(value);
+                        },
+                        controller: _controller.idCardFrontController,
+                      ),
+                    ),
+                    SpacedContainer(
+                      child: PhotoPicker(  
+                        hintText: "ID Card Back",
+                        labelText: "ID Card Back",
+                        prefixIcon: const Icon(Icons.credit_card),
+                        context: context,
+                        onChange: (value) {
+                          print(value);
+                        },
+                        controller: _controller.idCardBackController,
+                      ),
+                    ),
+                    SpacedContainer(
+                      child: PhotoPicker(  
+                        hintText: "Customer Signature",
+                        labelText: "Customer Signature",
+                        prefixIcon: const Icon(Icons.draw),
+                        context: context,
+                        onChange: (value) {
+                          print(value);
+                        },
+                        controller: _controller.customerSignatureController,
+                      ),
+                    ),
+                    SpacedContainer(
+                      child: PhotoPicker(  
+                        hintText: "Utility Bill",
+                        labelText: "Utility Bill",
+                        prefixIcon: const Icon(Icons.receipt),
+                        context: context,
+                        onChange: (value) {
+                          print(value);
+                        },
+                        controller: _controller.utilityBillController,
+                      ),
+                    ),
+                    SpacedContainer(
+                      child: PhotoPicker(
+                        hintText: "Proof of Address",
+                        labelText: "Proof of Address",
+                        prefixIcon: const Icon(Icons.home),
+                        context: context,
+                        onChange: (value) {
+                          print(value);
+                        },
+                        controller: _controller.proofOfAddressController,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  }
+
 
 class DatePickerTextField extends StatefulWidget {
   BuildContext context;
   Function(String?) onChange;
   TextEditingController dateController;
   String? Function(String?)? validator;
+  String?  labelText;
   DatePickerTextField({
     super.key,
     required this.context,
     required this.onChange,
     required this.dateController,
     this.validator,
+    this.labelText,
   });
 
   @override
@@ -417,7 +508,7 @@ class _DatePickerTextFieldState extends State<DatePickerTextField> {
   Widget build(BuildContext context) {
     return CustomTextField(
     controller: widget.dateController,
-      labelText: 'Date of birth',
+      labelText: widget.labelText,
       prefixIcon: Icon(Icons.calendar_today),
       suffixIcon: Icon(Icons.arrow_drop_down),
       hintText: _selectedDate != null ? _selectedDate.toString() : 'YYYY-MM-DD',

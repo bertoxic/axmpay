@@ -87,7 +87,7 @@ class ApiService {
         endpoint,
         options: await _getOptions(token,"GET"),
       );
-      _handleResponse(response);
+      handleResponse(response);
       return response;
     } on DioException catch (e) {
       if(context.mounted){
@@ -114,69 +114,36 @@ class ApiService {
     }
   }
 
-  Future<Response> post( BuildContext context, String endpoint, Map<String, dynamic> data, String? token) async {
-   var dat = jsonEncode(data);
+  Future<Response> post(BuildContext context, String endpoint, Map<String, dynamic> data, String? token) async {
     try {
+      final options = await _getOptions(token, "POST");
       final response = await _dio.post(
         endpoint,
-        data: dat,
-      //  options: _getOptions(token),
-        options: await _getOptions(token,"POST"),
+        data: jsonEncode(data),
+        options: options,
       );
-      if (response.statusCode == 200){
-        // Extract session cookie
-        List<String>? cookies = response.headers['set-cookie'];
-        if (cookies != null && cookies.isNotEmpty) {
-          for (String cookie in cookies) {
-            if (cookie.contains('PHPSESSID')) {
-              int index = cookie.indexOf(';');
-              sessionCookie = (index == -1) ? cookie : cookie.substring(0, index);
-              await SharedPreferencesUtil.saveString("sessionCookie", sessionCookie);
-              break;
-            }
-          }
-        }
-      }
 
-      _handleResponse(response);
+      await _handleSessionCookie(response);
       return response;
     } on DioException catch (e) {
-      if (e is DioException) {
-        if (e.type == DioExceptionType.connectionError) {
-          handleGlobalError(context, e);
-          //rethrow;
-        }else if (e.type == DioExceptionType.connectionTimeout) {
-          handleGlobalError(context, e);
-          //rethrow;
-         }else if (e.type == DioExceptionType.badResponse) {
-          print("gggggggggggggggggggggggggggggggggggggggggggggggg");
-          handleGlobalError(context, e);
-          //rethrow;
-        }else if (e.type == DioExceptionType.unknown) {
-          handleGlobalError(context, e);
-          //rethrow;
-        }else{
-          handleGlobalError(context, e);}
-        // rethrow;
-      }
+      _handleDioException(context, e);
+      rethrow;
+    } catch (e) {
       handleGlobalError(context, e);
       rethrow;
-      //throw _handleError(e);
     }
   }
 
   Future<Options> _getOptions(String? token, String method) async {
-    String? prefsSessionCookie = await SharedPreferencesUtil.getString("sessionCookie");
-    print("Token being sent: $token");
-    print("sessionid being sent: $prefsSessionCookie");
+    String? sessionCookie = await SharedPreferencesUtil.getString("sessionCookie");
 
     Map<String, String> headers = {
       HttpHeaders.authorizationHeader: 'Bearer $token',
       'Content-Type': 'application/json',
     };
 
-    if (prefsSessionCookie != null && prefsSessionCookie.isNotEmpty) {
-      headers['Cookie'] = prefsSessionCookie??"";
+    if (sessionCookie != null && sessionCookie.isNotEmpty) {
+      headers['Cookie'] = sessionCookie;
     }
 
     return Options(
@@ -186,20 +153,55 @@ class ApiService {
     );
   }
 
-  Future<void> _handleResponse(Response response) async {
-    if (response.statusCode != 200) {
-      if (response.statusCode == 400) {
-        var  jsondata = jsonDecode(response.data);
-        throw BadRequestException('Bad request ohh: ');
-      }else if (response.statusCode == 401) {
-       var prefs = await SharedPreferencesUtil.getInstance();
-       prefs.remove("auth_token");
-       prefs.remove("sessionCookie");
-        throw TokenExpiredException();
+  Future<void> _handleSessionCookie(Response response) async {
+    if (response.statusCode == 200) {
+      List<String>? cookies = response.headers['set-cookie'];
+      if (cookies != null && cookies.isNotEmpty) {
+        for (String cookie in cookies) {
+          if (cookie.contains('PHPSESSID')) {
+            int index = cookie.indexOf(';');
+            String sessionCookie = (index == -1) ? cookie : cookie.substring(0, index);
+            await SharedPreferencesUtil.saveString("sessionCookie", sessionCookie);
+            break;
+          }
+        }
       }
-
     }
   }
+
+  void _handleDioException(BuildContext context, DioException e) {
+    switch (e.type) {
+      case DioExceptionType.badResponse:
+        if (e.response?.statusCode == 401) {
+          handleGlobalError(context, TokenExpiredException(message: 'Your session has expired. Please log in again.'));
+        } else {
+          handleGlobalError(context, e);
+        }
+        break;
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.connectionError:
+      case DioExceptionType.unknown:
+        handleGlobalError(context, e);
+        break;
+      default:
+        handleGlobalError(context, e);
+    }
+  }
+
+  void handleResponse(Response response) {
+    if (response.statusCode != 200) {
+      if (response.statusCode == 400) {
+        throw BadRequestException('Bad request: ${response.data}');
+      } else if (response.statusCode == 401) {
+        SharedPreferencesUtil.getInstance().then((prefs) {
+          prefs.remove("authToken");
+          prefs.remove("sessionCookie");
+        });
+        throw TokenExpiredException();
+      }
+    }
+  }
+}
 
   Exception _handleError(DioException e) {
     if (e.type == DioExceptionType.connectionTimeout ||
@@ -211,7 +213,7 @@ class ApiService {
       return Exception('An error occurred: ${e.message}');
     }
   }
-}
+
 
 bool _isShowingErrorDialog = false;
 

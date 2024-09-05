@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:fintech_app/ui/screens/Mobile_top_up/top_up_screen_contoller.dart';
 import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:fintech_app/ui/widgets/svg_maker/svg_icon.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +29,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
   String? phoneNumberValue = "";
   TopUpPayload? topUpPayload;
   DataBundle? dataBundle;
+  late TopUpController _topUpController;
   late TextEditingController phoneController;
   late TextEditingController amountController;
   late TextEditingController serviceProviderController;
@@ -37,12 +40,14 @@ class _MobileTopUpState extends State<MobileTopUp> {
   bool isData = false;
 
   String? serviceProviderNetwork;
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();
     phoneController = TextEditingController();
     amountController = TextEditingController();
     serviceProviderController = TextEditingController();
+    _topUpController = TopUpController();
     // phoneController.addListener(checkPhoneNumber);
     userProvider = Provider.of<UserServiceProvider>(context, listen: false);
   }
@@ -53,10 +58,10 @@ class _MobileTopUpState extends State<MobileTopUp> {
       child: SizedBox(
         height: height,
         child: Scaffold(
-          appBar: AppBar(title: Text("MobileTopUp"),),
+          appBar: AppBar(title: const Text("MobileTopUp"),),
           body:  Container(
             padding: EdgeInsets.all(2.w),
-            margin: EdgeInsets.all(8.w),
+            margin: EdgeInsets.all(8.w).copyWith(top: 30.h),
             decoration: const BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(8)),
               color: Colors.white,
@@ -156,9 +161,19 @@ class _MobileTopUpState extends State<MobileTopUp> {
                                       "an error occured while verifying number";
                                   return Text(errorMessage);
                                 } else if (snapshot.hasData) {
-                                  serviceProviderNetwork = snapshot.data;
 
-                                  return Text(snapshot.data!);
+                                  serviceProviderNetwork = snapshot.data;
+                                  return SizedBox(  //height: 50,
+                                    child: Row( mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox( height: 50, width: 50,
+                                       //     child: SvgIcon("assets/images/${serviceProviderNetwork?.toLowerCase()}_logo.svg")),
+                                      child:  _topUpController.getServiceProviderLogo(serviceProviderNetwork??""),),
+                                       // SizedBox(width: 10.w,),
+                                        //Text(snapshot.data!.toLowerCase()),
+                                      ],
+                                    ),
+                                  );
                                 } else {
                                   return const SizedBox();
                                 }
@@ -244,7 +259,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: CustomDropdown<String>(
-                      items: const ['airtime', 'data', 'recharge'],
+                      items: const ['airtime', 'data',],
                       initialValue: "airtime",
                       onChanged: (newValue) {
                         if (newValue == 'data') {

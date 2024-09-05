@@ -38,6 +38,7 @@ dependencies:
   intl: ^0.17.0
   image_picker: ^1.0.8
   sqflite:
+  flutter_svg: ^2.0.5
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -62,6 +63,9 @@ dev_dependencies:
 flutter:
   assets:
     - .env
+    - assets/
+    - assets/images/
+    - assets/images/airtel_logo.svg
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

@@ -8,10 +8,12 @@ import 'package:flutter/cupertino.dart';
 
 class UpgradeAccountProvider extends ChangeNotifier {
 UserServiceProvider userProvider = UserServiceProvider();
+//UserServiceProvider userProvider = Provider.of<UserServiceProvider>(context,listen: false);
+
   DateTime? selectedDate;
   UserDetails? userDetails;
   UserData? preRegistrationDetails;
-  WalletPayload? walletPayload;
+  UpgradeWalletPayload? walletPayload;
   updateSelectedDate (DateTime pickedDate){
     selectedDate = pickedDate;
     notifyListeners();

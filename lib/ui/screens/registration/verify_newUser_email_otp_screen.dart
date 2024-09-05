@@ -1,4 +1,5 @@
 import 'package:fintech_app/main.dart';
+import 'package:fintech_app/models/ResponseModel.dart';
 import 'package:fintech_app/models/user_model.dart';
 import 'package:fintech_app/providers/user_service_provider.dart';
 import 'package:fintech_app/ui/widgets/custom_buttons.dart';
@@ -15,7 +16,8 @@ import '../../widgets/custom_textfield.dart';
 
 class NewUserOTPVerificationScreen extends StatefulWidget {
   final PreRegisterDetails preRegisterDetails;
-  const NewUserOTPVerificationScreen({super.key, required this.preRegisterDetails});
+  const NewUserOTPVerificationScreen({Key? key, required this.preRegisterDetails}) : super(key: key);
+
   @override
   _NewUserOTPVerificationScreenState createState() => _NewUserOTPVerificationScreenState();
 }
@@ -25,8 +27,10 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   final _inputOTPFormKey = GlobalKey<FormState>();
   String? otp;
+  bool _isLoading = false;
+
   @override
-  void dispose(){
+  void dispose() {
     for (var controller in _controllers) {
       controller.dispose();
     }
@@ -44,7 +48,6 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
         setState(() {
           otp = _controllers.map((c) => c.text).join();
         });
-        print('otp entered: $otp');
       }
     }
   }
@@ -54,113 +57,127 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
     final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
 
     return Scaffold(
-      body: Column(
-        children: [
-          Container(
-            height: 500.h,
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0.w, vertical: 16.h),
-            child: Form(
-              key: _inputOTPFormKey,
-              child: Container(
-                width: 400.w,
-                height: 240.h,
-                decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.4),
-                    borderRadius:  const BorderRadius.all(Radius.circular(20))
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(height: 40.h),
+                Icon(Icons.lock_outline, size: 80.h, color: colorScheme.primary),
+                SizedBox(height: 24.h),
+                AppText.title(
+                  "OTP Verification",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 28.sp, fontWeight: FontWeight.bold),
                 ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          AppText.title("Enter Otp code"),
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                children: [
-                                  AppText.body("Please input code sent to your email:"),
-                                  AppText.body(widget.preRegisterDetails.email,color: colorScheme.onBackground,),
-                                ],
-                              ),
+                SizedBox(height: 16.h),
+                AppText.body(
+                  "Please enter the 6-digit code sent to:",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16.sp, color: colorScheme.onSurface.withOpacity(0.7)),
+                ),
+                SizedBox(height: 8.h),
+                AppText.body(
+                  widget.preRegisterDetails.email,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: colorScheme.primary),
+                ),
+                SizedBox(height: 32.h),
+                Form(
+                  key: _inputOTPFormKey,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(
+                      6,
+                          (index) => SizedBox(
+                        width: 50.w,
+                        child: CustomTextField(
+                          validator: (value) => FormValidator.validate(value, ValidatorType.digits, fieldName: "Digit ${index + 1}"),
+                          controller: _controllers[index],
+                          focusNode: _focusNodes[index],
+                          textAlign: TextAlign.center,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(1),
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: colorScheme.primary),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: colorScheme.primary, width: 2),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        6,
-                            (index) => Container(
-                          width: 50,
-                          margin: const EdgeInsets.symmetric(horizontal: 5),
-                          child: CustomTextField(
-                            validator: (value)=>FormValidator.validate(value, ValidatorType.digits,fieldName: "$index"),
-                            controller: _controllers[index],
-                            focusNode: _focusNodes[index],
-                            textAlign: TextAlign.center,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              LengthLimitingTextInputFormatter(1),
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                            ),
-                            onChanged: (_) => _onChanged(index), fieldName: '$index',
-                          ),
+                          onChanged: (_) => _onChanged(index),
+                          fieldName: 'Digit ${index + 1}',
                         ),
                       ),
                     ),
-                    SizedBox(height: 30.h,),
-                    CustomButton(size: ButtonSize.large,
-                      text: "confirm",
-                      onPressed: ()async{
-
-                        if (!mounted) return;
-                        String? status;
-                        try{
-                          status = await userProvider.emailVerification(context,otp!);
-                          if(status.toString() =="failed"){
-                            if (!mounted) return;
-                            await CustomPopup.show(backgroundColor:colorScheme.onBackground,type: PopupType.error ,title: "Check your email", message: "Inputted otp might be wrong", context: context);
-                          }else
-                          if (_inputOTPFormKey.currentState!.validate()) {
-                            if (!mounted) return;
-                            // context.pushNamed("/user_details_page",
-                            //     pathParameters: {"email":widget.preRegisterDetails.email, "otp":otp!}
-                            // );
-
-                          }("/user_details_page");
-
-                        }catch(e) {
-                          if (!mounted) return;
-                        }
-                        if (_inputOTPFormKey.currentState!.validate()) {
-                          if (!mounted) return;
-                          // context.pushNamed("/user_details_page",
-                          //    pathParameters: {"email":widget.preRegisterDetails.email, "otp":otp!}
-                          // );
-                        }
-
-                        if (otp!=null) {
-                          if (otp?.length != 6){
-                          }
-                        }
-                        context.pushNamed("/login");
-                      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ,)
-                  ],
+                  ),
                 ),
-              ),
+                SizedBox(height: 32.h),
+                _isLoading
+                    ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
+                    : CustomButton(
+                  size: ButtonSize.large,
+                  text: "Verify OTP",
+                  onPressed: _verifyOTP,
+                ),
+                SizedBox(height: 24.h),
+                TextButton(
+                  onPressed: () {
+                    // TODO: Implement resend OTP functionality
+                  },
+                  child: Text(
+                    "Didn't receive the code? Resend",
+                    style: TextStyle(color: colorScheme.primary, fontSize: 16.sp),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
+  }
+
+  Future<void> _verifyOTP() async {
+    if (!_inputOTPFormKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
+      final resp = await userProvider.emailVerification(context, otp!);
+
+      if (!mounted) return;
+
+      if (resp.status.toString() == "failed") {
+        await CustomPopup.show(
+          backgroundColor: colorScheme.onPrimary,
+          type: PopupType.error,
+          title: "Verification Failed",
+          message: "${resp.message}.",
+          context: context,
+        );
+      } else {
+        context.pushNamed("/login", pathParameters: {"email": widget.preRegisterDetails.email, "otp": otp!});
+      }
+    } catch (e) {
+      await CustomPopup.show(
+        backgroundColor: colorScheme.onPrimary,
+        type: PopupType.error,
+        title: "Error",
+        message: "An unexpected error occurred. Please try again later.",
+        context: context,
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 }
