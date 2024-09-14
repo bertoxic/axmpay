@@ -1,4 +1,4 @@
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
 
 import 'global_error_handler.dart';

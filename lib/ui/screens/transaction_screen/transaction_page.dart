@@ -1,22 +1,26 @@
 
-import 'package:fintech_app/constants/app_colors.dart';
-import 'package:fintech_app/main.dart';
-import 'package:fintech_app/models/recepients_model.dart';
-import 'package:fintech_app/providers/user_service_provider.dart';
-import 'package:fintech_app/ui/widgets/custom_buttons.dart';
-import 'package:fintech_app/ui/widgets/custom_container.dart';
-import 'package:fintech_app/ui/widgets/custom_pop_up.dart';
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
-import 'package:fintech_app/ui/widgets/custom_textfield.dart';
-import 'package:fintech_app/utils/form_validator.dart';
+import 'package:AXMPAY/constants/app_colors.dart';
+import 'package:AXMPAY/main.dart';
+import 'package:AXMPAY/models/ResponseModel.dart';
+import 'package:AXMPAY/models/recepients_model.dart';
+import 'package:AXMPAY/providers/user_service_provider.dart';
+import 'package:AXMPAY/ui/screens/passcode_screen/passcode_screen.dart';
+import 'package:AXMPAY/ui/screens/transaction_screen/transaction_receipt.dart';
+import 'package:AXMPAY/ui/widgets/custom_buttons.dart';
+import 'package:AXMPAY/ui/widgets/custom_container.dart';
+import 'package:AXMPAY/ui/widgets/custom_pop_up.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
+import 'package:AXMPAY/ui/widgets/custom_textfield.dart';
+import 'package:AXMPAY/utils/form_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../models/transaction_model.dart';
-import '../../models/user_model.dart';
-import '../../utils/color_generator.dart';
-import '../widgets/custom_dialog.dart';
-import '../widgets/transaction_butttom_sheet.dart';
+import '../../../models/transaction_model.dart';
+import '../../../models/user_model.dart';
+import '../../../utils/color_generator.dart';
+import '../../widgets/custom_dialog.dart';
+import '../../widgets/transaction_butttom_sheet.dart';
 
 class TransferScreen extends StatefulWidget {
   const TransferScreen({super.key});
@@ -43,6 +47,7 @@ class _TransferScreenState extends State<TransferScreen> {
   String? _transactionRemark;
   UserData? userData;
   AccountRequestDetails accountRequestDetails = AccountRequestDetails();
+
   Future<RecipientDetails?>? _recipientDetailsFuture;
   @override
   void initState() {
@@ -133,29 +138,7 @@ class _TransferScreenState extends State<TransferScreen> {
               children: [
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 12.0.sp),
-                  child: Row(
-                    children: [
-                      Padding(
-                          padding: EdgeInsets.all(8.sp),
-                          child: CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.grey.shade300,
-                            child: const Icon(Icons.person),
-                          )),
-                      Consumer<UserServiceProvider>(
-                          builder: (context, userServiceProvider, child) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AppText.caption(
-                                "${userServiceProvider.userdata?.lastname}"),
-                            AppText.body(
-                                "${userServiceProvider.userdata?.accountNumber}")
-                          ],
-                        );
-                      })
-                    ],
-                  ),
+                  child: _buildUserInfo(userp),
                 ),
                 SpacedContainer(
                     //height: double.maxFinite,
@@ -286,7 +269,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
                                           color: Colors.grey.shade200,
-                                          width: 2)),
+                                          width: 2.w)),
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -308,9 +291,11 @@ class _TransferScreenState extends State<TransferScreen> {
                                           ],
                                         ),
                                       ),
-                                      const Icon(
-                                        Icons.arrow_drop_down,
-                                        color: Colors.grey,
+                                      const Expanded(
+                                        child:  Icon(
+                                          Icons.arrow_drop_down,
+                                          color: Colors.grey,
+                                        ),
                                       )
                                     ],
                                   ),
@@ -387,10 +372,10 @@ class _TransferScreenState extends State<TransferScreen> {
                                                               'Exception: ',
                                                               '');
                                                     }
-                                                    return Center(
+                                                    return  Center(
                                                         child: Text(
-                                                      ' $errorMessage',
-                                                      style: const TextStyle(
+                                                      'an error occured ',
+                                                      style: TextStyle(
                                                           color: Colors.red),
                                                     ));
                                                   } else {
@@ -518,13 +503,27 @@ class _TransferScreenState extends State<TransferScreen> {
                           senderAccountName: userp.userdata?.firstname,
                           narration: _transactionRemark!);
 
-                      _showBottomSheet(context, transactionModel,(){
-                        userp.makeBankTransfer(context, transactionModel);
-                        print("user sent the money now");
-                      });
+                      _showBottomSheet(context, transactionModel,
+                      //         ()async{
+                      //   ResponseResult? resp;
+                      //  resp = await userp.makeBankTransfer(context, transactionModel);
+                      //  if(resp?.status == ResponseStatus.failed){
+                      //    if(!mounted) return;
+                      //    CustomPopup.show(
+                      //        context: context,
+                      //        title: resp?.status.toString()??"error",message:
+                      //    "${resp?.message}");
+                      //  }else if(resp?.status==ResponseStatus.success){
+                      //   if(!mounted) return;
+                      //   CustomPopup.show(
+                      //       context: context, title: resp?.status.toString()??"success",
+                      //       message: "${resp?.message}");
+                      // }
+                      // }
+                       );
                     }else{
                       CustomPopup.show(context: context, title: 'incomplete details',message: "please confirm your details are complete");
-                      print("receipient is not valid");
+                      print("recipient is not valid");
                     }
                   },
                 )
@@ -555,7 +554,79 @@ Widget _buildAccountDetails(int accountNumber, String accountName) {
 
 }
 
-void _showBottomSheet(BuildContext context, TransactionModel transactionModel, Function()?onTap) {
+Widget _buildUserInfo(UserServiceProvider userp) {
+  return Container(
+    padding: EdgeInsets.all(16.sp),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: <Color>[
+            colorScheme.primary,
+            colorScheme.primary,
+            const Color(0xB25C4DE5),
+            //const Color(0xB20C93AB),
+            // Color(0xB643C036),
+            // const Color(0xFF5EE862),
+          ]),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.1),
+          spreadRadius: 1,
+          blurRadius: 5,
+          offset: const Offset(0, 3),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        CircleAvatar(
+          radius: 24,
+          backgroundColor: Colors.grey.shade200,
+          child: const Icon(Icons.person, color: Colors.grey),
+        ),
+        SizedBox(width: 16.w),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppText.subtitle("${userp.userdata?.lastname}",color: colorScheme.onPrimary,),
+            SizedBox(height: 4.h),
+            AppText.caption("${userp.userdata?.accountNumber}",color: Colors.grey.shade300,),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+// void _showBottomSheet(BuildContext context, TransactionModel transactionModel, Function()?onTap) {
+//   showModalBottomSheet(
+//     context: context,
+//     isScrollControlled: true,
+//     shape: const RoundedRectangleBorder(
+//       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+//     ),
+//     builder: (context) => DraggableScrollableSheet(
+//       initialChildSize: 0.6,
+//       minChildSize: 0.1,
+//       maxChildSize: 0.65,
+//       expand: false,
+//       builder: (_, controller) {
+//         return BottomTransactionConfirmSheetContent(
+//           onTap: onTap,
+//           controller: controller,
+//           transactionModel: transactionModel, // corrected here
+//         );
+//       },
+//     ),
+//   );
+// }
+
+
+void _showBottomSheet(BuildContext context, TransactionModel transactionModel) {
+  UserServiceProvider userp = Provider.of<UserServiceProvider>(context,listen: false);
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -569,15 +640,68 @@ void _showBottomSheet(BuildContext context, TransactionModel transactionModel, F
       expand: false,
       builder: (_, controller) {
         return BottomTransactionConfirmSheetContent(
-          onTap: onTap,
+          onTap: () async {
+            bool correctPass = await showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return Dialog(
+                  child:ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.6,
+                      maxWidth: MediaQuery.of(context).size.width * 0.9,
+                    ),
+                    child: const PasscodeInputScreen(),
+                  ),
+                );
+              },
+            );
+            if(correctPass){
+            ResponseResult? resp;
+            resp = await userp.makeBankTransfer(context, transactionModel);
+
+            if (!context.mounted) return;
+
+            if (resp?.status == ResponseStatus.failed) {
+              CustomPopup.show(
+                context: context,
+                title: resp?.status.toString() ?? "error",
+                message: "${resp?.message}",
+              );
+            } else if (resp?.status == ResponseStatus.success) {
+              if(!context.mounted) return;
+              // CustomPopup.show(
+              //   context: context,
+              //   title: resp?.status.toString() ?? "success",
+              //   message: "${resp?.message}",
+              // );
+              ReceiptData? receiptData = ReceiptData.fromJson(resp!.data!);
+              showDialog(context: context, builder: (BuildContext context){
+                return  ConstrainedBox(
+                  constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.6,
+                   maxWidth: MediaQuery.of(context).size.width * 0.9,
+                                ),
+                  child: ReceiptPopup(
+                receiptData: receiptData,
+                )
+                );
+              });
+            }
+          }else{
+              if(!context.mounted) return;
+              CustomPopup.show(
+                context: context,
+                title: "Incorrect Passcode",
+                message: "please ensure you put a correct passcode",
+              );
+            }
+          },
           controller: controller,
-          transactionModel: transactionModel, // corrected here
+          transactionModel: transactionModel,
         );
       },
     ),
   );
 }
-
-
 
 

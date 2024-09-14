@@ -1,8 +1,8 @@
 
 
 
-import 'package:fintech_app/database/database.dart';
-import 'package:fintech_app/models/user_model.dart';
+import 'package:AXMPAY/database/database.dart';
+import 'package:AXMPAY/models/user_model.dart';
 
 class UserRepository {
 

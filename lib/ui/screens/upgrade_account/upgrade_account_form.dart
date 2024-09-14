@@ -1,10 +1,11 @@
-import 'package:fintech_app/providers/user_service_provider.dart';
-import 'package:fintech_app/ui/screens/upgrade_account/upgrade_user_details_field.dart';
-import 'package:fintech_app/ui/screens/upgrade_account/upgrade_account_controller.dart';
-import 'package:fintech_app/ui/widgets/custom_buttons.dart';
-import 'package:fintech_app/ui/widgets/custom_dialog.dart';
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/ui/widgets/file_picker/photo_picker.dart';
+import 'package:AXMPAY/models/ResponseModel.dart';
+import 'package:AXMPAY/providers/user_service_provider.dart';
+import 'package:AXMPAY/ui/screens/upgrade_account/upgrade_user_details_field.dart';
+import 'package:AXMPAY/ui/screens/upgrade_account/upgrade_account_controller.dart';
+import 'package:AXMPAY/ui/widgets/custom_buttons.dart';
+import 'package:AXMPAY/ui/widgets/custom_dialog.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:AXMPAY/ui/widgets/file_picker/photo_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -87,9 +88,15 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
         padding: const EdgeInsets.all(8.0),
         child: ElevatedButton(
           child: Text('Submit'),
-          onPressed: () {
+          onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              // Process data
+               _controller.createUserWalletPayload();
+               ResponseResult? responseResult = await _controller.upgradeUserWalletInServer();
+              if(responseResult?.status!= ResponseStatus.success){
+                CustomPopup.show(context: context,
+                    title: responseResult?.status.toString()??"",
+                    message: responseResult?.message??"");
+              }
             }
           },
         ),

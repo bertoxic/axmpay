@@ -1,10 +1,10 @@
-import 'package:fintech_app/main.dart';
-import 'package:fintech_app/ui/widgets/custom_buttons.dart';
-import 'package:fintech_app/ui/widgets/custom_dialog.dart';
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
-import 'package:fintech_app/ui/widgets/custom_textfield.dart';
-import 'package:fintech_app/utils/form_validator.dart';
+import 'package:AXMPAY/main.dart';
+import 'package:AXMPAY/ui/widgets/custom_buttons.dart';
+import 'package:AXMPAY/ui/widgets/custom_dialog.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
+import 'package:AXMPAY/ui/widgets/custom_textfield.dart';
+import 'package:AXMPAY/utils/form_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';

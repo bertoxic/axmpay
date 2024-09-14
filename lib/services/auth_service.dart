@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:fintech_app/providers/user_service_provider.dart';
+import 'package:AXMPAY/providers/user_service_provider.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../models/user_model.dart';

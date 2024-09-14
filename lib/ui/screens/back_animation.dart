@@ -1,4 +1,4 @@
-import 'package:fintech_app/main.dart';
+import 'package:AXMPAY/main.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 

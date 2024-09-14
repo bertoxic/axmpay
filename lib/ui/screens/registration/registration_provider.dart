@@ -1,9 +1,9 @@
 
 
 
-import 'package:fintech_app/models/transaction_model.dart';
-import 'package:fintech_app/models/user_model.dart';
-import 'package:fintech_app/providers/user_service_provider.dart';
+import 'package:AXMPAY/models/transaction_model.dart';
+import 'package:AXMPAY/models/user_model.dart';
+import 'package:AXMPAY/providers/user_service_provider.dart';
 import 'package:flutter/cupertino.dart';
 
 class RegistrationProvider extends ChangeNotifier {

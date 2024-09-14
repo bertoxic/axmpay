@@ -1,11 +1,11 @@
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/transaction_model.dart';
-import '../../providers/user_service_provider.dart';
+import '../../../models/transaction_model.dart';
+import '../../../providers/user_service_provider.dart';
 
 class TransactionHistoryPage extends StatelessWidget {
   const TransactionHistoryPage({super.key});

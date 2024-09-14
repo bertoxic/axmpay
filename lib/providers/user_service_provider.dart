@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:AXMPAY/models/other_models.dart';
 import 'package:dio/dio.dart';
-import 'package:fintech_app/database/user_repository.dart';
-import 'package:fintech_app/models/ResponseModel.dart';
-import 'package:fintech_app/services/api_service.dart';
-import 'package:fintech_app/utils/sharedPrefernce.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:AXMPAY/database/user_repository.dart';
+import 'package:AXMPAY/models/ResponseModel.dart';
+import 'package:AXMPAY/services/api_service.dart';
+import 'package:AXMPAY/utils/sharedPrefernce.dart';
+import 'package:flutter/material.dart';
 
 import '../models/recepients_model.dart';
 import '../models/transaction_model.dart';
@@ -19,6 +20,9 @@ class UserServiceProvider extends ChangeNotifier {
   Wallet? wallet;
   BankListResponse? bankListResponse;
   List<TransactionHistoryModel>? transactHistoryList;
+  AxmpayFaqList? axmpayFaqList= AxmpayFaqList(faqs: null);
+  AxmpayTermsList? axmpayTermsList= AxmpayTermsList(data: null);
+  TermSection? termSection;
   ApiService apiService = ApiService();
   UserRepository userRepo = UserRepository();
 
@@ -29,11 +33,6 @@ class UserServiceProvider extends ChangeNotifier {
       String? token = await SharedPreferencesUtil.getString('auth_token');
       Response response =
           await apiService.get(context, "getUserDetails.php", token);
-      //await getWalletDetails();
-      // if (response.statusCode != 200) {
-      //   throw Exception(
-      //       "status code is  : ${response.statusCode}, hence error");
-      // }
       if (response.statusCode == 401) {
         throw TokenExpiredException();
       }
@@ -54,7 +53,6 @@ class UserServiceProvider extends ChangeNotifier {
       print("errorrrx : $e");
       rethrow;
     }
-    notifyListeners();
     return userdata;
   }
 
@@ -111,18 +109,33 @@ class UserServiceProvider extends ChangeNotifier {
     }
   }
 
-  makeBankTransfer(
+  Future<ResponseResult?> makeBankTransfer(
       BuildContext context, TransactionModel transactionModel) async {
     try {
       final data = transactionModel.toJson();
       String? token = await SharedPreferencesUtil.getString("auth_token");
       final response =
           await apiService.post(context, "bankTransfer.php", data, token);
-      if (response.data != null) {
-        var jsonData = jsonDecode(response.data);
+      Map<String, dynamic> jsonData;
+      if (response.data is String) {
+        jsonData = jsonDecode(response.data);
       } else {
-        throw Exception("respose has no data for banktransfer");
+        jsonData = response.data;
       }
+      if (jsonData["status"] == "failed") {
+        return ResponseResult(
+          status: ResponseStatus.failed,
+          message: jsonData["message"] ?? "Verification failed",
+          data: jsonData["data"] as Map<String, dynamic>?,
+        );
+      }
+      getUserDetails(context);
+      notifyListeners();
+      return ResponseResult(
+        status: ResponseStatus.success,
+        message: jsonData["message"] ?? "Verification successful",
+        data: jsonData["data"] as Map<String, dynamic>?,
+      );
     } catch (e) {
       rethrow;
     }
@@ -133,7 +146,7 @@ class UserServiceProvider extends ChangeNotifier {
     try {
       String? token = await SharedPreferencesUtil.getString("auth_token");
       final response =
-          await apiService.get(context, "fetchTransactions.php", token);
+          await apiService.get(context, "fetchTransactions.php?limit=32", token);
       var jsonData = jsonDecode(response.data);
 
       if (jsonData["Data"].toString() == "[]") {
@@ -145,6 +158,55 @@ class UserServiceProvider extends ChangeNotifier {
       transactHistoryList = data;
       notifyListeners();
       return data;
+    } catch (e) {
+      handleGlobalError(context, e);
+      rethrow;
+    }
+  }
+  Future<AxmpayFaqList?> getFAQs(BuildContext context) async {
+    try {
+      String? token = await SharedPreferencesUtil.getString("auth_token");
+      final response =
+          await apiService.get(context, "FAQs.php", token);
+      Map<String, dynamic> jsonData;
+      if (response.data is String) {
+        jsonData = jsonDecode(response.data);
+      } else {
+        jsonData = response.data;
+      }
+      if (jsonData["status"] == "failed") {
+        return null;
+      }
+      AxmpayFaqList data = AxmpayFaqList.fromJson(jsonData["data"]);
+      axmpayFaqList = data;
+      notifyListeners();
+      return data;
+
+    } catch (e) {
+      handleGlobalError(context, e);
+      rethrow;
+    }
+  }
+  Future<AxmpayTermsList?> getTandC(BuildContext context) async {
+    try {
+      String? token = await SharedPreferencesUtil.getString("auth_token");
+      final response =
+          await apiService.get(context, "termsConditions.php", token);
+      Map<String, dynamic> jsonData;
+      if (response.data is String) {
+        jsonData = jsonDecode(response.data);
+      } else {
+        jsonData = response.data;
+      }
+      if (jsonData["status"] == "failed") {
+        return null;
+      }
+
+      AxmpayTermsList data = AxmpayTermsList.fromJson(response.data);
+      axmpayTermsList = data;
+      notifyListeners();
+      return data;
+
     } catch (e) {
       handleGlobalError(context, e);
       rethrow;
@@ -395,21 +457,30 @@ class UserServiceProvider extends ChangeNotifier {
       rethrow;
     }
   }
-  Future<String> upgradeUserWallet(
+  Future<ResponseResult> upgradeUserWallet(
       BuildContext context, UpgradeWalletPayload walletPayload) async {
     try {
       Map<String, dynamic> data = walletPayload.toJson();
       String? token = await SharedPreferencesUtil.getString("auth_token");
       final response =
       await apiService.post(context, "upgradeWallet.php", data, token);
-      if (response.data == null) {
-        throw Exception("no response from the server");
+      Map<String, dynamic> jsonData;
+      if (response.data is String) {
+        jsonData = jsonDecode(response.data);
+      } else {
+        jsonData = response.data;
       }
-      var jsonData = jsonDecode(response.data);
-      // if (jsonData["status"]=="failed") {
-      //   throw Exception(jsonData["message"]);
-      // }
-      return jsonData["status"].toString();
+      if (jsonData["status"] == "failed") {
+        return ResponseResult(
+          status: ResponseStatus.failed,
+          message: jsonData["message"] ?? "Verification failed",
+          data: jsonData["data"] as Map<String, dynamic>?,
+        );
+      }
+      return ResponseResult(
+          status: ResponseStatus.success,
+          message: jsonData["message"] ?? "Verification successful",
+          data: jsonData["data"] as Map<String, dynamic>?,);
     } catch (e) {
       if (!context.mounted) {
         rethrow;
@@ -419,20 +490,30 @@ class UserServiceProvider extends ChangeNotifier {
     }
   }
 
-  Future<String?> getNetworkProvider(
+  Future<ResponseResult?> getNetworkProvider(
       BuildContext context, String phoneNumber) async {
     try {
       String? token = await SharedPreferencesUtil.getString("auth_token");
-      if (!context.mounted) return "";
-      final response = await apiService.get(context,
-          "API-9PSB/VAS/getNetwork.php?phoneNumber=$phoneNumber", token);
-      if (response.statusCode != 200) {
-        throw Exception("no response from the server");
+      if (!context.mounted) return null;
+      final response = await apiService.get(context, "API-9PSB/VAS/getNetwork.php?phoneNumber=$phoneNumber", token);
+      Map<String, dynamic> jsonData;
+      if (response.data is String) {
+        jsonData = jsonDecode(response.data);
+      } else {
+        jsonData = response.data;
       }
-      var jsonDat = jsonEncode(response.data);
-      String jsonData = jsonDecode(jsonDat);
-
-      return jsonData;
+      if (jsonData["status"] == "failed") {
+        return ResponseResult(
+          status: ResponseStatus.failed,
+          message: jsonData["message"] ?? "Verification failed",
+          data: jsonData["data"] as Map<String, dynamic>?,
+        );
+      }
+      return ResponseResult(
+        status: ResponseStatus.success,
+        message: jsonData["message"] ?? "Verification successful",
+        data: jsonData["data"] as Map<String, dynamic>?,
+      );
     } catch (e) {
       if (!context.mounted) {
         rethrow;
@@ -470,22 +551,31 @@ class UserServiceProvider extends ChangeNotifier {
     }
   }
 
-  Future<String> buyAirtime(
+  Future<ResponseResult?> buyAirtime(
       BuildContext context, TopUpPayload topUpPayload) async {
     try {
       String? token = await SharedPreferencesUtil.getString("auth_token");
-      if (!context.mounted) return "";
+      if (!context.mounted) return null;
       final response = await apiService.post(
           context, "buyAirtime.php/phoneNumber", topUpPayload.toJson(), token);
-      if (response.data == null) {
-        throw Exception("no response from the server");
+      Map<String, dynamic> jsonData;
+      if (response.data is String) {
+        jsonData = jsonDecode(response.data);
+      } else {
+        jsonData = response.data;
       }
-      print(response.data);
-      var jsonData = jsonDecode(response.data);
-      // if (jsonData["status"]=="failed") {
-      //   throw Exception(jsonData["message"]);
-      // }
-      return jsonData["status"].toString();
+      if (jsonData["status"] == "failed") {
+        return ResponseResult(
+          status: ResponseStatus.failed,
+          message: jsonData["message"] ?? "Verification failed",
+          data: jsonData["data"] as Map<String, dynamic>?,
+        );
+      }
+      return ResponseResult(
+        status: ResponseStatus.success,
+        message: jsonData["message"] ?? "Verification successful",
+        data: jsonData["data"] as Map<String, dynamic>?,
+      );
     } catch (e) {
       if (!context.mounted) {
         rethrow;

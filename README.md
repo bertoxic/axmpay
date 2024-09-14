@@ -1,4 +1,4 @@
-# fintech_app
+# AXMPAY
 
 A new Flutter project.
 

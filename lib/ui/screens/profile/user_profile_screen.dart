@@ -1,286 +1,197 @@
-  import 'package:fintech_app/main.dart';
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
+import 'package:AXMPAY/main.dart';
+import 'package:AXMPAY/models/user_model.dart';
+import 'package:AXMPAY/providers/user_service_provider.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
-class UserProfileScreen extends StatelessWidget {
-    const UserProfileScreen({super.key});
+class UserProfileScreen extends StatefulWidget {
 
-    @override
-    Widget build(BuildContext context) {
-      double width =  MediaQuery.sizeOf(context).width;
-      double height =  MediaQuery.sizeOf(context).height;
-      return  SizedBox(
-        height: height,
-        width: width,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: SizedBox(
-            height: height,
-            width: width,
-            child: Container(
-              color: colorScheme.onPrimary,
-              child: Stack(
-               fit: StackFit.expand,
-                children: [
-                  Positioned(
-                    top: 0,  width: width,
-                    child: Container(
-                      height: 250.h,
-                      width: 500,
-                      decoration: BoxDecoration(
-                          color: colorScheme.primary,
-                          borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(28), bottomRight: Radius.circular(28))
-                      ),
-                      child: const Text("obey"),
-                    ),
-                  ),
-                  Positioned(
-                    top: 50.h, left: 20.w,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+   UserProfileScreen({Key? key}) : super(key: key);
+
+  @override
+  State<UserProfileScreen> createState() => _UserProfileScreenState();
+}
+
+class _UserProfileScreenState extends State<UserProfileScreen> {
+  late UserServiceProvider userService ;
+  @override
+  void initState() {
+    // TODO: implement initState
+    WidgetsFlutterBinding.ensureInitialized();
+    userService = Provider.of<UserServiceProvider>(context, listen: false);
+    super.initState();
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildHeader(context,userService.userdata),
+            _buildAccountInfo(context,userService.userdata),
+            _buildProfileOptions(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, UserData? userData) {
+    return Container(
+      height: 250.h,
+      decoration: BoxDecoration(
+        color: colorScheme.primary,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28.sp),
+          bottomRight: Radius.circular(28.sp),
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(20.w),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 50.sp,
+                backgroundColor: Colors.grey.shade200,
+                child: Icon(Icons.person, size: 50.sp, color: colorScheme.primary),
+              ),
+              SizedBox(width: 20.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText.title("${userData?.firstname} ${userData?.lastname}", color: colorScheme.onPrimary),
+                    SizedBox(height: 4.h),
+                    AppText.body("${userData?.email}", color: colorScheme.onPrimary),
+                    SizedBox(height: 4.h),
+                    AppText.body("${userData?.phone}", color: colorScheme.onPrimary),
+                    SizedBox(height: 8.h),
+                    Row(
                       children: [
-                        Container(
-                          height: 100.h,
-                          width: 100.w,
-                          decoration: BoxDecoration(
-                          color: Colors.grey.shade50,
-                          borderRadius: const BorderRadius.all(Radius.circular(12))),
-                          child: const Text('TOM june'),
-                        ),
-                        SizedBox(width: 20.w,),
-                         Column(
-                           crossAxisAlignment: CrossAxisAlignment.start,
-                           children: [
-                             Container(
-                               child: Column(
-                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                 children: [
-                                   AppText.title("Jude Bakerly",color: colorScheme.onPrimary,),
-                                   AppText.body("JudeBakerly@gmail.com",color: colorScheme.onPrimary,),
-                                   AppText.body("phone: +345 784 9847",color: colorScheme.onPrimary,),
-                                 ],
-                               ),
-                             ),
-                             SizedBox(height: 20.h,),
-                             Row(
-                               children: [
-                                 AppText.body("status: verified",color: Colors.grey.shade300,),
-                                 const Icon(Icons.verified, color: Colors.green,)
-                               ],
-                             ),
-                           ],
-                         ),
+                        AppText.body("${userData?.status}", color: Colors.grey.shade300),
+                        SizedBox(width: 4.w),
+                        Icon(Icons.verified, color: Colors.green, size: 18.sp)
                       ],
                     ),
-                  ),
-                  Positioned(
-                    top: 220.h,
-                    left: 20.w, width:(width-40.h),
-                    child: Container(
-                      height: 100.h,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 5,spreadRadius: 0.4,offset: Offset(3,2))
-                        ]
-                      ),
-                      child:   Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text("AccountNumber: 0098345763"),
-                                AppText.caption("BVN: 22034576831"),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 340.h,
-                    left: 10.w, width:(width-20.h),
-                    child: Container(
-                      height: 500.h,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(12)
-                      ),
-                      child:   Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            GestureDetector(
-                              onTap: (){
-                                context.pushNamed("upgrade_account_page");
-                              },
-                              child:      Container(
-                                padding:  EdgeInsets.all(8.0.sp ),
-                                margin: EdgeInsets.symmetric(vertical:
-                                4.h),
-                                decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.all(Radius.circular(28)),
-                                  color: colorScheme.onPrimary,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Row(
-                                      children: [
-                                         CircleAvatar(backgroundColor: colorScheme.primary,
-                                            child: Icon(Icons.upgrade_rounded)),//lutrozesp
-                                        const SizedBox(width: 10,),// u@gufum.com
-                                        AppText.body("Upgrade your account"),
-                                      ],
-                                    ),
-                                    const Icon(Icons.arrow_forward_ios_sharp)
-                                  ],
-                                ),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: (){
-                                context.pushNamed("forgot_password_input_mail");
-                              },
-                              child:      Container(
-                                padding:  EdgeInsets.all(8.0.sp ),
-                                margin: EdgeInsets.symmetric(vertical:
-                                4.h),
-                                decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.all(Radius.circular(28)),
-                                  color: colorScheme.onPrimary,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        const CircleAvatar(backgroundColor: Colors.grey,
-                                            child: Icon(Icons.lock)),//lutrozesp
-                                        const SizedBox(width: 10,),// u@gufum.com
-                                        AppText.body("Change your password"),
-                                      ],
-                                    ),
-                                    const Icon(Icons.arrow_forward_ios_sharp)
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding:  EdgeInsets.all(8.0.sp ),
-                              margin: EdgeInsets.symmetric(vertical:
-                              4.h),
-                              decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.all(Radius.circular(28)),
-                                color: colorScheme.onPrimary,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const CircleAvatar(backgroundColor: Colors.redAccent,
-                                          child: Icon(Icons.file_copy)),//lutrozesp
-                                      const SizedBox(width: 10,),// u@gufum.com
-                                      AppText.body("Terms and conditions"),
-                                    ],
-                                  ),
-                                  const Icon(Icons.arrow_forward_ios_sharp)
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding:  EdgeInsets.all(8.0.sp ),
-                              margin: EdgeInsets.symmetric(vertical:
-                              4.h),
-                              decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.all(Radius.circular(28)),
-                                color: colorScheme.onPrimary,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const CircleAvatar(backgroundColor: Colors.green,
-                                          child: Icon(Icons.pending_actions_rounded)),//lutrozesp
-                                      const SizedBox(width: 10,),// u@gufum.com
-                                      AppText.body("FAQ"),
-                                    ],
-                                  ),
-                                  const Icon(Icons.arrow_forward_ios_sharp)
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding:  EdgeInsets.all(8.0.sp ),
-                              margin: EdgeInsets.symmetric(vertical:
-                              4.h),
-                              decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.all(Radius.circular(28)),
-                                color: colorScheme.onPrimary,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const CircleAvatar(backgroundColor: Colors.orange,
-                                          child: Icon(Icons.mail_lock_sharp)),//lutrozespu@gufum.com
-                                      const SizedBox(width: 10,),// u@gufum.com
-                                      AppText.body("Contact us"),
-                                    ],
-                                  ),
-                                  const Icon(Icons.arrow_forward_ios_sharp)
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding:  EdgeInsets.all(8.0.sp ),
-                              margin: EdgeInsets.symmetric(vertical:
-                              4.h),
-                              decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.all(Radius.circular(28)),
-                                color: colorScheme.onPrimary,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const CircleAvatar(backgroundColor: Colors.purple,
-                                          child: Icon(Icons.exit_to_app_outlined)),//lutrozesp
-                                      const SizedBox(width: 10,),// u@gufum.com
-                                      AppText.body("Log out"),
-                                    ],
-                                  ),
-                                  const Icon(Icons.arrow_forward_ios_sharp)
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
-      );
-    }
+      ),
+    );
   }
+
+  Widget _buildAccountInfo(BuildContext context, UserData? userData) {
+    return Container(
+      margin: EdgeInsets.all(20.w),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 0,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppText.body("Account Number: ${userData?.accountNumber}", style: TextStyle(fontWeight: FontWeight.bold)),
+          SizedBox(height: 8.h),
+          AppText.caption("BVN: ${userData?.bvn}"),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileOptions(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          _buildOptionTile(
+            context,
+            icon: Icons.upgrade_rounded,
+            title: "Upgrade your account",
+            color: colorScheme.primary,
+            onTap: () => context.pushNamed("upgrade_account_page"),
+          ),
+          _buildOptionTile(
+            context,
+            icon: Icons.lock,
+            title: "Change your password",
+            color: Colors.grey,
+            onTap: () => context.pushNamed("forgot_password_input_mail"),
+          ),
+          _buildOptionTile(
+            context,
+            icon: Icons.file_copy,
+            title: "Terms and conditions",
+            color: Colors.redAccent,
+            onTap: ()=> context.pushNamed("terms_and_conditions"),
+          ),
+          _buildOptionTile(
+            context,
+            icon: Icons.help_outline,
+            title: "FAQ",
+            color: Colors.green,
+            onTap: ()=>context.pushNamed("frequently_asked_questions"),
+          ),
+          _buildOptionTile(
+            context,
+            icon: Icons.mail,
+            title: "Contact us",
+            color: Colors.orange,
+          ),
+          _buildOptionTile(
+            context,
+            icon: Icons.exit_to_app,
+            title: "Log out",
+            color: Colors.purple,
+              onTap: () => context.goNamed("login")
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionTile(BuildContext context, {
+    required IconData icon,
+    required String title,
+    required Color color,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: Colors.grey.shade300, width: 1)),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(backgroundColor: color, child: Icon(icon, color: Colors.white)),
+            SizedBox(width: 16.w),
+            Expanded(child: AppText.body(title)),
+            Icon(Icons.arrow_forward_ios, size: 16.sp, color: Colors.grey),
+          ],
+        ),
+      ),
+    );
+  }
+}

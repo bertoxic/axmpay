@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:fintech_app/main.dart';
-import 'package:fintech_app/models/ResponseModel.dart';
-import 'package:fintech_app/providers/user_service_provider.dart';
-import 'package:fintech_app/ui/widgets/custom_buttons.dart';
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
-import 'package:fintech_app/utils/form_validator.dart';
-import 'package:fintech_app/ui/widgets/custom_dialog.dart';
-import 'package:fintech_app/ui/widgets/custom_textfield.dart';
+import 'package:AXMPAY/main.dart';
+import 'package:AXMPAY/models/ResponseModel.dart';
+import 'package:AXMPAY/providers/user_service_provider.dart';
+import 'package:AXMPAY/ui/widgets/custom_buttons.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
+import 'package:AXMPAY/utils/form_validator.dart';
+import 'package:AXMPAY/ui/widgets/custom_dialog.dart';
+import 'package:AXMPAY/ui/widgets/custom_textfield.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
   final String email;
@@ -130,23 +130,27 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                       if (_inputOTPFormKey.currentState!.validate()) {
                         try {
                           final resp = await userProvider.verifyOTPForPasswordChange(context, widget.email, otp!);
-                          if (resp.status == "failed") {
+                          if (resp.status == ResponseStatus.failed) {
+                            if(!mounted)return;
                             await CustomPopup.show(
-                              backgroundColor: colorScheme.error,
+                              backgroundColor: colorScheme.onPrimary,
                               type: PopupType.error,
                               title: "Verification Failed",
                               message: "The OTP you entered is incorrect. Please try again.",
                               context: context,
                             );
                           } else {
-                            context.pushNamed("/login");
+                            if(!mounted) return;
+                            context.pushNamed("change_password_screen",
+                            pathParameters: {"email":widget.email,"otp":otp!}
+                            );
                           }
                         } catch (e) {
                           await CustomPopup.show(
-                            backgroundColor: colorScheme.error,
+                            backgroundColor: colorScheme.onPrimary,
                             type: PopupType.error,
                             title: "Error",
-                            message: "An unexpected error occurred. Please try again later.",
+                            message: "An unexpected error occurred. Please try again later.$e",
                             context: context,
                           );
                         }

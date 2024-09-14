@@ -1,8 +1,9 @@
 
-import 'package:fintech_app/models/transaction_model.dart';
-import 'package:fintech_app/models/user_model.dart';
-import 'package:fintech_app/providers/user_service_provider.dart';
-import 'package:fintech_app/ui/screens/upgrade_account/upgrade_account_provider.dart';
+import 'package:AXMPAY/models/ResponseModel.dart';
+import 'package:AXMPAY/models/transaction_model.dart';
+import 'package:AXMPAY/models/user_model.dart';
+import 'package:AXMPAY/providers/user_service_provider.dart';
+import 'package:AXMPAY/ui/screens/upgrade_account/upgrade_account_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -119,10 +120,10 @@ void _initializeController() {
 
     print(upgradeWalletPayload?.toJson());
   }
-  void upgradeUserWalletInServer(){
+  Future<ResponseResult?> upgradeUserWalletInServer() async {
     final provider = Provider.of<UpgradeAccountProvider>(context, listen: false);
-    provider.userProvider.upgradeUserWallet(context,upgradeWalletPayload!);
-
+   ResponseResult? responseResult = await provider.userProvider.upgradeUserWallet(context,upgradeWalletPayload!);
+    return responseResult;
   }
 
   // Future<String?> walletPayloadToServer() async {

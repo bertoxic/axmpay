@@ -1,5 +1,5 @@
-import 'package:fintech_app/constants/app_colors.dart';
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:AXMPAY/constants/app_colors.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
 import '../widgets/custom_text/custom_apptext.dart';
 

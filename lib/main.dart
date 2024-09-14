@@ -1,16 +1,18 @@
 
-import 'package:fintech_app/providers/Custom_Widget_State_Provider.dart';
-import 'package:fintech_app/providers/user_service_provider.dart';
-import 'package:fintech_app/ui/screens/registration/registration_provider.dart';
-import 'package:fintech_app/ui/screens/upgrade_account/upgrade_account_provider.dart';
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/utils/globalErrorHandler.dart';
+import 'package:AXMPAY/providers/Custom_Widget_State_Provider.dart';
+import 'package:AXMPAY/providers/user_service_provider.dart';
+import 'package:AXMPAY/ui/screens/informational_screens/Information_Screen_Provider.dart';
+import 'package:AXMPAY/ui/screens/passcode_screen/passcode_provider.dart';
+import 'package:AXMPAY/ui/screens/registration/registration_provider.dart';
+import 'package:AXMPAY/ui/screens/upgrade_account/upgrade_account_provider.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:AXMPAY/utils/globalErrorHandler.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fintech_app/providers/authentication_provider.dart';
-import 'package:fintech_app/providers/config_provider.dart';
-import 'package:fintech_app/routes/router.dart';
-import 'package:fintech_app/services/api_service.dart';
+import 'package:AXMPAY/providers/authentication_provider.dart';
+import 'package:AXMPAY/providers/config_provider.dart';
+import 'package:AXMPAY/routes/router.dart';
+import 'package:AXMPAY/services/api_service.dart';
 final ColorScheme colorScheme = ColorScheme(
   primary: const Color(0xff462eb4), // Primary color used for app bars, buttons, etc.
   primaryContainer:  const Color(0xFFFFFFFF), // A darker variant of the primary color
@@ -44,6 +46,8 @@ await configProvider.loadConfig();
         ChangeNotifierProvider<UserServiceProvider>(create: (context)=>UserServiceProvider()),
         ChangeNotifierProvider<RegistrationProvider>(create: (context)=>RegistrationProvider()),
         ChangeNotifierProvider<UpgradeAccountProvider>(create: (context)=>UpgradeAccountProvider()),
+        ChangeNotifierProvider<PasscodeSetupModel>(create: (context)=>PasscodeSetupModel()),
+        ChangeNotifierProvider<InformationScreenProvider>(create: (context)=>InformationScreenProvider())
       ],
       child:  const GlobalErrorHandler(child: MyApp())));
 }

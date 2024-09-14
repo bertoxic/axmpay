@@ -1,7 +1,7 @@
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
-import 'package:fintech_app/ui/widgets/custom_textfield.dart';
-import 'package:fintech_app/ui/widgets/file_picker/photo_picker_controller.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
+import 'package:AXMPAY/ui/widgets/custom_textfield.dart';
+import 'package:AXMPAY/ui/widgets/file_picker/photo_picker_controller.dart';
 import 'package:flutter/material.dart';
 
 class PhotoPicker extends StatefulWidget {

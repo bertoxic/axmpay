@@ -1,21 +1,25 @@
 import 'dart:convert';
 
-import 'package:fintech_app/models/user_model.dart';
-import 'package:fintech_app/ui/screens/MainWrapper.dart';
-import 'package:fintech_app/ui/screens/Mobile_top_up/top_up_screen.dart';
-import 'package:fintech_app/ui/screens/registration/verify_newUser_email_otp_screen.dart';
-import 'package:fintech_app/ui/screens/registration/update_user_details_page.dart';
-import 'package:fintech_app/ui/screens/forgot_password/input_Email_Recovery_screen.dart';
-import 'package:fintech_app/ui/screens/forgot_password/token_verification_screen.dart';
-import 'package:fintech_app/ui/screens/transaction_history.dart';
-import 'package:fintech_app/ui/screens/transaction_page.dart';
-import 'package:fintech_app/ui/screens/profile/user_profile_screen.dart';
+import 'package:AXMPAY/models/user_model.dart';
+import 'package:AXMPAY/ui/screens/MainWrapper.dart';
+import 'package:AXMPAY/ui/screens/Mobile_top_up/top_up_screen.dart';
+import 'package:AXMPAY/ui/screens/informational_screens/frequently_asked_questions.dart';
+import 'package:AXMPAY/ui/screens/informational_screens/terms_and_conditions.dart';
+import 'package:AXMPAY/ui/screens/registration/verify_newUser_email_otp_screen.dart';
+import 'package:AXMPAY/ui/screens/registration/update_user_details_page.dart';
+import 'package:AXMPAY/ui/screens/forgot_password/input_Email_Recovery_screen.dart';
+import 'package:AXMPAY/ui/screens/forgot_password/token_verification_screen.dart';
+import 'package:AXMPAY/ui/screens/transaction_screen/transaction_history.dart';
+import 'package:AXMPAY/ui/screens/transaction_screen/transaction_page.dart';
+import 'package:AXMPAY/ui/screens/profile/user_profile_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
 
 import '../models/transaction_model.dart';
-import '../ui/screens/detailed_transaction_page.dart';
+import '../ui/screens/passcode_screen/passcode_screen.dart';
+import '../ui/screens/passcode_screen/passcode_set_up.dart';
+import '../ui/screens/transaction_screen/detailed_transaction_page.dart';
 import '../ui/screens/forgot_password/change_password_screen.dart';
 import '../ui/screens/homeScreen/home_screen.dart';
 import '../ui/screens/login_page.dart';
@@ -32,7 +36,7 @@ final  _rootNavigatorTransfer= GlobalKey<NavigatorState>(debugLabel: 'shellTrans
 final  _rootNavigatorUserProfile= GlobalKey<NavigatorState>(debugLabel: 'shellUserProfile');
 final  _rootNavigatorTransactionHistory= GlobalKey<NavigatorState>(debugLabel: 'shellUserTransactionHistory');
 final GoRouter  _router = GoRouter(
-  initialLocation: '/register',
+  initialLocation: '/login',
   navigatorKey: _rootNavigatorKey,
   routes: <RouteBase>[
     GoRoute(
@@ -198,7 +202,7 @@ final GoRouter  _router = GoRouter(
     ),
     GoRoute(
       path: '/change_password_screen/:email/:otp',
-      name: '/change_password_screen',
+      name: 'change_password_screen',
       builder: (BuildContext context, GoRouterState state) {
         final String? otp = state.pathParameters['otp'];
         final String? email = state.pathParameters['email'];
@@ -211,6 +215,18 @@ final GoRouter  _router = GoRouter(
       builder: (BuildContext context, GoRouterState state) {
         return MobileTopUp();
       },
+    ),  GoRoute(
+      path: '/passcode_input_screen',
+      name: 'passcode_input_screen',
+      builder: (BuildContext context, GoRouterState state) {
+        return PasscodeInputScreen();
+      },
+    ),  GoRoute(
+      path: '/passcode_setup_screen',
+      name: 'passcode_setup_screen',
+      builder: (BuildContext context, GoRouterState state) {
+        return PasscodeSetupScreen();
+      },
     ),
 
     GoRoute(
@@ -222,8 +238,24 @@ final GoRouter  _router = GoRouter(
     ),
 
     GoRoute(
+      path: '/frequently_asked_questions',
+      name: 'frequently_asked_questions',
+      builder: (BuildContext context, GoRouterState state) {
+        return  FAQs();
+      },
+    ),
+
+    GoRoute(
+      path: '/terms_and_conditions',
+      name: 'terms_and_conditions',
+      builder: (BuildContext context, GoRouterState state) {
+        return  TermsAndConditions();
+      },
+    ),
+
+    GoRoute(
       path: '/login',
-      name: '/login',
+      name: 'login',
       builder: (BuildContext context, GoRouterState state) {
         return   LoginPage();
       },

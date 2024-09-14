@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:fintech_app/utils/global_error_handler.dart';
+import 'package:AXMPAY/utils/global_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -88,12 +88,17 @@ class ApiService {
         options: await _getOptions(token,"GET"),
       );
       handleResponse(response);
+
       return response;
     } on DioException catch (e) {
       if(context.mounted){
+        if (e is TokenExpiredException) {
+          handleGlobalError(context, e);
+        }
         if (e is DioException) {
           if (e.type == DioExceptionType.connectionError) {
             handleGlobalError(context, e);
+
             //rethrow;
           }else if (e.type == DioExceptionType.connectionTimeout) {
             handleGlobalError(context, e);
@@ -124,6 +129,7 @@ class ApiService {
       );
 
       await _handleSessionCookie(response);
+       handleResponse(response);
       return response;
     } on DioException catch (e) {
       _handleDioException(context, e);

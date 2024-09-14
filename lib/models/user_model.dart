@@ -1,5 +1,5 @@
 
-import 'package:fintech_app/models/transaction_model.dart';
+import 'package:AXMPAY/models/transaction_model.dart';
 
 class LoginDetails {
   String email;

@@ -1,4 +1,4 @@
-import 'package:fintech_app/ui/screens/upgrade_account/upgrade_account_controller.dart';
+import 'package:AXMPAY/ui/screens/upgrade_account/upgrade_account_controller.dart';
 import 'package:flutter/material.dart';
 
 import '../../../constants/app_colors.dart';

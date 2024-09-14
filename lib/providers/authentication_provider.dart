@@ -1,9 +1,9 @@
-import 'package:fintech_app/services/auth_service.dart';
+import 'package:AXMPAY/services/auth_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fintech_app/models/user_model.dart';
-import 'package:fintech_app/services/api_service.dart';
-import 'package:fintech_app/utils/sharedPrefernce.dart';
+import 'package:AXMPAY/models/user_model.dart';
+import 'package:AXMPAY/services/api_service.dart';
+import 'package:AXMPAY/utils/sharedPrefernce.dart';
 
 
 class AuthenticationProvider extends ChangeNotifier {

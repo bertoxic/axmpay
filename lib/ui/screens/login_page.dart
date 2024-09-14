@@ -1,21 +1,20 @@
-
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:fintech_app/constants/text_constants.dart';
-import 'package:fintech_app/ui/widgets/custom_buttons.dart';
-import 'package:fintech_app/ui/widgets/custom_container.dart';
-import 'package:fintech_app/ui/widgets/custom_textfield.dart';
+import 'package:AXMPAY/constants/text_constants.dart';
+import 'package:AXMPAY/ui/widgets/custom_buttons.dart';
+import 'package:AXMPAY/ui/widgets/custom_container.dart';
+import 'package:AXMPAY/ui/widgets/custom_textfield.dart';
 
 import '../../main.dart';
 import '../../models/user_model.dart';
 import '../../providers/authentication_provider.dart';
 
 class LoginPage extends StatefulWidget {
-
-   LoginPage({super.key});
+  const LoginPage({Key? key}) : super(key: key);
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -23,121 +22,193 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
-
   final TextEditingController _passwordController = TextEditingController();
-
   final _formKey = GlobalKey<FormState>();
-
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   Widget build(BuildContext context) {
-     LoginDetails userdetails =LoginDetails(email: "oyehbaze@gmail.com", password: "1234");
     final authProvider = Provider.of<AuthenticationProvider>(context);
-     return  Form(
-      key: _formKey,
-      child: Scaffold(
-        appBar: AppBar(title: const Text("Signin to your account"),),
-         body:  Container(
-           margin: EdgeInsets.all(12.sp).copyWith(top: 40.sp),
-      padding: EdgeInsets.symmetric(horizontal: 8.w),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-
-        color: colorScheme.primaryContainer,),
-           child: Column(
-             mainAxisSize: MainAxisSize.min,
-             children: [
-                SpacedContainer(
-                   child: Align(
-                     alignment: Alignment.topLeft,
-                       child: Padding(
-                         padding: const EdgeInsets.symmetric(horizontal: 20),
-                         child: AppText.subtitle("welcome back"),
-                       )) ),
-               SpacedContainer(
-                 margin:  EdgeInsets.symmetric(horizontal: double.parse(20.w.toString())),
-                   child: CustomTextField(
-                     labelText: "Email",
-                     hintText: "enter email address",
-                       fieldName: Fields.email,
-                     prefixIcon: const Icon(Icons.email_outlined),
-                     controller: _emailController,
-                   //  validator: (value)=>FormValidator.validate(value, ValidatorType.email,fieldName:Fields.email),
-                   )
-               ),
-               SpacedContainer(
-                 margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                   child: CustomTextField(
-                     fieldName: Fields.password,
-                     hintText: "enter password",
-                     labelText: "password",
-                     prefixIcon: const Icon(Icons.lock),
-                     controller: _passwordController,
-                     //validator: (value)=>FormValidator.validate(value, ValidatorType.password,fieldName:Fields.password),
-
-                   )
-               ),
-                SpacedContainer(
-                margin:  EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Center(
-                    child: Row(
-                      children: [
-                        _isLoading? SizedBox(  height: 12.h, width: 12.w,
-                            child: const CircularProgressIndicator(color: Colors.purple)):CustomButton(
-                          onPressed:_isLoading?null: () async {
-                            setState(() {
-                              _isLoading = true;
-                            });
-                          if(_formKey.currentState!.validate()){
-                          }
-                          userdetails.email = _emailController.value.text;
-                          userdetails.password = _passwordController.value.text;
-                         var data = await authProvider.login(context, userdetails);
-                         if(data!=null){
-                          if( data["status"] == "Verified"){
-                            context.goNamed("/home");
-                          }else{
-                            context.goNamed("user_details_page");
-                          }
-                         }
-                              setState(() {
-                                _isLoading=false;
-                              });
-                        },
-                          type: ButtonType.elevated,
-                          backgroundColor: colorScheme.primary,
-                        text: "Login",
-                        ),
-                      ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Sign in to your account"),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: Theme.of(context).colorScheme.onBackground,
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(24.w),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome back!',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
-                ),
-               Center(
-                 child: GestureDetector(
-                   onTap: () {
-                     setState(() {
-                       _isLoading = true;
-                     });
-
-                     _isLoading? const CircularProgressIndicator():SizedBox();
-                     context.pushNamed("/change_password_screen");
-                     setState(() {
-                       _isLoading = false;
-                     });
-                   },
-                   child: const Text(
-                     'forgot password?',
-                     style: TextStyle(
-                       color: Colors.blue,
-                     ),
-                   ),
-                 ),
-               )
-             ],
-           ),
-         ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'Please sign in to continue.',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  SizedBox(height: 32.h),
+                  buildTextField(
+                    controller: _emailController,
+                    labelText: 'Email',
+                    hintText: 'Enter your email address',
+                    prefixIcon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: validateEmail,
+                  ),
+                  SizedBox(height: 16.h),
+                  buildTextField(
+                    controller: _passwordController,
+                    labelText: 'Password',
+                    hintText: 'Enter your password',
+                    prefixIcon: Icons.lock_outline,
+                    obscureText: _obscurePassword,
+                    validator: validatePassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                      ),
+                      onPressed: _isLoading ? null : () => _handleLogin(authProvider),
+                      child: _isLoading
+                          ? SizedBox(
+                        height: 24.h,
+                        width: 24.w,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                          : Text('Login', style: TextStyle(fontSize: 16.sp, color: Colors.white)),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Center(
+                    child: TextButton(
+                      onPressed: () => context.pushNamed("/change_password_screen"),
+                      child: Text(
+                        'Forgot password?',
+                        style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
+                  Center(
+                    child: TextButton(
+                      onPressed: () => context.pushNamed("register"),
+                      child: Text(
+                        "Don't have an account? Sign up",
+                        style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
+  }
+
+  Widget buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required String hintText,
+    required IconData prefixIcon,
+    bool obscureText = false,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+    Widget? suffixIcon,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      validator: validator,
+      decoration: InputDecoration(
+        labelText: labelText,
+        hintText: hintText,
+        prefixIcon: Icon(prefixIcon),
+        suffixIcon: suffixIcon,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        filled: true,
+        fillColor: Theme.of(context).colorScheme.surface,
+      ),
+    );
+  }
+
+  String? validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Email is required';
+    }
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+      return 'Enter a valid email address';
+    }
+    return null;
+  }
+
+  String? validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password is required';
+    }
+    if (value.length < 4) {
+      return 'Password must be at least 4 characters long';
+    }
+    return null;
+  }
+
+  void _handleLogin(AuthenticationProvider authProvider) async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+
+      LoginDetails userDetails = LoginDetails(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      try {
+        var data = await authProvider.login(context, userDetails);
+        if (data != null) {
+          if (data["status"] == "Verified") {
+           final storage = FlutterSecureStorage();
+            bool hasPasscode = await storage.read(key: 'passcode')==null;
+            if (hasPasscode) {
+              if(!mounted) return;
+              context.pushNamed("passcode_setup_screen");
+            }else if(!hasPasscode){
+              if(!mounted) return;
+              context.goNamed("/home");
+            }
+          } else {
+            if(!mounted) return;
+            context.goNamed("user_details_page");
+          }
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login failed: ${e.toString()}')),
+        );
+      } finally {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 }

@@ -1,8 +1,8 @@
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../models/transaction_model.dart';
+import '../../../models/transaction_model.dart';
 
 class TransactionDetailScreen extends StatelessWidget {
   final SpecificTransactionData transaction;
@@ -129,10 +129,12 @@ class TransactionDetailScreen extends StatelessWidget {
           SizedBox(
             child: isStatus
                 ? buildStatusChip(value)
-                : Text(
-                    value,
-                    style: const TextStyle(fontSize: 16),
-                  ),
+                : SizedBox( width: 200.w,
+                  child: Text(
+                      value,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                ),
           ),
         ],
       ),

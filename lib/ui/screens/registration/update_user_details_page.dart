@@ -1,13 +1,15 @@
-import 'package:fintech_app/models/ResponseModel.dart';
-import 'package:fintech_app/ui/screens/registration/registration_controller.dart';
-import 'package:fintech_app/ui/widgets/custom_buttons.dart';
-import 'package:fintech_app/ui/widgets/custom_dialog.dart';
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:AXMPAY/models/ResponseModel.dart';
+import 'package:AXMPAY/ui/screens/registration/registration_controller.dart';
+import 'package:AXMPAY/ui/widgets/custom_buttons.dart';
+import 'package:AXMPAY/ui/widgets/custom_dialog.dart';
+import 'package:AXMPAY/ui/widgets/custom_dropdown.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:fintech_app/constants/app_colors.dart';
+import 'package:AXMPAY/constants/app_colors.dart';
 
 import '../../../constants/text_constants.dart';
 import '../../../main.dart';
@@ -253,17 +255,32 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                               }, dateController: _controller.date_of_birth,),
                             ),
                             SpacedContainer(
-                              child: CustomTextField(
-                                labelText: 'Gender',
-                                  hintText: 'pick your gender',
-                                    controller: _controller.gender,
-                                validator:null,
-                                prefixIcon: const Icon(Icons.location_city), fieldName: Fields.name,
-                                onChanged: (value){
-                                  userdetails.address?.city = value;
-                                },
-
-                              ),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(18)
+                                ),
+                                child: CustomDropdown(
+                                  initialValue: "Please pick your gender",
+                                  itemBuilder: (item){
+                                    return Padding(
+                                      padding: EdgeInsets.all(8.sp),
+                                      child: Row(
+                                        children: [
+                                          AppText.body(item),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                  onChanged: (newValue) {
+                                    setState(() {
+                                        _controller.gender.text = newValue??"select value"!;
+                                    });
+                                  },
+                                  selectedItemBuilder: (item) => Text(item),
+                                  items: const <String>["Male","Female"],
+                                ),
+                              )
                             ),
                             SpacedContainer(
                               child: CustomTextField(
@@ -271,7 +288,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                                 hintText: 'input your valid BVN',
 
                                 validator:null,
-                                prefixIcon: const Icon(Icons.location_city), fieldName: Fields.name,
+                                prefixIcon: const Icon(Icons.perm_identity), fieldName: Fields.name,
                                 onChanged: (value){
                                 },
                                 controller: _controller.bvn,
@@ -283,7 +300,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                                 hintText: 'your place of birth',
 
                                 validator:null,
-                                prefixIcon: const Icon(Icons.location_city), fieldName: Fields.name,
+                                prefixIcon: const Icon(Icons.location_on), fieldName: Fields.name,
                                 onChanged: (value){
                                   userdetails.nin = value;
                                 },
@@ -296,7 +313,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                                 hintText: 'who referred you',
 
                                 validator:null,
-                                prefixIcon: const Icon(Icons.location_city), fieldName: Fields.name,
+                                prefixIcon: const Icon(Icons.man_3_outlined), fieldName: Fields.name,
                                 onChanged: (value){
                                   userdetails.nin = value;
                                 },
@@ -331,8 +348,16 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                                 }else if(resp?.status==ResponseStatus.success){
                                  CustomPopup.show(context: context, title: resp?.status.toString()??"success", message: resp?.message??"");
                                  await  Future.delayed(Duration(seconds: 1));
-                                 Navigator.pop(context);
-                                 context.goNamed("/home");
+                                 final storage = FlutterSecureStorage();
+                                 bool hasPasscode = await storage.read(key: 'passcode')==null;
+                                 if (hasPasscode) {
+                                   if(!mounted) return;
+                                   context.pushNamed("passcode_setup_screen");
+                                 }else if(!hasPasscode){
+                                   if(!mounted) return;
+                                   context.goNamed("/home");
+                                 }
+
                                 }
                                 },
                               ),

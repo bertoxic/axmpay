@@ -410,3 +410,124 @@ class UpgradeWalletPayload {
     );
   }
 }
+
+class ReceiptData {
+  final Transaction transaction;
+  final Customer customer;
+  final Order order;
+  final String narration;
+  final Merchant merchant;
+  final String code;
+  final String message;
+
+  ReceiptData({
+    required this.transaction,
+    required this.customer,
+    required this.order,
+    required this.narration,
+    required this.merchant,
+    required this.code,
+    required this.message,
+  });
+
+  factory ReceiptData.fromJson(Map<String, dynamic> json) {
+    return ReceiptData(
+      transaction: Transaction.fromJson(json['transaction']),
+      customer: Customer.fromJson(json['customer']),
+      order: Order.fromJson(json['order']),
+      narration: json['narration'],
+      merchant: Merchant.fromJson(json['merchant']),
+      code: json['code'],
+      message: json['message'],
+    );
+  }
+}
+
+class Transaction {
+  final String reference;
+
+  Transaction({required this.reference});
+
+  factory Transaction.fromJson(Map<String, dynamic> json) {
+    return Transaction(reference: json['reference']);
+  }
+}
+
+class Customer {
+  final Account account;
+
+  Customer({required this.account});
+
+  factory Customer.fromJson(Map<String, dynamic> json) {
+    return Customer(account: Account.fromJson(json['account']));
+  }
+}
+
+class Account {
+  final String number;
+  final String bank;
+  final String name;
+  final String senderaccountnumber;
+  final String sendername;
+
+  Account({
+    required this.number,
+    required this.bank,
+    required this.name,
+    required this.senderaccountnumber,
+    required this.sendername,
+  });
+
+  factory Account.fromJson(Map<String, dynamic> json) {
+    return Account(
+      number: json['number'],
+      bank: json['bank'],
+      name: json['name'],
+      senderaccountnumber: json['senderaccountnumber'],
+      sendername: json['sendername'],
+    );
+  }
+}
+
+class Order {
+  final String amount;
+  final String currency;
+  final String description;
+  final String country;
+
+  Order({
+    required this.amount,
+    required this.currency,
+    required this.description,
+    required this.country,
+  });
+
+  factory Order.fromJson(Map<String, dynamic> json) {
+    return Order(
+      amount: json['amount'],
+      currency: json['currency'],
+      description: json['description'],
+      country: json['country'],
+    );
+  }
+}
+
+class Merchant {
+  final bool isFee;
+  final String merchantFeeAccount;
+  final String merchantFeeAmount;
+
+  Merchant({
+    required this.isFee,
+    required this.merchantFeeAccount,
+    required this.merchantFeeAmount,
+  });
+
+  factory Merchant.fromJson(Map<String, dynamic> json) {
+    return Merchant(
+      isFee: json['isFee'],
+      merchantFeeAccount: json['merchantFeeAccount'],
+      merchantFeeAmount: json['merchantFeeAmount'],
+    );
+  }
+}

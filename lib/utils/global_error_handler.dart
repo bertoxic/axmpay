@@ -6,30 +6,25 @@ import '../main.dart';
 
 bool _showingErrorDialog = false;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void handleGlobalError(BuildContext context, dynamic error) {
   if (!_showingErrorDialog) {
+    Map<String, dynamic> errorMap = getErrorMessage(error);
     _showingErrorDialog = true;
 
     if (error is TokenExpiredException) {
-
+      print('Showing relogin dialog');
       showReloginDialog(context);
-    } else if (error.type == DioExceptionType.connectionError) {
-      showConnectionErrorDialog(context);
-    } else if (error.type == DioExceptionType.connectionTimeout) {
-      showConnectionErrorDialog(context);
-    }else if (error.type == DioExceptionType.receiveTimeout) {
-      showConnectionErrorDialog(context);
-    } else if (error.type == DioExceptionType.badResponse) {
-      showConnectionErrorDialog(context);
+    } else if (error is DioException) {
+      showErrorDialog(context, errorMap);
     } else {
       showGeneralErrorDialog(context, error);
     }
-
-    // Reset the flag after the dialog is dismissed
-    Future.delayed(Duration.zero, () {
-      _showingErrorDialog = false;
-    });
   }
+
+  Future.delayed(Duration(seconds: 1), () {
+    _showingErrorDialog = false;
+  });
 }
 
 class TokenExpiredException implements Exception {
@@ -38,10 +33,9 @@ class TokenExpiredException implements Exception {
   TokenExpiredException({this.message});
 
   @override
-  String toString() {
-    return message ?? 'Token expired';
-  }
+  String toString() => message ?? 'Token expired';
 }
+
 class BadRequestException implements Exception {
   final String message;
 
@@ -50,109 +44,147 @@ class BadRequestException implements Exception {
   @override
   String toString() => message;
 }
-void showConnectionErrorDialog(BuildContext context) {
+
+void showErrorDialog(BuildContext context, Map<String, dynamic> errorMap) {
   showDialog(
     context: navigatorKey.currentContext ?? context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12,vertical: 8),
-            decoration:  BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: colorScheme.primary.withOpacity(0.3),
-            ),
-            child:  Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Timeout'),
-                Icon(Icons.info_outlined, color: colorScheme.primaryContainer,)
-              ],
-            )),
-        content: const Text('Timeout. Please check your network connection'),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
+    builder: (BuildContext context) => CustomAlertDialog(
+      title: errorMap["title"],
+      message: errorMap["message"],
+      icon: Icons.error_outline,
+    ),
   );
 }
 
 void showGeneralErrorDialog(BuildContext context, dynamic error) {
   showDialog(
     context: navigatorKey.currentContext ?? context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12,vertical: 8),
-            decoration:  BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: colorScheme.primary.withOpacity(0.3),
-            ),
-            child:  Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Error'),
-                Icon(Icons.info_outlined, color: colorScheme.primaryContainer,)
-              ],
-            )),
-        content: Text(error.toString()),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
+    builder: (BuildContext context) => CustomAlertDialog(
+      title: 'Error',
+      message: error.toString(),
+      icon: Icons.warning_amber_rounded,
+    ),
   );
 }
+
 void showReloginDialog(BuildContext context) {
   showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-    return AlertDialog(
-      title:Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12,vertical: 8),
-        decoration:  BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: colorScheme.primary.withOpacity(0.3),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('Session Expired'),
-            Icon(Icons.info_outlined, color: colorScheme.primaryContainer,)
-
-          ],
-        ),
-      ),
-      content: const Text('Your session has expired. Please log in again.'),
-      actions: <Widget>[
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) => CustomAlertDialog(
+      title: 'Session Expired',
+      message: 'Your session has expired. Please log in again.',
+      icon: Icons.login,
+      actions: [
         TextButton(
-          child: const Text('Relogin'),
+          child: Text('Relogin', style: TextStyle(color: colorScheme.primary)),
           onPressed: () {
-            // Implement relogin logic here
-            // Navigator.of(context).pushReplacementNamed('/login');
             Navigator.of(context).pop();
-            context.goNamed("/login");
-
+            context.goNamed("login");
           },
         ),
         TextButton(
-          child: const Text('Cancel'),
+          child: Text('Cancel', style: TextStyle(color: colorScheme.secondary)),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
       ],
-    );
-  }, );
+    ),
+  );
+}
+
+Map<String, String> getErrorMessage(dynamic error) {
+  String title;
+  String message;
+
+  if (error is TokenExpiredException) {
+    title = 'Session Expired';
+    message = 'Your session has expired. Please log in again.';
+  } else if (error is DioException) {
+    switch (error.type) {
+      case DioExceptionType.connectionError:
+        title = 'Connection Error';
+        message = 'Failed to connect to the server. Please check your internet connection and try again.';
+        break;
+      case DioExceptionType.connectionTimeout:
+        title = 'Connection Timeout';
+        message = 'The connection timed out. Please try again later.';
+        break;
+      case DioExceptionType.receiveTimeout:
+        title = 'Timeout';
+        message = 'The server took too long to respond. Please try again later.';
+        break;
+      case DioExceptionType.badResponse:
+        title = 'Bad Response';
+        message = 'The server returned an unexpected response. Please try again later.';
+        break;
+      default:
+        title = 'Error';
+        message = 'An unexpected error occurred. Please try again.';
+        break;
+    }
+  } else {
+    title = 'Error';
+    message = 'An unexpected error occurred. Please try again.';
   }
+
+  return {'title': title, 'message': message};
+}
+
+class CustomAlertDialog extends StatelessWidget {
+  final String title;
+  final String message;
+  final IconData icon;
+  final List<Widget>? actions;
+
+  const CustomAlertDialog({
+    Key? key,
+    required this.title,
+    required this.message,
+    required this.icon,
+    this.actions,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: colorScheme.primary.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ),
+            Icon(icon, color: colorScheme.onPrimary),
+          ],
+        ),
+      ),
+      content: Text(
+        message,
+        style: TextStyle(color: colorScheme.onSurface),
+      ),
+      actions: actions ??
+          [
+            TextButton(
+              child: Text('OK', style: TextStyle(color: colorScheme.primary)),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+      backgroundColor: colorScheme.surface,
+      elevation: 8,
+    );
+  }
+}

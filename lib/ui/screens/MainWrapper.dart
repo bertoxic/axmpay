@@ -1,5 +1,5 @@
-import 'package:fintech_app/main.dart';
-import 'package:fintech_app/providers/user_service_provider.dart';
+import 'package:AXMPAY/main.dart';
+import 'package:AXMPAY/providers/user_service_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -26,20 +26,34 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
 
   Future<void> _initializeUserDetails() async {
     final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
-    // try {
       final userData = await userProvider.getUserDetails(context);
       await userProvider.getBankNames(context);
-     // await userProvider.getWalletDetails();
-    // } catch (e) {
-    //   handleGlobalError(context, e);
-    // }
+      await userProvider.getUserDetails(context);
+
   }
-  void goToBranch(int index) {
+  void goToBranch(int index) async {
     widget.navigationShell.goBranch(
       index,
       initialLocation: index == widget.navigationShell.currentIndex,
     );
+    // Call getUserDetails after navigation
+    await _refreshUserDetails(index);
   }
+
+  Future<void> _refreshUserDetails(int index) async {
+    final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
+    switch(index){
+      case 0 :
+        await userProvider.getUserDetails(context);
+        if(!mounted) return;
+        context.goNamed("/home");
+        return;
+     case 3 :
+        await userProvider.fetchTransactionHistory(context);
+        return;
+    }
+  }
+
   void _retryInitialization() {
     setState(() {
       _initFuture = _initializeUserDetails();

@@ -1,11 +1,11 @@
-import 'package:fintech_app/main.dart';
-import 'package:fintech_app/models/ResponseModel.dart';
-import 'package:fintech_app/models/user_model.dart';
-import 'package:fintech_app/providers/user_service_provider.dart';
-import 'package:fintech_app/ui/widgets/custom_buttons.dart';
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/ui/widgets/custom_text/custom_apptext.dart';
-import 'package:fintech_app/utils/form_validator.dart';
+import 'package:AXMPAY/main.dart';
+import 'package:AXMPAY/models/ResponseModel.dart';
+import 'package:AXMPAY/models/user_model.dart';
+import 'package:AXMPAY/providers/user_service_provider.dart';
+import 'package:AXMPAY/ui/widgets/custom_buttons.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
+import 'package:AXMPAY/utils/form_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -166,9 +166,10 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
           context: context,
         );
       } else {
-        context.pushNamed("/login", pathParameters: {"email": widget.preRegisterDetails.email, "otp": otp!});
+        context.pushNamed("login", pathParameters: {"email": widget.preRegisterDetails.email, "otp": otp!});
       }
     } catch (e) {
+
       await CustomPopup.show(
         backgroundColor: colorScheme.onPrimary,
         type: PopupType.error,

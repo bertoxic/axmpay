@@ -1,9 +1,9 @@
 
 
-import 'package:fintech_app/models/ResponseModel.dart';
-import 'package:fintech_app/models/transaction_model.dart';
-import 'package:fintech_app/models/user_model.dart';
-import 'package:fintech_app/ui/screens/registration/registration_provider.dart';
+import 'package:AXMPAY/models/ResponseModel.dart';
+import 'package:AXMPAY/models/transaction_model.dart';
+import 'package:AXMPAY/models/user_model.dart';
+import 'package:AXMPAY/ui/screens/registration/registration_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -63,8 +63,6 @@ void _initializeController() {
         nin: placeOfBirthController.text,
         phone: phone_number.text,
         gender: gender.text,
-
-
     );
      print("userDetails");
     final provider = Provider.of<RegistrationProvider>(context, listen: false);

@@ -1,23 +1,40 @@
-import 'package:fintech_app/ui/widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:fintech_app/utils/color_generator.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
+import 'package:AXMPAY/models/transaction_model.dart';
 
 import '../../models/recepients_model.dart';
+import '../../utils/color_generator.dart';
 import 'custom_buttons.dart';
 import 'custom_container.dart';
 import 'custom_text/custom_apptext.dart';
 
-class BottomTransactionConfirmSheetContent extends StatelessWidget {
+class BottomTransactionConfirmSheetContent extends StatefulWidget {
   final ScrollController controller;
-  final Function()? onTap;
-  TransactionModel? transactionModel;
-  BottomTransactionConfirmSheetContent(
-      {super.key, required this.controller, this.onTap, this.transactionModel});
+  final Future<void> Function()? onTap;
+  final TransactionModel? transactionModel;
+
+  const BottomTransactionConfirmSheetContent({
+    super.key,
+    required this.controller,
+    this.onTap,
+    this.transactionModel,
+  });
+
+  @override
+  _BottomTransactionConfirmSheetContentState createState() =>
+      _BottomTransactionConfirmSheetContentState();
+}
+
+class _BottomTransactionConfirmSheetContentState
+    extends State<BottomTransactionConfirmSheetContent> {
+  bool _isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     return ListView(
-      controller: controller,
+      controller: widget.controller,
       children: [
+        // ... (keep all the existing UI elements)
         SizedBox(height: 10.h),
         Center(
           child: Container(
@@ -40,7 +57,7 @@ class BottomTransactionConfirmSheetContent extends StatelessWidget {
             child: Column(
               children: [
                 Center(
-                  child: AppText.headline("${transactionModel?.amount}"),
+                  child: AppText.headline("\₦${widget.transactionModel?.amount}"),
                 ),
                 SizedBox(
                   height: 16.h,
@@ -54,7 +71,7 @@ class BottomTransactionConfirmSheetContent extends StatelessWidget {
                         "Account number",
                         color: Colors.grey.shade500,
                       ),
-                      AppText.body("${transactionModel?.recipientAccount}"),
+                      AppText.body("${widget.transactionModel?.recipientAccount}"),
                     ],
                   ),
                 ),
@@ -67,7 +84,7 @@ class BottomTransactionConfirmSheetContent extends StatelessWidget {
                         "Recipient's Name",
                         color: Colors.grey.shade500,
                       ),
-                      AppText.body("${transactionModel?.recipientAccountName}"),
+                      AppText.body("${widget.transactionModel?.recipientAccountName}"),
                     ],
                   ),
                 ),
@@ -80,7 +97,7 @@ class BottomTransactionConfirmSheetContent extends StatelessWidget {
                         "Recipient's Bank",
                         color: Colors.grey.shade500,
                       ),
-                      AppText.body("${transactionModel?.recipientBankName}"),
+                      AppText.body("${widget.transactionModel?.recipientBankName}"),
                     ],
                   ),
                 ),
@@ -93,7 +110,7 @@ class BottomTransactionConfirmSheetContent extends StatelessWidget {
                         "Amount:",
                         color: Colors.grey.shade500,
                       ),
-                      AppText.body(" ${transactionModel?.amount}")
+                      AppText.body(" ${widget.transactionModel?.amount}")
                     ],
                   ),
                 ),
@@ -102,7 +119,6 @@ class BottomTransactionConfirmSheetContent extends StatelessWidget {
                 ),
                 Container(
                   decoration: BoxDecoration(
-                      //color: const Color(0xffdeffe6),
                       color: getRandomColor().withOpacity(0.2),
                       borderRadius: BorderRadius.circular(8)),
                   padding:
@@ -120,9 +136,9 @@ class BottomTransactionConfirmSheetContent extends StatelessWidget {
                         children: [
                           AppText.caption("Account to be Debited"),
                           AppText.caption(
-                              "${transactionModel?.senderAccountName}"),
+                              "${widget.transactionModel?.senderAccountName}"),
                           AppText.caption(
-                            "${transactionModel?.senderAccountNumber}",
+                            "${widget.transactionModel?.senderAccountNumber}",
                             style: const TextStyle(fontSize: 12),
                           ),
                         ],
@@ -143,20 +159,45 @@ class BottomTransactionConfirmSheetContent extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(
-                  height: 40.h,
-                ),
+                SizedBox(height: 40.h),
                 CustomButton(
                   text: "SEND",
                   size: ButtonSize.large,
                   width: double.maxFinite,
-                  onPressed: onTap,
+                  onPressed: _isLoading ? null : _handleTap,
+                  customChild: _isLoading
+                      ? SizedBox(
+                    width: 24.w,
+                    height: 24.h,
+                    child: const CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                      :  Text("SEND"),
                 )
               ],
             ),
           ),
         ),
+
+
       ],
     );
+  }
+
+  Future<void> _handleTap() async {
+    if (widget.onTap != null) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      await widget.onTap!();
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      Navigator.pop(context);
+    }
   }
 }
