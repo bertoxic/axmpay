@@ -191,11 +191,17 @@ class _BottomTransactionConfirmSheetContentState
         _isLoading = true;
       });
 
-      await widget.onTap!();
 
-      setState(() {
-        _isLoading = false;
-      });
+      try {
+        await widget.onTap!();
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+
 
       Navigator.pop(context);
     }

@@ -38,7 +38,7 @@ class _PasscodeSetupScreenContent extends StatelessWidget {
              Text('Your PIN code', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.primary)),
              SizedBox(height: 12.h),
             Text(
-              'To set up your PIN create 5 digit code\nthen confirm it below',
+              'To set up your PIN create 4 digit code\nthen confirm it below',
               style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
              SizedBox(height: 24.h),
@@ -57,7 +57,7 @@ class _PasscodeSetupScreenContent extends StatelessWidget {
                SizedBox(height: 8.h),
               _buildPinCodeRow(model, isConfirmation: true),
             ],
-            if (model.passcode.length == 5 && model.confirmedPasscode.length == 5)
+            if (model.passcode.length == 4 && model.confirmedPasscode.length == 4)
               _buildValidationMessage(model),
             const Spacer(),
             _buildNumberPad(model),
@@ -89,7 +89,7 @@ class _PasscodeSetupScreenContent extends StatelessWidget {
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: List.generate(6, (index) {
+      children: List.generate(5, (index) {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           width: 48.w,
@@ -99,7 +99,7 @@ class _PasscodeSetupScreenContent extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
-            child: index < 5
+            child: index < 4
                 ? isVisible
                 ? Text(
               index < currentPasscode.length ? currentPasscode[index] : '',
@@ -132,7 +132,7 @@ class _PasscodeSetupScreenContent extends StatelessWidget {
   Widget _buildValidationMessage(PasscodeSetupModel model) {
     bool isValid = model.passcode == model.confirmedPasscode;
     return AnimatedOpacity(
-      opacity: model.passcode.length == 5 && model.confirmedPasscode.length == 5 ? 1.0 : 0.0,
+      opacity: model.passcode.length == 4 && model.confirmedPasscode.length == 4 ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 300),
       child: Padding(
         padding:  EdgeInsets.only(top: 16.h),
@@ -178,7 +178,7 @@ class _PasscodeSetupScreenContent extends StatelessWidget {
     return InkWell(
       onTap: () {
         model.addDigit(number);
-        if (model.passcode.length == 5 && !model.isConfirming) {
+        if (model.passcode.length == 4 && !model.isConfirming) {
           model.switchToConfirmation();
         }
       },
@@ -216,10 +216,10 @@ class _PasscodeSetupScreenContent extends StatelessWidget {
 
   Widget _buildContinueButton(PasscodeSetupModel model, BuildContext context) {
     return AnimatedOpacity(
-      opacity: model.passcode.length == 5 && model.confirmedPasscode.length == 5 ? 1.0 : 0.0,
+      opacity: model.passcode.length == 4 && model.confirmedPasscode.length == 4 ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 300),
       child: ElevatedButton(
-        onPressed: model.passcode.length == 5 && model.confirmedPasscode.length == 5 && model.passcode == model.confirmedPasscode
+        onPressed: model.passcode.length == 4 && model.confirmedPasscode.length == 4 && model.passcode == model.confirmedPasscode
             ? () async {
           await model.savePasscode();
           ScaffoldMessenger.of(context).showSnackBar(

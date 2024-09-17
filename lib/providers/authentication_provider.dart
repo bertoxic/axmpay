@@ -1,5 +1,10 @@
+import 'dart:convert';
+
+import 'package:AXMPAY/models/ResponseModel.dart';
+import 'package:AXMPAY/providers/user_service_provider.dart';
 import 'package:AXMPAY/services/auth_service.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:AXMPAY/models/user_model.dart';
 import 'package:AXMPAY/services/api_service.dart';
@@ -9,10 +14,11 @@ import 'package:AXMPAY/utils/sharedPrefernce.dart';
 class AuthenticationProvider extends ChangeNotifier {
   String? _token;
   final ApiService apiService;
+  final BuildContext context;
   final AuthService  authService = AuthService();
   bool _isAuthenticated = false;
   String? _errMessage;
-  AuthenticationProvider({required this.apiService});
+  AuthenticationProvider(this.context, {required this.apiService});
 
   String? get token => _token;
   bool get isAuthenticated => _isAuthenticated;
@@ -25,22 +31,45 @@ class AuthenticationProvider extends ChangeNotifier {
   }
 
 
-  Future<Map<String, dynamic>?> login(BuildContext context ,LoginDetails userdetails) async {
-    Map<String, dynamic>? data;
-        try {
-           data = await authService.login(context,userdetails);
-          String? token = data?["obtainedToken"];
-          await SharedPreferencesUtil.saveString('auth_token', token??"");
-          await SharedPreferencesUtil.saveString(
-              "isAuthenticated", _isAuthenticated.toString());
-          setToken(token);
-         await _saveTokenTOPref();
-         return data;
+  Future<ResponseResult?> login(BuildContext context ,LoginDetails userdetails) async {
+    UserServiceProvider userServiceProvider = Provider.of(context,listen: false);
+    try {
+          final response = await authService.login(context,userdetails);
+          Map<String, dynamic> jsonData;
+          if (response.data is String) {
+            jsonData = jsonDecode(response.data);
+          } else {
+            jsonData = response.data;
+          }
+
+          if (jsonData["status"].toString() == "Failed") {
+
+             return ResponseResult(
+               status: ResponseStatus.failed,
+               message: jsonData["message"] ?? "Verification failed",
+               data: null,
+             );
+           }else{
+
+             String? token = jsonData["token"];
+             await SharedPreferencesUtil.saveString('auth_token', token??"");
+             await SharedPreferencesUtil.saveString(
+                 "isAuthenticated", _isAuthenticated.toString());
+             setToken(token);
+             await _saveTokenTOPref();
+             await userServiceProvider.getUserDetails(context);
+
+           notifyListeners();
+           return ResponseResult(
+             status: ResponseStatus.success,
+             message: jsonData["message"] ?? "Verification successful",
+             data: null,
+           );
+           }
         }catch(e){
-          print("erorr occured in authenticationprovidder$e");
+          print("error occurred in authenticationprovidder$e");
         }
-    notifyListeners();
-        return data;
+
   }
 
 

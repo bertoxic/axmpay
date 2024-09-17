@@ -160,6 +160,7 @@ class UserServiceProvider extends ChangeNotifier {
       return data;
     } catch (e) {
       handleGlobalError(context, e);
+     // return [];
       rethrow;
     }
   }

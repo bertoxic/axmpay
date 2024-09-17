@@ -27,7 +27,7 @@ class MobileTopUp extends StatefulWidget {
 }
 
 class _MobileTopUpState extends State<MobileTopUp> {
-  String? phoneNumberValue = "";
+  String? phoneNumberValue;
   TopUpPayload? topUpPayload;
   DataBundle? dataBundle;
   late TopUpController _topUpController;
@@ -37,7 +37,11 @@ class _MobileTopUpState extends State<MobileTopUp> {
   Future<DataBundleList?>? _dataBundleList;
   bool phoneIsValid = false;
   bool isData = false;
+  bool isDataSelected = false;
+  DataBundle? selectedDataBundle;
   String? serviceProviderNetwork;
+  bool isSelectingDataBundle = true;
+  Future<ResponseResult?>? _phoneCheckFuture;
 
   @override
   void initState() {
@@ -46,13 +50,81 @@ class _MobileTopUpState extends State<MobileTopUp> {
     amountController = TextEditingController();
     _topUpController = TopUpController();
     userProvider = Provider.of<UserServiceProvider>(context, listen: false);
+    phoneController.addListener(_onPhoneChanged);
   }
 
   @override
   void dispose() {
+    phoneController.removeListener(_onPhoneChanged);
     phoneController.dispose();
     amountController.dispose();
     super.dispose();
+  }
+
+  void _onPhoneChanged() {
+    final phoneNumber = phoneController.text.trim();
+    if (_isValidPhoneNumber(phoneNumber)) {
+      setState(() {
+        phoneNumberValue = phoneNumber;
+        _phoneCheckFuture = _checkPhoneNumber(phoneNumber);
+      });
+    } else {
+      setState(() {
+        phoneIsValid = false;
+        serviceProviderNetwork = null;
+        _phoneCheckFuture = null;
+      });
+    }
+  }
+
+  bool _isValidPhoneNumber(String phoneNumber) {
+    return phoneNumber.length == 11 && phoneNumber.startsWith('0');
+  }
+
+  Future<ResponseResult?> _checkPhoneNumber(String phoneNumber) async {
+    try {
+      final result = await userProvider.getNetworkProvider(context, phoneNumber);
+      if (mounted) {
+        setState(() {
+          phoneIsValid = true;
+          if (result?.status == ResponseStatus.success) {
+            final data = result?.data as Map<String, dynamic>?;
+            serviceProviderNetwork = data?["network"];
+          }
+        });
+      }
+      return result;
+    } catch (e) {
+      print("Error checking phone number: $e");
+      return null;
+    }
+  }
+  Color? _getProviderColor(String providerLogo){
+    switch (providerLogo) {
+      case "9MOBILE":
+        return Colors.green;
+      case "GLO":
+        return Colors.green;
+      case "AIRTEL":
+        return Colors.red;
+      case "MTN":
+        return Colors.amber;}
+    return colorScheme.primary;
+  }
+  Future<DataBundleList?> _getListOfDataBundles() async {
+    if (!phoneIsValid) return null;
+    try {
+      final result = await userProvider.getDataPlans(context, phoneNumberValue!);
+      if (mounted) {
+        setState(() {
+          _dataBundleList = Future.value(result);
+        });
+      }
+      return result;
+    } catch (e) {
+      print("Error fetching data bundles: $e");
+      return null;
+    }
   }
 
   @override
@@ -72,11 +144,10 @@ class _MobileTopUpState extends State<MobileTopUp> {
               SizedBox(height: 20.h),
               _buildServiceProviderInfo(),
               SizedBox(height: 20.h),
-              _buildAmountInput(),
+              _buildTopUpTypeSelection(),
               SizedBox(height: 20.h),
-              _buildTopUpTypeDropdown(),
-              SizedBox(height: 20.h),
-              _buildDataBundleDropdown(),
+              if (!isDataSelected) _buildAmountInput(),
+              if (isDataSelected) _buildDataBundleSelection(),
               SizedBox(height: 30.h),
               _buildTopUpButton(),
             ],
@@ -86,7 +157,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
     );
   }
 
-  Widget _buildPhoneNumberInput() {
+  Widget _buildPhoneNumberInput(){
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -96,10 +167,10 @@ class _MobileTopUpState extends State<MobileTopUp> {
           children: [
             Container(
               height: 48.h,
-              padding: EdgeInsets.symmetric(horizontal: 12.w),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 0.h),
               decoration: BoxDecoration(
                 color: colorScheme.primary,
-                borderRadius: BorderRadius.horizontal(left: Radius.circular(8)),
+                borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
               ),
               child: Center(
                 child: AppText.caption(
@@ -114,12 +185,12 @@ class _MobileTopUpState extends State<MobileTopUp> {
                 controller: phoneController,
                 onChanged: (value) {
                   phoneNumberValue = value.toString();
-                  _checkPhoneNumber();
+                  _checkPhoneNumber(value);
                 },
                 decoration: InputDecoration(
                   fillColor: Colors.grey.shade100,
                   filled: true,
-                  border: OutlineInputBorder(
+                  border: const OutlineInputBorder(
                     borderRadius: BorderRadius.horizontal(right: Radius.circular(8)),
                     borderSide: BorderSide.none,
                   ),
@@ -132,21 +203,20 @@ class _MobileTopUpState extends State<MobileTopUp> {
     );
   }
 
+
   Widget _buildServiceProviderInfo() {
     return FutureBuilder<ResponseResult?>(
-      future: _checkPhoneNumber(),
+      future: _phoneCheckFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
           return Text("An error occurred while verifying the number: ${snapshot.error}");
         } else if (snapshot.hasData && phoneIsValid) {
-          final data = snapshot.data?.data as Map<String, dynamic>?;
-          serviceProviderNetwork = data?["network"];
           if (snapshot.data?.status == ResponseStatus.failed) {
             return Text("${snapshot.data?.message}");
           } else {
-            return Row(
+            return Row( mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
                   height: 40.h,
@@ -162,7 +232,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
             );
           }
         }
-        return SizedBox();
+        return const SizedBox();
       },
     );
   }
@@ -181,7 +251,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
           decoration: InputDecoration(
             fillColor: Colors.grey.shade100,
             filled: true,
-            prefixIcon: Icon(Icons.attach_money, color: colorScheme.primary),
+            prefixIcon: Icon(Icons.fiber_smart_record_sharp, color: colorScheme.primary),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
@@ -192,69 +262,285 @@ class _MobileTopUpState extends State<MobileTopUp> {
     );
   }
 
-  Widget _buildTopUpTypeDropdown() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  // Widget _buildTopUpTypeDropdown() {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       AppText.body("Top Up Type"),
+  //       SizedBox(height: 8.h),
+  //       CustomDropdown<String>(
+  //         items: const ['Airtime', 'Data'],
+  //         initialValue: "Airtime",
+  //         onChanged: (newValue) {
+  //           setState(() {
+  //             isData = newValue == 'Data';
+  //             if (isData) {
+  //               _dataBundleList = _getListOfDataBundles();
+  //             }
+  //           });
+  //         },
+  //         itemBuilder: (item) => Padding(
+  //           padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.w),
+  //           child: Text(item),
+  //         ),
+  //         selectedItemBuilder: (item) => Text(item),
+  //       ),
+  //     ],
+  //   );
+  //
+  // }
+  Widget _buildTopUpTypeSelection() {
+    return Row(
       children: [
-        AppText.body("Top Up Type"),
-        SizedBox(height: 8.h),
-        CustomDropdown<String>(
-          items: const ['Airtime', 'Data'],
-          initialValue: "Airtime",
-          onChanged: (newValue) {
-            setState(() {
-              isData = newValue == 'Data';
-              if (isData) {
-                _getListOfDataBundles();
-              }
-            });
-          },
-          itemBuilder: (item) => Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.w),
-            child: Text(item),
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                isDataSelected = false;
+                isData = false;
+              });
+            },
+            child: Container(
+              height: 100.h,
+              decoration: BoxDecoration(
+                color: isDataSelected ? Colors.grey[200] : colorScheme.primary,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.phone_android,
+                    size: 40.sp,
+                    color: isDataSelected ? Colors.grey[600] : Colors.white,
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    "Airtime",
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: isDataSelected ? Colors.grey[600] : Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          selectedItemBuilder: (item) => Text(item),
+        ),
+        SizedBox(width: 16.w),
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                isDataSelected = true;
+                isData = true;
+                _dataBundleList = _getListOfDataBundles();
+              });
+            },
+            child: Container(
+              height: 100.h,
+              decoration: BoxDecoration(
+                color: isDataSelected ? colorScheme.primary : Colors.grey[200],
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.data_usage,
+                    size: 40.sp,
+                    color: isDataSelected ? Colors.white : Colors.grey[600],
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    "Data",
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: isDataSelected ? Colors.white : Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ],
     );
   }
-
-  Widget _buildDataBundleDropdown() {
-    if (!isData) return SizedBox();
+  // Widget _buildDataBundleDropdown() {
+  //   if (!isData) return SizedBox();
+  //   return FutureBuilder<DataBundleList?>(
+  //     future: _dataBundleList,
+  //     builder: (context, snapshot) {
+  //       if (snapshot.connectionState == ConnectionState.waiting) {
+  //         return Center(child: CircularProgressIndicator());
+  //       } else if (snapshot.hasError) {
+  //         return Text("Error loading data bundles: ${snapshot.error}");
+  //       } else if (snapshot.hasData && phoneIsValid) {
+  //         return Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             AppText.body("Select Data Bundle"),
+  //             SizedBox(height: 8.h),
+  //             CustomDropdown<DataBundle>(
+  //               items: snapshot.data!.dataBundles,
+  //               initialValue: snapshot.data?.dataBundles.isNotEmpty == true ? snapshot.data?.dataBundles[0] : null,
+  //               onChanged: (newValue) {
+  //                 setState(() {
+  //                   dataBundle = newValue;
+  //                   amountController.text = newValue?.amount ?? '';
+  //                 });
+  //               },
+  //               itemBuilder: (item) => ListTile(
+  //                 leading: Icon(Icons.money    ),
+  //                 title: Text(item.dataBundle),
+  //                 subtitle: Text('${item.validity} - ₦${item.amount}'),
+  //               ),
+  //               selectedItemBuilder: (item) => Text("${item.dataBundle} - ₦${item.amount}"),
+  //             ),
+  //           ],
+  //         );
+  //       }
+  //       return SizedBox();
+  //     },
+  //   );
+  // }
+  Widget _buildDataBundleSelection() {
+    if (!isDataSelected) return const SizedBox();
     return FutureBuilder<DataBundleList?>(
       future: _dataBundleList,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
           return Text("Error loading data bundles: ${snapshot.error}");
         } else if (snapshot.hasData && phoneIsValid) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppText.body("Select Data Bundle"),
-              SizedBox(height: 8.h),
-              CustomDropdown<DataBundle>(
-                items: snapshot.data!.dataBundles,
-                initialValue: snapshot.data?.dataBundles.isNotEmpty == true ? snapshot.data?.dataBundles[0] : null,
-                onChanged: (newValue) {
-                  setState(() {
-                    dataBundle = newValue;
-                    amountController.text = newValue?.amount ?? '';
-                  });
-                },
-                itemBuilder: (item) => ListTile(
-                  leading: Icon(Icons.money),
-                  title: Text(item.dataBundle),
-                  subtitle: Text('${item.validity} - ₦${item.amount}'),
-                ),
-                selectedItemBuilder: (item) => Text("${item.dataBundle} - ₦${item.amount}"),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  AppText.body("Data Bundle", style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
+                  if (!isSelectingDataBundle)
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          isSelectingDataBundle = true;
+                          selectedDataBundle = null;
+                        });
+                      },
+                      child: Text("Change", style: TextStyle(color: colorScheme.primary)),
+                    ),
+                ],
               ),
+              SizedBox(height: 16.h),
+              if (isSelectingDataBundle)SizedBox( height: 300.h,
+                child: GridView.builder(
+                    shrinkWrap: true,
+                    scrollDirection: Axis.horizontal,
+                    physics: ScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 1.2,
+                      crossAxisSpacing: 16.w,
+                      mainAxisSpacing: 16.h,
+                    ),
+                    itemCount: snapshot.data!.dataBundles.length,
+                    itemBuilder: (context, index) {
+                      final item = snapshot.data!.dataBundles[index];
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedDataBundle = item;
+                            dataBundle = item;
+                            amountController.text = item.amount ?? '';
+                            isSelectingDataBundle = false;
+                          });
+                        },
+                        child: _buildDataBundleCard(item, false),
+                      );
+                    },
+                  ),
+              )
+              else if (selectedDataBundle != null)
+                _buildDataBundleCard(selectedDataBundle!, true),
             ],
           );
         }
-        return SizedBox();
+        return const SizedBox();
       },
+    );
+  }
+
+  Widget _buildDataBundleCard(DataBundle item, bool isSelected) {
+    return Container(
+      padding: EdgeInsets.all(12.sp),
+      width: double.maxFinite,
+      decoration: BoxDecoration(
+        color: isSelected ? _getProviderColor(serviceProviderNetwork??"") : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: isSelectingDataBundle?MainAxisAlignment.center:MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+             mainAxisAlignment: MainAxisAlignment.center,
+             crossAxisAlignment: !isSelectingDataBundle?CrossAxisAlignment.start: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.data_usage,
+                size: 32.sp,
+                color: isSelected ? Colors.white : _getProviderColor(serviceProviderNetwork??"") ,
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                item.dataBundle,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? Colors.white : Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                '₦${item.amount}',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: isSelected ? Colors.white70 : Colors.grey[600],
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                item.validity,
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  color: isSelected ? Colors.white70 : Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+          isSelectingDataBundle?const SizedBox():GestureDetector(
+              onTap: (){
+                setState(() {
+                  isSelectingDataBundle = true;
+                  selectedDataBundle = null;
+                });
+              },
+              child: Icon(Icons.arrow_forward_outlined, color: Colors.grey.shade200,))
+        ],
+      ),
     );
   }
 
@@ -264,31 +550,58 @@ class _MobileTopUpState extends State<MobileTopUp> {
       text: "Top Up",
       width: double.infinity,
       onPressed: () {
+        // Check if phone number is valid
         if (!phoneIsValid) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Please enter a valid phone number")),
+          CustomPopup.show(
+              context: context, message: "Please enter a valid phone number",title: "invalid phone number",
           );
           return;
         }
 
+        // Check if service provider network is available
+        if (serviceProviderNetwork == null || serviceProviderNetwork!.isEmpty) {
+          CustomPopup.show(
+            context: context, message: "Unable to determine service provider. Please try again.", title: 'No serviceProvider',
+          );
+          return;
+        }
+
+        // Check if amount is entered for airtime top-up
+        if (!isDataSelected && (amountController.text.isEmpty || double.tryParse(amountController.text) == null)) {
+          CustomPopup.show(
+              context: context, message: "Please enter a valid amount for airtime top-up",title: "please enter a valid amount",
+          );
+          return;
+        }
+
+        // Check if data bundle is selected for data top-up
+        if (isDataSelected && selectedDataBundle == null) {
+          CustomPopup.show(
+              context: context, message: "Please select a data bundle",title: 'missing data-bundle',
+          );
+          return;
+        }
+
+        // Create TopUpPayload
         TopUpPayload topup = TopUpPayload(
           phoneNumber: phoneNumberValue!,
-          amount: amountController.text,
+          amount: isDataSelected ? selectedDataBundle!.amount! : amountController.text,
           network: serviceProviderNetwork!,
-          productId: isData ? dataBundle?.productId ?? "" : "",
+          productId: isDataSelected ? selectedDataBundle!.productId ?? "" : "",
         );
 
+        // Show bottom sheet for confirmation
         _showBottomSheet(
           context,
           topup,
           userProvider,
               () async {
             try {
-              bool correctPass = await showDialog(
+              bool? correctPass = await showDialog(
                 context: context,
                 builder: (BuildContext context) {
                   return Dialog(
-                    child:ConstrainedBox(
+                    child: ConstrainedBox(
                       constraints: BoxConstraints(
                         maxHeight: MediaQuery.of(context).size.height * 0.6,
                         maxWidth: MediaQuery.of(context).size.width * 0.9,
@@ -298,30 +611,36 @@ class _MobileTopUpState extends State<MobileTopUp> {
                   );
                 },
               );
-              if(correctPass){
-              ResponseResult? resp = await userProvider.buyAirtime(context, topup);
-              if(resp?.status == ResponseStatus.failed){
-                if(!mounted) return;
-                CustomPopup.show(context: context,
-                    title: "error occured: ${resp?.status.toString()}",
-                    message: "${resp?.message.toString()}");
+                  if(correctPass !=null){
+              if (correctPass) {
+                ResponseResult? resp = await userProvider.buyAirtime(context, topup);
+                if (resp?.status == ResponseStatus.failed) {
+                  if (!mounted) return;
+                  CustomPopup.show(
+                    context: context,
+                    title: "Error occurred: ${resp?.status.toString()}",
+                    message: "${resp?.message.toString()}",
+                  );
+                } else {
+                  if (!mounted) return;
+                  Navigator.pop(context); // Close the bottom sheet
+                  CustomPopup.show(
+                      context: context, message:"Top-up successful", title: "Success"
+                  );
+                }
+              } else {
+                if (!mounted) return;
+                CustomPopup.show(
+                  context: context,
+                  title: "Wrong passcode entered",
+                  message: "Please use the correct passcode",
+                );
               }
-              if(!mounted) return;
-
-              Navigator.pop(context); // Close the bottom sheet
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Top-up successful")),
-              );
-              }else{
-                if(!mounted) return;
-                CustomPopup.show(context: context,
-                    title: "wrong passcode inputted}",
-                    message: "Please use a correct passcode");
               }
             } catch (e) {
               print("Error during top-up: $e");
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Top-up failed: $e")),
+              CustomPopup.show(
+                  context: context, message: "Top-up failed: $e", title: "failed",
               );
             }
           },
@@ -330,47 +649,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
     );
   }
 
-  Future<DataBundleList?> _getListOfDataBundles() async {
-    if (!phoneIsValid) return null;
-    try {
-      final result = await userProvider.getDataPlans(context, phoneNumberValue!);
-      setState(() {
-        _dataBundleList = Future.value(result);
-      });
-      return result;
-    } catch (e) {
-      print("Error fetching data bundles: $e");
-      return null;
-    }
-  }
 
-  Future<ResponseResult?> _checkPhoneNumber() async {
-    String? phoneNumber = phoneController.text.trim();
-    if (phoneNumber.isEmpty) return null;
-
-    setState(() {
-      phoneIsValid = false;
-    });
-
-    if (phoneNumber.length == 10 && !phoneNumber.startsWith('0')) {
-      phoneNumber = '0$phoneNumber';
-    }
-
-    if (phoneNumber.length == 11 && phoneNumber.startsWith('0')) {
-      setState(() {
-        phoneIsValid = true;
-        phoneNumberValue = phoneNumber;
-      });
-
-      try {
-        return await userProvider.getNetworkProvider(context, phoneNumber);
-      } catch (e) {
-        print("Error checking phone number: $e");
-        return null;
-      }
-    }
-    return null;
-  }
 }
 
 void _showBottomSheet(

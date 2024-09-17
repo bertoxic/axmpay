@@ -45,9 +45,11 @@ class ReceiptPopup extends StatelessWidget {
                       color: colorScheme.primary,
                     ),
                     padding: EdgeInsets.symmetric(horizontal: 12.sp,vertical: 4.sp),
-                    child:  Text(
-                      DateFormat('EEE, MMM d, yyyy • h:mm:ss a').format(DateTime.now()),
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade100),
+                    child:  Center(
+                      child: Text(
+                        DateFormat('EEE, MMM d, yyyy • h:mm:ss a').format(DateTime.now()),
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade100),
+                      ),
                     ),
                   ),
                 ),
@@ -58,14 +60,20 @@ class ReceiptPopup extends StatelessWidget {
               children: [
                 Expanded(
                   child: Container(
-                    padding: EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       //border: Border.all(color: Colors.grey,width: 0.5),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Text(
-                      "ref: ${receiptData!.transaction.reference}",
-                      style: TextStyle( fontWeight: FontWeight.normal,color: Colors.grey.shade500),
+                    child: Center(
+                      child: Row(
+                        children: [
+                          Text(
+                            "Success",
+                            style: TextStyle( fontWeight: FontWeight.normal,color: Colors.grey.shade500),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -79,7 +87,7 @@ class ReceiptPopup extends StatelessWidget {
             _buildInfoRow('Sender Name', receiptData?.customer.account.sendername??""),
             _buildInfoRow('Amount', '${formatter.format(balance)}'),
             _buildInfoRow('Desc', receiptData?.order.description??""),
-            _buildInfoRow('Charge', '${receiptData?.merchant.merchantFeeAmount} NGN'),
+            _buildInfoRow('Charge', '${formatter.format(merchantCharge)} '),
              _buildInfoRow('Total', '${formatter.format( merchantCharge??0.00+balance!)}'),
             // _buildInfoRow('Operator', operator),
             SizedBox(height: 16.h),

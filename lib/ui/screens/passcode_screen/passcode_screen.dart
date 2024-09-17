@@ -15,7 +15,7 @@ class _PasscodeInputScreenState extends State<PasscodeInputScreen> {
   String _passcode = '';
 
   void _addDigit(String digit) {
-    if (_passcode.length < 5) {
+    if (_passcode.length < 4) {
       setState(() {
         _passcode += digit;
       });
@@ -44,7 +44,7 @@ class _PasscodeInputScreenState extends State<PasscodeInputScreen> {
           children: [
             // const CircleAvatar(
             //   radius: 40,
-            //   backgroundImage: AssetImage('assets/profile_image.jpg'), // Replace with your image
+            //   backgroundImage: AssetImage('assets/profile_image.jpg'), // Replace with profile image
             // ),
             const Text(
               'Enter Your Passcode!',
@@ -53,7 +53,7 @@ class _PasscodeInputScreenState extends State<PasscodeInputScreen> {
              SizedBox(height: 20.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(5, (index) {
+              children: List.generate(4, (index) {
                 return Container(
                   margin:  EdgeInsets.symmetric(horizontal: 8.w),
                   width: 12.w,
@@ -120,12 +120,12 @@ class _PasscodeInputScreenState extends State<PasscodeInputScreen> {
   }
   Widget _buildContinueButton( BuildContext context, String passcode) {
     return AnimatedOpacity(
-      opacity: passcode.length == 5 ? 1.0 : 0.0,
+      opacity: passcode.length == 4 ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 300),
       child: ElevatedButton(
-        onPressed: passcode.length == 5
+        onPressed: passcode.length == 4
             ? () async {
-          bool correctPass = await confirmPasscode(passcode);
+          bool? correctPass = await confirmPasscode(passcode);
           Navigator.pop(context,correctPass);
         }
             : null,
@@ -142,7 +142,7 @@ class _PasscodeInputScreenState extends State<PasscodeInputScreen> {
     );
 
   }
-  Future<bool> confirmPasscode(String passcode)async{
+  Future<bool?> confirmPasscode(String passcode)async{
     final storage = FlutterSecureStorage();
     String? pass = await storage.read(key: "passcode");
     print("secondhand person is $pass vs first is $passcode, ... ${passcode==pass}");

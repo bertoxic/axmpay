@@ -2,6 +2,8 @@
 import 'package:AXMPAY/main.dart';
 import 'package:AXMPAY/models/transaction_model.dart';
 import 'package:AXMPAY/providers/user_service_provider.dart';
+import 'package:AXMPAY/ui/screens/informational_screens/frequently_asked_questions.dart';
+import 'package:AXMPAY/ui/widgets/custom_dialog.dart';
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
 import 'package:AXMPAY/ui/widgets/svg_maker/svg_icon.dart';
@@ -10,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../transaction_screen/success_receipt_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -33,6 +36,7 @@ class _HomePageState extends State<HomePage> {
   bool isData = false;
 
   String? serviceProviderNetwork;
+  late Future<List<TransactionHistoryModel>> _transactionHistoryFuture;
   final formatter = NumberFormat.currency(locale: 'en_US', symbol: '\₦');
    double? balance;
   @override
@@ -42,9 +46,17 @@ class _HomePageState extends State<HomePage> {
     amountController = TextEditingController();
     serviceProviderController = TextEditingController();
     userProvider =  Provider.of<UserServiceProvider>(context, listen: false);
-
+    _transactionHistoryFuture = _fetchTransactionHistory();
+  }
+  Future<List<TransactionHistoryModel>> _fetchTransactionHistory() {
+    return Provider.of<UserServiceProvider>(context, listen: false).fetchTransactionHistory(context);
   }
 
+  void _retryFetchingTransactions() {
+    setState(() {
+      _transactionHistoryFuture = _fetchTransactionHistory();
+    });
+  }
 
   @override
   Widget build(BuildContext context){
@@ -57,13 +69,14 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: Icon(Icons.help, color: colorScheme.primary),
             onPressed: () {
-              // Add help functionality
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) =>  FAQs()),
+              );
             },
           ),
           IconButton(
             icon: Icon(Icons.notifications, color: colorScheme.onSurface),
             onPressed: () {
-              // Add notifications functionality
             },
           ),
         ],
@@ -105,7 +118,7 @@ class _HomePageState extends State<HomePage> {
               colors: <Color>[
                 colorScheme.primary,
                 colorScheme.primary,
-                const Color(0xB25C4DE5),
+                //const Color(0xB25C4DE5),
                 //const Color(0xB20C93AB),
                 // Color(0xB643C036),
                 // const Color(0xFF5EE862),
@@ -151,13 +164,17 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 ),
-                SvgIcon("assets/images/9mobile_logo.svg", color: Colors.green, width: 40.w, height: 40.h),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: SizedBox( width: 50, height: 50,
+                      child: SvgIcon("assets/images/axmpay_logo.svg", color: Colors.grey.shade200, width: 36.w, height: 40.h)),
+                ),
               ],
             ),
             SizedBox(height: 16.h),
             Text(
               "Available Balance",
-              style: TextStyle(fontSize:10.sp, color: Colors.grey[300]),
+              style: TextStyle(fontSize:12.sp, color: Colors.grey[300]),
             ),
             SizedBox(height: 8.h),
             Text(
@@ -169,9 +186,9 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
+                AppText.body(
                   "Earnings: ₦${userProvider.userdata?.earn ?? "0"}",
-                  style: TextStyle(fontSize: 9.sp, color: Colors.grey[300]),
+                  style: TextStyle(fontSize: 16.sp, color: Colors.grey[300]),
                 ),
                 ElevatedButton.icon(
                   onPressed: () {
@@ -218,6 +235,8 @@ class _HomePageState extends State<HomePage> {
                 _buildQuickActionButton(Icons.send, "Transfer", () => context.pushNamed("/transferPage")),
                 _buildQuickActionButton(Icons.phone_android, "Recharge", () => context.pushNamed("top_up")),
                 _buildQuickActionButton(Icons.history, "History", () => context.pushNamed("/transaction_history_page")),
+                 // _buildQuickActionButton(Icons.history, "History", (){  Navigator.of(context).push(
+                 //     MaterialPageRoute(builder: (_) =>  TopUpSuccessScreen()));},)
                     ],
             ),
           ],
@@ -272,17 +291,17 @@ class _HomePageState extends State<HomePage> {
             SizedBox(height: 8.h),
             SizedBox(
               height: 320.h,
-              child: FutureBuilder(
-                future: userProvider.fetchTransactionHistory(context),
+              child: FutureBuilder<List<TransactionHistoryModel>>(
+                future: _fetchTransactionHistory(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
+                    return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
                     return _buildErrorWidget();
                   } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                     return _buildTransactionList(snapshot.data!);
                   } else {
-                    return Center(child: Text("No transactions found."));
+                    return const Center(child: Text("No transactions found."));
                   }
                 },
               ),
@@ -300,17 +319,18 @@ class _HomePageState extends State<HomePage> {
         children: [
           Icon(Icons.error_outline, color: Colors.red, size: 60),
           SizedBox(height: 16),
-          Text(
+          const Text(
             "An error occurred while fetching transactions.",
             style: TextStyle(fontSize: 16),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
-              setState(() {}); // Refresh the page
+          _retryFetchingTransactions() ;
+
             },
-            child: Text("Retry"),
+            child: const Text("Retry"),
           ),
         ],
       ),
@@ -321,73 +341,10 @@ class _HomePageState extends State<HomePage> {
     return ListView.builder(
       itemCount: transactions.length,
       itemBuilder: (context, index) {
-        return _buildTransactionItem(transactions[index]);
+        return TransactionItemWidget(transaction: transactions[index]);
       },
     );
   }
-
-  Widget _buildTransactionItem(TransactionHistoryModel transaction) {
-    return InkWell(
-      onTap: () async {
-        SpecificTransactionData transactionData = await userProvider.fetchTransactionDetails(context, transaction.trxID.toString());
-        if (!mounted) return;
-        context.pushNamed(
-          'transaction_details',
-          pathParameters: {'trxID': transaction.trxID.toString()},
-          extra: transactionData,
-        );
-      },
-      child: Card(
-        margin: EdgeInsets.symmetric(vertical: 4.h),
-        child: Padding(
-          padding: EdgeInsets.all(12.w),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  color: transaction.action == 'Receive' ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  transaction.action == 'Receive' ? Icons.arrow_downward : Icons.arrow_upward,
-                  color: transaction.action == 'Receive' ? Colors.green : Colors.red,
-                ),
-              ),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      transaction.accountName,
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize:10.sp),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      transaction.dateCreated,
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12.sp),
-                    ),
-                  ],
-                ),
-              ),
-              AppText.caption(
-                '${transaction.action == 'Receive' ? '+' : '-'}\₦${transaction.amount}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 10.sp,
-                  color: transaction.action == 'Receive' ? Colors.green : Colors.red,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   void _showCustomDialog(BuildContext context) {
     showDialog(
         context: context,
@@ -401,46 +358,150 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        Text(
-                          "FUND ACCOUNT",
-                          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
-                        ),
                         SizedBox(height: 16.h),
                         Text(
-                          "${userProvider.userdata?.firstname.toUpperCase()} ${userProvider.userdata?.lastname.toUpperCase()}",
-                          style: TextStyle(fontSize: 12.sp),
+                          "account name",
+                          style: TextStyle(fontSize: 9.sp, color: Colors.grey[600]),
+                        ),
+                        Text(
+                          "${userProvider.userdata?.username .toUpperCase()} ${userProvider.userdata?.lastname.toUpperCase()}",
+                          style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 8.h),
                         Text(
                           "9 Payment service bank",
-                          style: TextStyle(fontSize:10.sp, color: Colors.grey[600]),
+                          style: TextStyle(fontSize:14.sp, color: Colors.grey[600],fontWeight: FontWeight.bold),
                         ),
-                        SizedBox(height: 16.h),
+                        SizedBox(height: 8.h),
+                        Text(
+                          "account number",
+                          style: TextStyle(fontSize: 9.sp, color: Colors.grey[600]),
+                        ),
                         Text(
                           "${userProvider.userdata?.accountNumber}",
                           style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                         ),
-                        SizedBox(height: 8.h),
-                        Text(
-                          "Transfer to this account number",
-                          style: TextStyle(fontSize: 9.sp, color: Colors.grey[600]),
-                        ),
-                        SizedBox(height: 24.h),
+                        SizedBox(height: 16.h),
                         ElevatedButton(
                             onPressed: () {
                               Clipboard.setData(ClipboardData(text: userProvider.userdata!.accountNumber));
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Account number copied to clipboard')),
+                                const SnackBar(content: Text('Account number copied to clipboard')),
                               );
                               Navigator.of(context).pop();
                             },
-                            child: Text('Copy Account Number'),
                             style: ElevatedButton.styleFrom(
                               primary: colorScheme.onPrimary,
-                            )
-                        )
+                            ),
+                            child: Text('Copy Account Number')
+                        ),
+                        Text(
+                          "Transfer to this account number",
+                          style: TextStyle(fontSize: 9.sp, color: Colors.grey[600]),
+                        ),
+
+
                       ]
                   )));
         });
   }
 }
+
+class TransactionItemWidget extends StatefulWidget {
+  final TransactionHistoryModel transaction;
+
+  const TransactionItemWidget({Key? key, required this.transaction}) : super(key: key);
+
+  @override
+  _TransactionItemWidgetState createState() => _TransactionItemWidgetState();
+}
+
+class _TransactionItemWidgetState extends State<TransactionItemWidget> {
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: _isLoading ? null : () async {
+        if (_isLoading) return;
+        setState(() {
+          _isLoading = true;
+        });
+        try {
+          final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
+          SpecificTransactionData transactionData = await userProvider.fetchTransactionDetails(
+            context,
+            widget.transaction.trxID.toString(),
+          );
+          if (!mounted) return;
+          await context.pushNamed(
+            'transaction_details',
+            pathParameters: {'trxID': widget.transaction.trxID.toString()},
+            extra: transactionData,
+          );
+        } catch (e) {
+          if (mounted) {
+           CustomPopup.show(context: context,
+               title: "Error occurred", message: "unable to get transaction details");
+          }
+        } finally {
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+            });
+          }
+        }
+      },
+      child: Card(
+        margin: EdgeInsets.symmetric(vertical: 4.h),
+        child: Padding(
+          padding: EdgeInsets.all(12.w),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: widget.transaction.action == 'Receive' ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child:_isLoading?SizedBox( width: 12.w,height: 12.w,
+                    child: CircularProgressIndicator( strokeWidth: 2.sp,color: widget.transaction.action == 'Receive' ? Colors.green : Colors.red,)): Icon(
+                  widget.transaction.action == 'Receive' ? Icons.arrow_downward : Icons.arrow_upward,
+                  color: widget.transaction.action == 'Receive' ? Colors.green : Colors.red,
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.transaction.accountName,
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize:10.sp),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      widget.transaction.dateCreated,
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12.sp),
+                    ),
+                  ],
+                ),
+              ),
+              AppText.caption(
+                '${widget.transaction.action == 'Receive' ? '+' : '-'}\₦${widget.transaction.amount}',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 10.sp,
+                  color: widget.transaction.action == 'Receive' ? Colors.green : Colors.red,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );}}
+
+
+

@@ -5,6 +5,7 @@ import 'package:AXMPAY/models/ResponseModel.dart';
 import 'package:AXMPAY/models/recepients_model.dart';
 import 'package:AXMPAY/providers/user_service_provider.dart';
 import 'package:AXMPAY/ui/screens/passcode_screen/passcode_screen.dart';
+import 'package:AXMPAY/ui/screens/transaction_screen/success_receipt_screen.dart';
 import 'package:AXMPAY/ui/screens/transaction_screen/transaction_receipt.dart';
 import 'package:AXMPAY/ui/widgets/custom_buttons.dart';
 import 'package:AXMPAY/ui/widgets/custom_container.dart';
@@ -14,6 +15,7 @@ import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
 import 'package:AXMPAY/ui/widgets/custom_textfield.dart';
 import 'package:AXMPAY/utils/form_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../models/transaction_model.dart';
@@ -285,7 +287,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                                 physics: const ScrollPhysics(),
                                                 child: AppText.caption(
                                                     selectedBank?.bankName ??
-                                                        "loading ..."),
+                                                        "Select a Bank ..."),
                                               ),
                                             ),
                                           ],
@@ -374,7 +376,7 @@ class _TransferScreenState extends State<TransferScreen> {
                                                     }
                                                     return  Center(
                                                         child: Text(
-                                                      'an error occured ',
+                                                      'unable to get receiver\'s account',
                                                       style: TextStyle(
                                                           color: Colors.red),
                                                     ));
@@ -436,7 +438,7 @@ class _TransferScreenState extends State<TransferScreen> {
                               fieldName: "transaction_amount"),
                           controller: _amountController,
                           hintText: "  100 - 50 000 000",
-                          prefix: AppText.body("\$"),
+                          prefix: AppText.body("\₦"),
                           fieldName: "transaction_amount",
                           onChanged: (value) {
                             setState(() {
@@ -503,24 +505,7 @@ class _TransferScreenState extends State<TransferScreen> {
                           senderAccountName: userp.userdata?.firstname,
                           narration: _transactionRemark!);
 
-                      _showBottomSheet(context, transactionModel,
-                      //         ()async{
-                      //   ResponseResult? resp;
-                      //  resp = await userp.makeBankTransfer(context, transactionModel);
-                      //  if(resp?.status == ResponseStatus.failed){
-                      //    if(!mounted) return;
-                      //    CustomPopup.show(
-                      //        context: context,
-                      //        title: resp?.status.toString()??"error",message:
-                      //    "${resp?.message}");
-                      //  }else if(resp?.status==ResponseStatus.success){
-                      //   if(!mounted) return;
-                      //   CustomPopup.show(
-                      //       context: context, title: resp?.status.toString()??"success",
-                      //       message: "${resp?.message}");
-                      // }
-                      // }
-                       );
+                      _showBottomSheet(context, transactionModel);
                     }else{
                       CustomPopup.show(context: context, title: 'incomplete details',message: "please confirm your details are complete");
                       print("recipient is not valid");
@@ -534,7 +519,97 @@ class _TransferScreenState extends State<TransferScreen> {
       ),
     );
   }
-}
+  void resetFields() {
+    setState(() {
+      _transactionAmount = null;
+      _transactionRemark = null;
+      recipientDetails = null;
+      selectedBank = null;
+      accountNumberSet = false;
+      _receiverAccountNumber = null;
+    });
+
+    _amountController.clear();
+    _accountNumberController.clear();
+    _remarkController.clear();
+    _bankSelectorController.clear();
+
+    _transactionFormKey.currentState?.reset();
+  }
+
+
+  void _showBottomSheet(BuildContext context, TransactionModel transactionModel) {
+    UserServiceProvider userp = Provider.of<UserServiceProvider>(context, listen: false);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.1,
+        maxChildSize: 0.65,
+        expand: false,
+        builder: (_, controller) {
+          return BottomTransactionConfirmSheetContent(
+            onTap: () async {
+              bool? correctPass = await showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return Dialog(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.6,
+                        maxWidth: MediaQuery.of(context).size.width * 0.9,
+                      ),
+                      child: const PasscodeInputScreen(),
+                    ),
+                  );
+                },
+              );
+              if (correctPass!=null) {
+                if (correctPass) {
+                ResponseResult? resp;
+                if (!mounted) return;
+                resp = await userp.makeBankTransfer(context, transactionModel);
+
+                if (!mounted) return;
+
+                if (resp?.status == ResponseStatus.failed) {
+                  CustomPopup.show(
+                    context: context,
+                    title: resp?.status.toString() ?? "error",
+                    message: "${resp?.message}",
+                  );
+                } else if (resp?.status == ResponseStatus.success) {
+
+                  ReceiptData? receiptData = ReceiptData.fromJson(resp!.data!);
+                 resetFields();
+                  context.pushNamed(
+                    'top_up_success',
+                    extra: receiptData,
+                  );
+                }
+
+              } else {
+                if (!mounted) return;
+                CustomPopup.show(
+                  context: context,
+                  title: "Incorrect Passcode",
+                  message: "please ensure you put a correct passcode",
+                );
+              }
+              }
+            },
+            controller: controller,
+            transactionModel: transactionModel,
+          );
+        },
+      ),
+    );
+  }
+  }
 
 Widget _buildAccountDetails(int accountNumber, String accountName) {
   return Container(
@@ -566,10 +641,8 @@ Widget _buildUserInfo(UserServiceProvider userp) {
           colors: <Color>[
             colorScheme.primary,
             colorScheme.primary,
-            const Color(0xB25C4DE5),
-            //const Color(0xB20C93AB),
-            // Color(0xB643C036),
-            // const Color(0xFF5EE862),
+           // const Color(0xB25C4DE5),
+
           ]),
       boxShadow: [
         BoxShadow(
@@ -591,9 +664,9 @@ Widget _buildUserInfo(UserServiceProvider userp) {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AppText.subtitle("${userp.userdata?.lastname}",color: colorScheme.onPrimary,),
+            AppText.subtitle("${userp.userdata?.firstname} ${userp.userdata?.lastname}",color: colorScheme.onPrimary,),
             SizedBox(height: 4.h),
-            AppText.caption("${userp.userdata?.accountNumber}",color: Colors.grey.shade300,),
+            AppText.body("${userp.userdata?.accountNumber}",color: Colors.grey.shade300,),
           ],
         ),
       ],
@@ -601,107 +674,5 @@ Widget _buildUserInfo(UserServiceProvider userp) {
   );
 }
 
-// void _showBottomSheet(BuildContext context, TransactionModel transactionModel, Function()?onTap) {
-//   showModalBottomSheet(
-//     context: context,
-//     isScrollControlled: true,
-//     shape: const RoundedRectangleBorder(
-//       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-//     ),
-//     builder: (context) => DraggableScrollableSheet(
-//       initialChildSize: 0.6,
-//       minChildSize: 0.1,
-//       maxChildSize: 0.65,
-//       expand: false,
-//       builder: (_, controller) {
-//         return BottomTransactionConfirmSheetContent(
-//           onTap: onTap,
-//           controller: controller,
-//           transactionModel: transactionModel, // corrected here
-//         );
-//       },
-//     ),
-//   );
-// }
-
-
-void _showBottomSheet(BuildContext context, TransactionModel transactionModel) {
-  UserServiceProvider userp = Provider.of<UserServiceProvider>(context,listen: false);
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (context) => DraggableScrollableSheet(
-      initialChildSize: 0.6,
-      minChildSize: 0.1,
-      maxChildSize: 0.65,
-      expand: false,
-      builder: (_, controller) {
-        return BottomTransactionConfirmSheetContent(
-          onTap: () async {
-            bool correctPass = await showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return Dialog(
-                  child:ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.6,
-                      maxWidth: MediaQuery.of(context).size.width * 0.9,
-                    ),
-                    child: const PasscodeInputScreen(),
-                  ),
-                );
-              },
-            );
-            if(correctPass){
-            ResponseResult? resp;
-            resp = await userp.makeBankTransfer(context, transactionModel);
-
-            if (!context.mounted) return;
-
-            if (resp?.status == ResponseStatus.failed) {
-              CustomPopup.show(
-                context: context,
-                title: resp?.status.toString() ?? "error",
-                message: "${resp?.message}",
-              );
-            } else if (resp?.status == ResponseStatus.success) {
-              if(!context.mounted) return;
-              // CustomPopup.show(
-              //   context: context,
-              //   title: resp?.status.toString() ?? "success",
-              //   message: "${resp?.message}",
-              // );
-              ReceiptData? receiptData = ReceiptData.fromJson(resp!.data!);
-              showDialog(context: context, builder: (BuildContext context){
-                return  ConstrainedBox(
-                  constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.6,
-                   maxWidth: MediaQuery.of(context).size.width * 0.9,
-                                ),
-                  child: ReceiptPopup(
-                receiptData: receiptData,
-                )
-                );
-              });
-            }
-          }else{
-              if(!context.mounted) return;
-              CustomPopup.show(
-                context: context,
-                title: "Incorrect Passcode",
-                message: "please ensure you put a correct passcode",
-              );
-            }
-          },
-          controller: controller,
-          transactionModel: transactionModel,
-        );
-      },
-    ),
-  );
-}
 
 

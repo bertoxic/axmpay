@@ -19,8 +19,6 @@ class _TermsAndConditionsState extends State<TermsAndConditions> {
   late final UserServiceProvider userServiceProvider;
   late InformationScreenController _controller;
   late Future<AxmpayTermsList?> _termsFuture;
-  List<bool> _isExpanded = [];
-  int _selectedIndex = -1;
 
   @override
   void initState() {
@@ -37,7 +35,7 @@ class _TermsAndConditionsState extends State<TermsAndConditions> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar( iconTheme: IconThemeData(color: Colors.grey.shade300),
-        title: Text("Terms and Conditions",style: TextStyle(color: Colors.grey.shade300),),
+        title: Text("Terms and Conditions" ,style: TextStyle(color: Colors.grey.shade300),),
         elevation: 0,
         backgroundColor: colorScheme.primary,
       ),
@@ -48,15 +46,12 @@ class _TermsAndConditionsState extends State<TermsAndConditions> {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasData && snapshot.data!.data != null) {
             final sortedTerms = _sortTerms(snapshot.data!.data!);
-            if (_isExpanded.isEmpty) {
-              _isExpanded = List.generate(sortedTerms.length, (_) => false);
-            }
             return CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(
                   child: Container(
                     padding: EdgeInsets.all(16.sp),
-                    decoration:  BoxDecoration(
+                    decoration: BoxDecoration(
                       color: colorScheme.primary,
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(30),
@@ -69,98 +64,74 @@ class _TermsAndConditionsState extends State<TermsAndConditions> {
                         AppText.display(
                           "Terms and Conditions",
                           color: Colors.white,
-                          style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold, color: Colors.grey.shade200),
+                          style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold,color: Colors.white.withOpacity(0.8),),
                         ),
                         SizedBox(height: 8.sp),
                         AppText.body(
                           "Please read our terms and conditions carefully.",
                           color: Colors.white.withOpacity(0.8),
-                          style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade200),
+                          style: TextStyle(fontSize: 14.sp, color: Colors.white.withOpacity(0.8),),
                         ),
                       ],
                     ),
                   ),
                 ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                      final term = sortedTerms[index];
-                      return AnimatedContainer(
-                        duration: Duration(milliseconds: 300),
-                        margin: EdgeInsets.symmetric(horizontal: 16.sp, vertical: 8.sp),
-                        decoration: BoxDecoration(
-                          color: _selectedIndex == index
-                              ? colorScheme.primaryContainer
-                              : colorScheme.surface,
-                          borderRadius: BorderRadius.circular(16.sp),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: Theme(
-                          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                          child: ExpansionTile(
-                            leading: CircleAvatar(
-                              backgroundColor: colorScheme.primary,
+                SliverPadding(
+                  padding: EdgeInsets.all(16.sp),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                        final term = sortedTerms[index];
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 12.sp),
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 12.sp, vertical: 6.sp),
+                              decoration: BoxDecoration(
+                                color: colorScheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(8.sp),
+                              ),
                               child: Text(
-                                term.sectionNumber,
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            title: Text(
-                              "Section ${term.sectionNumber}",
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurface,
-                              ),
-                            ),
-                            subtitle: Text(
-                              "Parent Section: ${term.parentSection}",
-                              style: TextStyle(fontSize: 12.sp, color: colorScheme.onSurface.withOpacity(0.6)),
-                            ),
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.all(16.sp),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      term.content,
-                                      style: TextStyle(fontSize: 14.sp, height: 1.5),
-                                    ),
-                                    SizedBox(height: 8.sp),
-                                    Text(
-                                      "Date Added: ${term.dateAdded}",
-                                      style: TextStyle(
-                                        fontSize: 12.sp,
-                                        fontStyle: FontStyle.italic,
-                                        color: colorScheme.onSurface.withOpacity(0.6),
-                                      ),
-                                    ),
-                                  ],
+                                "Section ${term.sectionNumber}",
+                                style: TextStyle(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.primary,
                                 ),
                               ),
-                            ],
-                            onExpansionChanged: (expanded) {
-                              setState(() {
-                                _isExpanded[index] = expanded;
-                                _selectedIndex = expanded ? index : -1;
-                              });
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                    childCount: sortedTerms.length,
+                            ),
+                            SizedBox(height: 12.sp),
+                            Text(
+                              term.content,
+                              style: TextStyle(fontSize: 14.sp, height: 1.5),
+                            ),
+                            SizedBox(height: 8.sp),
+                            Text(
+                              "Parent Section: ${term.parentSection}",
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                fontStyle: FontStyle.italic,
+                                color: colorScheme.onSurface.withOpacity(0.6),
+                              ),
+                            ),
+                            SizedBox(height: 4.sp),
+                            Text(
+                              "Date Added: ${term.dateAdded}",
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                fontStyle: FontStyle.italic,
+                                color: colorScheme.onSurface.withOpacity(0.6),
+                              ),
+                            ),
+                            if (index < sortedTerms.length - 1)
+                              Divider(height: 32.sp, thickness: 1.sp),
+                          ],
+                        );
+                      },
+                      childCount: sortedTerms.length,
+                    ),
                   ),
-                ),
-                SliverToBoxAdapter(
-                  child: SizedBox(height: 24.sp),
                 ),
               ],
             );

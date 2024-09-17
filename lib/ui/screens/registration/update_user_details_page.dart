@@ -9,8 +9,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:AXMPAY/constants/app_colors.dart';
-
 import '../../../constants/text_constants.dart';
 import '../../../main.dart';
 import '../../../models/user_model.dart';

@@ -11,50 +11,65 @@ import 'api_service.dart';
 class AuthService {
   ApiService apiService = ApiService();
   UserServiceProvider userServiceProvider = UserServiceProvider();
-  Future<Map<String,dynamic>?>? login(BuildContext context, LoginDetails userLoginDetails) async {
+
+
+
+  Future<Response<dynamic>> login(BuildContext context, LoginDetails userLoginDetails) async {
     try {
       Map<String, dynamic> userlogindetails = userLoginDetails.toJSON();
-
-      // Log the request details
       print("Login request details: $userlogindetails");
 
-      // API call
-      Response response = await apiService.post( context,"login.php", userlogindetails,"");
-      // Log the full response
+      Response<dynamic> response = await apiService.post(
+          context,
+          "login.php",
+          userlogindetails,
+          ""
+      );
+
       print("Full responsexlogin: $response");
       print("Response status codexlogin: ${response.statusCode}");
-      print("Response dataxlogin: ${response.data.toString()}");
 
       if (response.statusCode == 200) {
+        print("Response received with status 200");
 
-        // Check if response.data is a String, if so, try to parse it
+        // Parse the response data
+        Map<String, dynamic> data;
         if (response.data is String) {
-
-          try {
-            Map<String, dynamic> jsonData = jsonDecode(response.data);
-            response.data = jsonData;
-          } catch (e) {
-            print("Error parsing response data: $e");
-          }
+          data = jsonDecode(response.data);
+        } else if (response.data is Map<String, dynamic>) {
+          data = response.data;
+        } else {
+          throw Exception('Unexpected response data type: ${response.data.runtimeType}');
         }
 
-        // Access token from response data
-        if (response.data is Map<String, dynamic> && response.data['token'] != null) {
-          String obtainedToken = response.data["token"];
-          print("Obtained token: $obtainedToken");
+        print("Parsed response data: $data");
 
-          await SharedPreferencesUtil.saveString('auth_token', obtainedToken);
-          print("Token saved to SharedPreferences");
+        // Check the status in the response
+        if (data['status'] == 'Success') {
+          print("Login successful");
+          if (data.containsKey('token')) {
+            // String obtainedToken = data['token'];
+            // print("Obtained token: $obtainedToken");
+            //
+            // await SharedPreferencesUtil.saveString('auth_token', obtainedToken);
+            // print("Token saved to SharedPreferences");
+            //
+            // String? savedToken = await SharedPreferencesUtil.getString('auth_token');
+            // print("Retrieved token from SharedPreferences: $savedToken");
 
-          String? savedToken = await SharedPreferencesUtil.getString('auth_token');
-          print("Retrieved token from SharedPreferences: $savedToken");
-          await userServiceProvider.getUserDetails(context);
-          String? status = userServiceProvider.userdata?.status;
-          return {"obtainedToken":obtainedToken, "status":status};
+
+            //String? status = userServiceProvider.userdata?.status;
+            return response;
+          } else {
+            throw Exception('Token not found in successful response');
+          }
+        } else if (data['status'] == 'Failed') {
+          // print("Login failed: ${data['message']}");
+          // print("Login failedzzzzzzzzzzzzzzz: ${response.data}");
+          return response;
+          throw Exception('Login failed: ${data['message']}');
         } else {
-          print("Error: 'token' key not found in response data");
-          print("Response data structure: ${response.data.runtimeType}");
-          throw Exception('Token not found in response');
+          throw Exception('Unexpected status in response: ${data['status']}');
         }
       } else {
         print("Error: Unexpected status code ${response.statusCode}");
@@ -71,7 +86,6 @@ class AuthService {
       return Future.error(e);
     }
   }
-
   Future<void> Register(BuildContext context,PreRegisterDetails userdetails) async {
     try {
       Map<String, dynamic> details = userdetails.toJSON();

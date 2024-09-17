@@ -87,7 +87,7 @@ class _FAQsState extends State<FAQs> {
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          backgroundColor: colorScheme.primary.withOpacity(0.05 * index),
+          backgroundColor: colorScheme.primary.withOpacity(0.2),
           leading: CircleAvatar(
             radius: 12.sp,
             backgroundColor: _isExpanded[index]

@@ -37,7 +37,7 @@ await configProvider.loadConfig();
       providers: [
         Provider(create: (_) => ApiService()),
         ChangeNotifierProvider<AuthenticationProvider>(
-          create: (context) => AuthenticationProvider(
+          create: (context) => AuthenticationProvider( context,
             apiService: Provider.of<ApiService>(context, listen: false),
           ),
         ),

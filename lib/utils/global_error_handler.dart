@@ -4,13 +4,13 @@ import 'package:go_router/go_router.dart';
 
 import '../main.dart';
 
-bool _showingErrorDialog = false;
+bool _isPopupShowing = false;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void handleGlobalError(BuildContext context, dynamic error) {
-  if (!_showingErrorDialog) {
+  if (!_isPopupShowing) {
+    _isPopupShowing = true;
     Map<String, dynamic> errorMap = getErrorMessage(error);
-    _showingErrorDialog = true;
 
     if (error is TokenExpiredException) {
       print('Showing relogin dialog');
@@ -20,11 +20,11 @@ void handleGlobalError(BuildContext context, dynamic error) {
     } else {
       showGeneralErrorDialog(context, error);
     }
-  }
 
-  Future.delayed(Duration(seconds: 1), () {
-    _showingErrorDialog = false;
-  });
+    // Future.delayed(Duration(seconds: 1), () {
+    //   _isPopupShowing = false;
+    // });
+  }
 }
 
 class TokenExpiredException implements Exception {
@@ -46,9 +46,9 @@ class BadRequestException implements Exception {
 }
 
 void showErrorDialog(BuildContext context, Map<String, dynamic> errorMap) {
-  showDialog(
-    context: navigatorKey.currentContext ?? context,
-    builder: (BuildContext context) => CustomAlertDialog(
+  _showPopup(
+    context,
+    CustomAlertDialog(
       title: errorMap["title"],
       message: errorMap["message"],
       icon: Icons.error_outline,
@@ -57,9 +57,9 @@ void showErrorDialog(BuildContext context, Map<String, dynamic> errorMap) {
 }
 
 void showGeneralErrorDialog(BuildContext context, dynamic error) {
-  showDialog(
-    context: navigatorKey.currentContext ?? context,
-    builder: (BuildContext context) => CustomAlertDialog(
+  _showPopup(
+    context,
+    CustomAlertDialog(
       title: 'Error',
       message: error.toString(),
       icon: Icons.warning_amber_rounded,
@@ -68,10 +68,9 @@ void showGeneralErrorDialog(BuildContext context, dynamic error) {
 }
 
 void showReloginDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) => CustomAlertDialog(
+  _showPopup(
+    context,
+    CustomAlertDialog(
       title: 'Session Expired',
       message: 'Your session has expired. Please log in again.',
       icon: Icons.login,
@@ -92,6 +91,17 @@ void showReloginDialog(BuildContext context) {
       ],
     ),
   );
+}
+
+void _showPopup(BuildContext context, Widget dialog) {
+  showDialog(
+    context: navigatorKey.currentContext ?? context,
+    barrierDismissible: true,
+    builder: (BuildContext context) => dialog,
+  ).then((_) {
+    // Reset the flag when the dialog is closed
+    _isPopupShowing = false;
+  });
 }
 
 Map<String, String> getErrorMessage(dynamic error) {

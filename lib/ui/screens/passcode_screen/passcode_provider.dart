@@ -18,12 +18,12 @@ class PasscodeSetupModel extends ChangeNotifier {
 
   void addDigit(String digit) {
     if (_isConfirming) {
-      if (_confirmedPasscode.length < 5) {
+      if (_confirmedPasscode.length < 4) {
         _confirmedPasscode += digit;
         notifyListeners();
       }
     } else {
-      if (_passcode.length < 5) {
+      if (_passcode.length < 4) {
         _passcode += digit;
         notifyListeners();
       }
@@ -59,7 +59,7 @@ class PasscodeSetupModel extends ChangeNotifier {
   }
 
   void switchToConfirmation() {
-    if (_passcode.length == 5) {
+    if (_passcode.length == 4) {
       _isConfirming = true;
       notifyListeners();
     }else if(_confirmedPasscode.isEmpty){
@@ -69,7 +69,7 @@ class PasscodeSetupModel extends ChangeNotifier {
   }
 
   Future<void> savePasscode() async {
-    if (_passcode == _confirmedPasscode && _passcode.length == 5) {
+    if (_passcode == _confirmedPasscode && _passcode.length == 4) {
       final storage = FlutterSecureStorage();
       await storage.write(key: 'passcode', value: _passcode);
       String? pass = await storage.read(key: "passcode");

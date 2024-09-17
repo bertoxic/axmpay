@@ -38,7 +38,7 @@ class ApiService {
       },
       onResponse: (response, handler) {
         print('Response code 1: ${response.statusCode}');
-        print('Response Data 2: ${response.data}');
+        print('Response Data 2: ${response.data.toString()}');
         print('Response header xxx izzzzz 2: ${response.headers.toString()}');
         return handler.next(response);
       },
@@ -98,7 +98,6 @@ class ApiService {
         if (e is DioException) {
           if (e.type == DioExceptionType.connectionError) {
             handleGlobalError(context, e);
-
             //rethrow;
           }else if (e.type == DioExceptionType.connectionTimeout) {
             handleGlobalError(context, e);

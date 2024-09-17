@@ -25,11 +25,15 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
   }
 
   Future<void> _initializeUserDetails() async {
-    final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
+    if(mounted) {
+      final userProvider = Provider.of<UserServiceProvider>(
+          context, listen: false);
       final userData = await userProvider.getUserDetails(context);
+      if (!mounted) return;
       await userProvider.getBankNames(context);
+      if (!mounted) return;
       await userProvider.getUserDetails(context);
-
+    }
   }
   void goToBranch(int index) async {
     widget.navigationShell.goBranch(
@@ -41,17 +45,17 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
   }
 
   Future<void> _refreshUserDetails(int index) async {
-    final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
-    switch(index){
-      case 0 :
-        await userProvider.getUserDetails(context);
-        if(!mounted) return;
-        context.goNamed("/home");
-        return;
-     case 3 :
-        await userProvider.fetchTransactionHistory(context);
-        return;
-    }
+   // final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
+    // switch(index){
+    //   case 0 :
+    //     await userProvider.getUserDetails(context);
+    //     if(!mounted) return;
+    //     context.goNamed("/home");
+    //     return;
+    //  case 3 :
+    //     await userProvider.fetchTransactionHistory(context);
+    //     return;
+    // }
   }
 
   void _retryInitialization() {
@@ -75,17 +79,17 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
     // };
     return Scaffold(
       backgroundColor: Colors.grey,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: colorScheme.primaryContainer,
-        child:  Icon(Icons.water_drop, color: colorScheme.primary,),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {},
+      //   backgroundColor: colorScheme.primaryContainer,
+      //   child:  Icon(Icons.water_drop, color: colorScheme.primary,),
+      // ),
       bottomNavigationBar: CustomBottomNavBar(
         items: [
           BottomNavItem(icon: Icons.home, label: "Home"),
           BottomNavItem(icon: Icons.send_and_archive_rounded, label: "transfer"),
-          BottomNavItem(icon: Icons.sentiment_dissatisfied, label: "profile"),
           BottomNavItem(icon: Icons.format_align_center, label: "history"),
+          BottomNavItem(icon: Icons.person, label: "profile"),
         ],
         onItemSelected: (int value) {
           setState(() {

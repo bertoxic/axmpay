@@ -1,5 +1,8 @@
+import 'package:AXMPAY/models/ResponseModel.dart';
+import 'package:AXMPAY/providers/user_service_provider.dart';
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +15,7 @@ import 'package:AXMPAY/ui/widgets/custom_textfield.dart';
 import '../../main.dart';
 import '../../models/user_model.dart';
 import '../../providers/authentication_provider.dart';
+import '../widgets/custom_dialog.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -32,7 +36,7 @@ class _LoginPageState extends State<LoginPage> {
     final authProvider = Provider.of<AuthenticationProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Sign in to your account"),
+        title:  Text("Sign in to your account",style: TextStyle(color: colorScheme.primary.withOpacity(0.5)),),
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Theme.of(context).colorScheme.onBackground,
@@ -94,7 +98,7 @@ class _LoginPageState extends State<LoginPage> {
                           ? SizedBox(
                         height: 24.h,
                         width: 24.w,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                       )
                           : Text('Login', style: TextStyle(fontSize: 16.sp, color: Colors.white)),
                     ),
@@ -102,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
                   SizedBox(height: 16.h),
                   Center(
                     child: TextButton(
-                      onPressed: () => context.pushNamed("/change_password_screen"),
+                      onPressed: () =>  context.pushNamed("forgot_password_input_mail"),
                       child: Text(
                         'Forgot password?',
                         style: TextStyle(color: Theme.of(context).colorScheme.primary),
@@ -185,10 +189,17 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       try {
-        var data = await authProvider.login(context, userDetails);
-        if (data != null) {
-          if (data["status"] == "Verified") {
-           final storage = FlutterSecureStorage();
+        var resp = await authProvider.login(context, userDetails);
+        UserServiceProvider userServiceProvider = Provider.of<UserServiceProvider>(context,listen: false);
+        if (resp != null) {
+          if(resp.status== ResponseStatus.failed){
+            CustomPopup.show(
+              context: context, message: resp.message,title: "Error:${resp.status}",
+            );
+            return;
+          }
+          if (userServiceProvider.userdata?.status == "Verified") {
+           const storage = FlutterSecureStorage();
             bool hasPasscode = await storage.read(key: 'passcode')==null;
             if (hasPasscode) {
               if(!mounted) return;
@@ -203,8 +214,8 @@ class _LoginPageState extends State<LoginPage> {
           }
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login failed: ${e.toString()}')),
+        CustomPopup.show(
+            context: context, message: 'Login failed: ${e.toString()}',title: "Error",
         );
       } finally {
         setState(() => _isLoading = false);

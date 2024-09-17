@@ -25,6 +25,7 @@ import '../ui/screens/homeScreen/home_screen.dart';
 import '../ui/screens/login_page.dart';
 import '../ui/screens/registration/register_page.dart';
 import '../ui/screens/settings_page.dart';
+import '../ui/screens/transaction_screen/success_receipt_screen.dart';
 import '../ui/screens/upgrade_account/upgrade_account_form.dart';
 
 final  _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -84,21 +85,6 @@ final GoRouter  _router = GoRouter(
 
               ]),
 
-          StatefulShellBranch(
-              navigatorKey: _rootNavigatorUserProfile,
-              initialLocation: "/user_profile_page",
-              routes: [
-                GoRoute(
-                  path: '/user_profile_page',
-                  name: '/user_profile_page',
-                  builder: (BuildContext context, GoRouterState state) {
-                    return   UserProfileScreen(
-                      key: state.pageKey,
-                    );
-                  },
-                ),
-
-              ]),
       StatefulShellBranch(
           navigatorKey: _rootNavigatorTransactionHistory,
           initialLocation: "/transaction_history_page",
@@ -115,7 +101,21 @@ final GoRouter  _router = GoRouter(
             )
 
       ]),
+          StatefulShellBranch(
+              navigatorKey: _rootNavigatorUserProfile,
+              initialLocation: "/user_profile_page",
+              routes: [
+                GoRoute(
+                  path: '/user_profile_page',
+                  name: '/user_profile_page',
+                  builder: (BuildContext context, GoRouterState state) {
+                    return   UserProfileScreen(
+                      key: state.pageKey,
+                    );
+                  },
+                ),
 
+              ]),
           // StatefulShellBranch(
           //     initialLocation: "/settings",
           //     navigatorKey: _rootNavigatorProfile,
@@ -207,6 +207,14 @@ final GoRouter  _router = GoRouter(
         final String? otp = state.pathParameters['otp'];
         final String? email = state.pathParameters['email'];
         return   ChangePasswordScreen(email: email!, otp: otp!,);
+      },
+    ),
+    GoRoute(
+      path: '/top_up_success',
+      name: 'top_up_success',
+      builder: (BuildContext context, GoRouterState state) {
+        final ReceiptData? receiptData = state.extra as ReceiptData?;
+        return TopUpSuccessScreen(receiptData: receiptData);
       },
     ),
     GoRoute(

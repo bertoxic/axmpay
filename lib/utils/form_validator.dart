@@ -62,7 +62,7 @@ class FormValidator {
   }
 
   static String? validateRemarks(String value) {
-    if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
+    if (!RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value)) {
       return 'Please enter only letters';
     }
     if (value.length > 50) {

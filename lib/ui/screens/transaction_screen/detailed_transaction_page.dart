@@ -39,6 +39,8 @@ class TransactionDetailScreen extends StatelessWidget {
   }
 
   Widget _buildHeader() {
+    double? transactionAmount = double.tryParse(transaction?.amount.toString() ?? '0');
+    final formatter = NumberFormat.currency(locale: 'en_US', symbol: '\₦');
     return Row(
       children: [
         Expanded(
@@ -54,7 +56,7 @@ class TransactionDetailScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  '${transaction.type.toLowerCase() == 'credit' ? '+' : '-'} \$${transaction.amount.toStringAsFixed(2)}',
+                  '${transaction.type.toLowerCase() == 'credit' ? '+' : '-'} ${formatter.format(transactionAmount)}',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
@@ -82,6 +84,10 @@ class TransactionDetailScreen extends StatelessWidget {
   }
 
   Widget _buildDetailsList() {
+    double? balAfter = double.tryParse(transaction?.balAfter.toString() ?? '0');
+    double? transactionFee = double.tryParse(transaction?.fee.toString() ?? '0');
+    double? totalAmt = double.tryParse(transaction?.totalAmount.toString() ?? '0');
+    final formatter = NumberFormat.currency(locale: 'en_US', symbol: '\₦');
     return Container(
       decoration: BoxDecoration(
         color: transaction.type.toLowerCase() == 'credit'
@@ -99,10 +105,10 @@ class TransactionDetailScreen extends StatelessWidget {
             _buildDetailItem('Account:', transaction.accountName),
             _buildDetailItem('Status:', transaction.status, isStatus: true),
             _buildDetailItem('Type:', transaction.type),
-            _buildDetailItem('Fee:', '\$${transaction.fee.toStringAsFixed(2)}'),
+            _buildDetailItem('Fee:', formatter.format(transactionFee)),
             _buildDetailItem('Total Amount:',
-                '\$${transaction.totalAmount.toStringAsFixed(2)}'),
-            _buildDetailItem('Balance After:', transaction.balAfter),
+                formatter.format(totalAmt)),
+            _buildDetailItem('Balance After:', formatter.format(balAfter)),
             _buildDetailItem('Narration:', transaction.narration),
           ],
         ),
