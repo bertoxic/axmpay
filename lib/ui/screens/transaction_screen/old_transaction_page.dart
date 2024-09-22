@@ -523,7 +523,8 @@
 //                         print("user sent the money now");
 //                       });
 //                     }else{
-//                       CustomPopup.show(context: context, title: 'incomplete details',message: "please confirm your details are complete");
+//                       CustomPopup.show(type: PopupType.error,
+//                       context: context, title: 'incomplete details',message: "please confirm your details are complete");
 //                       print("receipient is not valid");
 //                     }
 //                   },

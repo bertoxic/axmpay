@@ -71,11 +71,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     SizedBox(height: 4.h),
                     AppText.body("${userData?.phone}", color: colorScheme.onPrimary),
                     SizedBox(height: 8.h),
-                    Row(
+                     Row(
                       children: [
-                        AppText.body("${userData?.status}", color: Colors.grey.shade300),
+                        AppText.body("${userData?.verificationStatus} upgrade", color: Colors.grey.shade300),
                         SizedBox(width: 4.w),
                         Icon(Icons.verified, color: Colors.green, size: 18.sp)
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        AppText.body("Tier: ${userService.userdata?.tier}", color: Colors.grey.shade300),
+                        SizedBox(width: 4.w),
+                        Icon(Icons.flag, color: Colors.white, size: 18.sp)
                       ],
                     ),
                   ],
@@ -124,7 +131,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ),
       child: Column(
         children: [
-          _buildOptionTile(
+         // (userService.userdata?.verificationStatus.toLowerCase()=="pending"||userService.userdata?.verificationStatus.toLowerCase()=="verified")?SizedBox():_buildOptionTile(
+          (userService.userdata?.verificationStatus.toLowerCase()=="pending"||userService.userdata?.verificationStatus.toLowerCase()=="verified")?SizedBox():_buildOptionTile(
             context,
             icon: Icons.upgrade_rounded,
             title: "Upgrade your account",

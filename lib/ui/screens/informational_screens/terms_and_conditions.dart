@@ -107,23 +107,16 @@ class _TermsAndConditionsState extends State<TermsAndConditions> {
                               style: TextStyle(fontSize: 14.sp, height: 1.5),
                             ),
                             SizedBox(height: 8.sp),
-                            Text(
-                              "Parent Section: ${term.parentSection}",
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                fontStyle: FontStyle.italic,
-                                color: colorScheme.onSurface.withOpacity(0.6),
-                              ),
-                            ),
+
                             SizedBox(height: 4.sp),
-                            Text(
-                              "Date Added: ${term.dateAdded}",
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                fontStyle: FontStyle.italic,
-                                color: colorScheme.onSurface.withOpacity(0.6),
-                              ),
-                            ),
+                            // Text(
+                            //   "Date Added: ${term.dateAdded}",
+                            //   style: TextStyle(
+                            //     fontSize: 12.sp,
+                            //     fontStyle: FontStyle.italic,
+                            //     color: colorScheme.onSurface.withOpacity(0.6),
+                            //   ),
+                            // ),
                             if (index < sortedTerms.length - 1)
                               Divider(height: 32.sp, thickness: 1.sp),
                           ],

@@ -1,6 +1,8 @@
+
 enum ResponseStatus {
   success,
   failed,
+
 }
 
 class ResponseResult {
@@ -13,4 +15,9 @@ class ResponseResult {
     required this.message,
     this.data,
   });
+
+  @override
+  String toString() {
+    return 'ResponseResult(status: $status, message: $message, data: $data)';
+  }
 }

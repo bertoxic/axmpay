@@ -1,3 +1,4 @@
+import 'package:AXMPAY/constants/lists.dart';
 import 'package:AXMPAY/models/ResponseModel.dart';
 import 'package:AXMPAY/ui/screens/registration/registration_controller.dart';
 import 'package:AXMPAY/ui/widgets/custom_buttons.dart';
@@ -13,6 +14,7 @@ import '../../../constants/text_constants.dart';
 import '../../../main.dart';
 import '../../../models/user_model.dart';
 import '../../../providers/authentication_provider.dart';
+import '../../../utils/form_validator.dart';
 import '../../widgets/custom_container.dart';
 import '../../widgets/custom_text/custom_apptext.dart';
 import '../../widgets/custom_textfield.dart';
@@ -100,9 +102,10 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                                 //     fillColor: AppColors.lightgrey,
                                 //     filled: true
                                 // ),
-                                validator: null,
+                                validator: (value)=>FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "firstName"),
                                 controller:  _controller.first_name,
                                 prefixIcon: const Icon(Icons.person), fieldName: Fields.name,
+                                readOnly: true,
                                 onChanged: (value){
                                   userdetails.firstName = value;
                                 },
@@ -114,7 +117,8 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                                 labelText: 'Last Name',
                                 hintText: 'Enter your Last Name',
                                 controller:  _controller.last_name,
-                                validator:null,
+                                readOnly: true,
+                                validator: (value)=>FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "lastName"),
                                 prefixIcon: const Icon(Icons.person), fieldName: Fields.name,
                                 onChanged: (value){
                                   userdetails.lastName = value;
@@ -126,6 +130,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                               child: CustomTextField(
                                 labelText: 'Email',
                                 hintText: 'Enter your email',
+                                readOnly: true,
                                 prefixIcon: const Icon(Icons.email_outlined),
                                 onChanged: (value){
                                   userdetails.email = value;
@@ -133,7 +138,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                                 keyboardType: TextInputType.emailAddress,
                                 fieldName: Fields.email,
                                 controller: _controller.emailController,
-                                // validator: (value)=>FormValidator.validate(value, ValidatorType.email,fieldName: Fields.email),
+                                 validator: (value)=>FormValidator.validate(value, ValidatorType.email,fieldName: Fields.email),
                               ),
                             ),
                             SpacedContainer(
@@ -143,12 +148,12 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                                 hintText: 'Enter phone number',
                                 prefixIcon: const Icon(Icons.phone),
 
-                                obscureText: true, fieldName: Fields.password,
+                                fieldName: 'phone',
                                 onChanged: (value){
                                   userdetails.phone = value;
                                 },
                                 controller: _controller.phone_number,
-                                // validator: (value) => FormValidator.validate(value, ValidatorType.password, fieldName: "password"),
+                                 validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "Phone number"),
                               ),
                             ),
                           ],
@@ -170,13 +175,25 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                                 padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.h),
                                 child: AppText.body("Address",),),
                             ),
-
+                            SpacedContainer(
+                              child: DropdownTextField(
+                                labelText: 'country',
+                                hintText: 'country',
+                                prefixIcon: Icons.location_on,
+                                controller: _controller.country,
+                                onChange: (value){
+                                },
+                                fieldName: "country",
+                                validator: (value)=>FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "country"),
+                                options: Countries, displayStringForOption: (options )=>options,
+                              ),
+                            ),
                             SpacedContainer(
                               child: CustomTextField(
                                 labelText: 'State',
                                 hintText: 'name of state',
                                 controller: _controller.state,
-                                validator: null,
+                                validator: (value)=>FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "state"),
                                 prefixIcon: const Icon(Icons.location_history), fieldName: Fields.name,
                                 onChanged: (value){
                                   userdetails.address?.state = value;
@@ -189,7 +206,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                                 labelText: 'City',
                                 hintText: 'Enter name of your City',
                                 controller: _controller.city,
-                                validator:null,
+                                validator: (value)=>FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "city"),
                                 prefixIcon: const Icon(Icons.location_city), fieldName: Fields.name,
                                 onChanged: (value){
                                   userdetails.address?.city = value;
@@ -199,29 +216,54 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                             ),
                             SpacedContainer(
                               child: CustomTextField(
-                                labelText: 'Street address',
-                                hintText: 'Enter street name and number',
-                                controller: _controller.street_address,
-                                prefixIcon: const Icon(Icons.location_searching_outlined),
+                                labelText: 'Street name',
+                                hintText: 'Enter street name',
+                                controller: _controller.streetAddress,
+                                prefixIcon: const Icon(Icons.add_road_outlined),
                                 onChanged: (value){
                                   userdetails.address?.street = value;
                                 },
                                 keyboardType: TextInputType.text,
                                 fieldName: Fields.email,
-                                // validator: (value)=>FormValidator.validate(value, ValidatorType.email,fieldName: Fields.email),
+                                 validator: (value)=>FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "street address"),
                               ),
                             ),
                             SpacedContainer(
                               child: CustomTextField(
-                                labelText: 'country',
-                                hintText: 'country',
-                                prefixIcon: const Icon(Icons.location_on),
-                                controller: _controller.country,
+                                labelText: 'L.G.A',
+                                hintText: 'Local Government Area',
+                                prefixIcon: const Icon(Icons.location_searching),
+                                controller: _controller.localGovArea,
                                 onChanged: (value){
                                 },
                                 keyboardType: TextInputType.text,
-                                fieldName: "country",
-                                // validator: (value)=>FormValidator.validate(value, ValidatorType.email,fieldName: Fields.email),
+                                fieldName: "Local Government Area",
+                                validator: (value)=>FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "L.G.A"),
+                              ),
+                            ), SpacedContainer(
+                              child: CustomTextField(
+                                labelText: 'House Number',
+                                hintText: 'Your House Number',
+                                prefixIcon: const Icon(Icons.discount),
+                                controller: _controller.houseNumber,
+                                onChanged: (value){
+                                },
+                                keyboardType: TextInputType.text,
+                                fieldName: "House Number",
+                                validator: (value)=>FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "House Number"),
+                              ),
+                            ),
+                            SpacedContainer(
+                              child: CustomTextField(
+                                labelText: 'Nearest LandMark',
+                                hintText: 'Nearest LandMark',
+                                prefixIcon: const Icon(Icons.add_home),
+                                controller: _controller.nearestLandMark,
+                                onChanged: (value){
+                                },
+                                keyboardType: TextInputType.text,
+                                fieldName: "Nearest LandMark",
+                                validator: (value)=>FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "Nearest LandMark"),
                               ),
                             ),
 
@@ -248,56 +290,50 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                             ),
 
                             SpacedContainer(
-                              child: DatePickerTextField(context: context,onChange:(value){
+                              child: DatePickerTextField(context: context,
+                                onChange:(value){
                                     print(value);
-                              }, dateController: _controller.date_of_birth,),
+                              }, dateController: _controller.date_of_birth,
+                                validator: (value)=>FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "date of birth"),
+
+                              ),
                             ),
+
                             SpacedContainer(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(18)
-                                ),
-                                child: CustomDropdown(
-                                  initialValue: "Please pick your gender",
-                                  itemBuilder: (item){
-                                    return Padding(
-                                      padding: EdgeInsets.all(8.sp),
-                                      child: Row(
-                                        children: [
-                                          AppText.body(item),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                  onChanged: (newValue) {
+                                child: DropdownTextField(
+                                  controller: _controller.gender,
+                                  validator: (value)=>FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "gender"),
+                                  onChange: (value ) {
                                     setState(() {
-                                        _controller.gender.text = newValue??"select value"!;
+                                      _controller.gender.text = value??""!;
                                     });
-                                  },
-                                  selectedItemBuilder: (item) => Text(item),
-                                  items: const <String>["Male","Female"],
-                                ),
-                              )
+
+                                  }, options: ["male","female"],
+                                  labelText: 'Gender', hintText: 'please select aa gender',
+                                  prefixIcon: Icons.female,
+                                  fieldName: 'gender',
+                                  displayStringForOption: (options )  =>options,
+                                )
                             ),
                             SpacedContainer(
                               child: CustomTextField(
                                 labelText: 'BVN',
                                 hintText: 'input your valid BVN',
+                    validator: (value)=>FormValidator.validate(value, ValidatorType.digits,fieldName: "BVN"),
 
-                                validator:null,
                                 prefixIcon: const Icon(Icons.perm_identity), fieldName: Fields.name,
                                 onChanged: (value){
                                 },
                                 controller: _controller.bvn,
                               ),
                             ),
+
                             SpacedContainer(
                               child: CustomTextField(
                                 labelText: 'place of birth',
                                 hintText: 'your place of birth',
 
-                                validator:null,
+                                validator: (value)=>FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "place of Birth"),
                                 prefixIcon: const Icon(Icons.location_on), fieldName: Fields.name,
                                 onChanged: (value){
                                   userdetails.nin = value;
@@ -306,16 +342,32 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                               ),
                             ),
                             SpacedContainer(
+                                child: DropdownTextField(
+                                  controller: _controller.PEP,
+                                  validator: (value)=>FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "Political exposed person"),
+                                  onChange: (value ) {
+                                    setState(() {
+                                      _controller.PEP.text = value??""!;
+                                    });
+
+                                  }, options: const ["Yes","No"],
+                                  labelText: 'P.E.P', hintText: 'Political Exposed Person?',
+                                  prefixIcon: Icons.perm_identity_sharp,
+                                  fieldName: 'P.E.P',
+                                  displayStringForOption: (options )  =>options,
+                                )
+                            ),
+                            SpacedContainer(
                               child: CustomTextField(
                                 labelText: 'referrer id',
-                                hintText: 'who referred you',
-
-                                validator:null,
+                                hintText: 'This field is optional',
                                 prefixIcon: const Icon(Icons.man_3_outlined), fieldName: Fields.name,
                                 onChanged: (value){
                                   userdetails.nin = value;
                                 },
                                   controller: _controller.refby,
+                               // validator: (value)=>FormValidator.validate(value, ValidatorType.remarks,fieldName: "referrerID"),
+
                               ),
                             ),
 
@@ -335,18 +387,23 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                               size: ButtonSize.large,
                                 backgroundColor: Colors.green,
                                 foregroundColor: Colors.white,
-                                borderRadius: 12, //pirkofalto@gufum.com
+                                borderRadius: 12,
                                 isLoading: false,
                                 isDisabled: false,
                                 type: ButtonType.elevated,
                                 onPressed: ()async{
+                                if (_formKey.currentState!.validate()) {
+
+
                                 ResponseResult? resp = await _controller.createNewUserWallet();
                                 if(resp?.status == ResponseStatus.failed){
-                                  CustomPopup.show(context: context, title: resp?.status.toString()??"error", message: resp?.message??"an error occured");
+                                  CustomPopup.show(type: PopupType.error,
+                                      context: context, title: "error:", message: resp?.message??"an error occured");
                                 }else if(resp?.status==ResponseStatus.success){
-                                 CustomPopup.show(context: context, title: resp?.status.toString()??"success", message: resp?.message??"");
+                                 CustomPopup.show(type: PopupType.success,
+                                     context: context, title: resp?.status.toString()??"success", message: resp?.message??"");
                                  await  Future.delayed(Duration(seconds: 1));
-                                 final storage = FlutterSecureStorage();
+                                 final storage = const FlutterSecureStorage();
                                  bool hasPasscode = await storage.read(key: 'passcode')==null;
                                  if (hasPasscode) {
                                    if(!mounted) return;
@@ -356,6 +413,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                                    context.goNamed("/home");
                                  }
 
+                                }
                                 }
                                 },
                               ),
@@ -425,9 +483,88 @@ class _DatePickerTextFieldState extends State<DatePickerTextField> {
   }
 }
 
+//-------------------------------------- gender picker-----------------------------------------
+
+class DropdownTextField<T> extends StatefulWidget {
+  final Function(T?) onChange;
+  final TextEditingController controller;
+  final String? Function(String?)? validator;
+  final List<T> options;
+  final String labelText;
+  final String hintText;
+  final IconData prefixIcon;
+  final String fieldName;
+  final String Function(T) displayStringForOption;
+
+  const DropdownTextField({
+    Key? key,
+    required this.onChange,
+    required this.controller,
+    required this.options,
+    required this.labelText,
+    required this.hintText,
+    required this.prefixIcon,
+    required this.fieldName,
+    required this.displayStringForOption,
+    this.validator,
+  }) : super(key: key);
+
+  @override
+  _DropdownTextFieldState<T> createState() => _DropdownTextFieldState<T>();
+}
+
+class _DropdownTextFieldState<T> extends State<DropdownTextField<T>> {
+  T? _selectedOption;
+
+  void _showDropdown() async {
+    final RenderBox textFieldBox = context.findRenderObject() as RenderBox;
+    final textFieldPosition = textFieldBox.localToGlobal(Offset.zero);
+
+    final T? selectedOption = await showMenu<T>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        textFieldPosition.dx,
+        textFieldPosition.dy + textFieldBox.size.height,
+        textFieldPosition.dx + textFieldBox.size.width,
+        textFieldPosition.dy + textFieldBox.size.height,
+      ),
+      items: widget.options.map((T option) {
+        return PopupMenuItem<T>(
+          value: option,
+          child: Text(widget.displayStringForOption(option)),
+        );
+      }).toList(),
+    );
+
+    if (selectedOption != null) {
+      setState(() {
+        _selectedOption = selectedOption;
+        widget.controller.text = widget.displayStringForOption(selectedOption);
+        widget.onChange(selectedOption);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomTextField(
+      controller: widget.controller,
+      labelText: widget.labelText,
+      prefixIcon: Icon(widget.prefixIcon),
+      suffixIcon: Icon(Icons.arrow_drop_down),
+      hintText: _selectedOption != null
+          ? widget.displayStringForOption(_selectedOption!)
+          : widget.hintText,
+      readOnly: true,
+      onTap: _showDropdown,
+      validator: widget.validator,
+      fieldName: widget.fieldName,
+    );
+  }
+}
 String? validator(String? input){
   if (input == null || input.isEmpty) {
-    return "Name cannot be empty";
+    return "Date cannot be empty";
   }else{
     return null;
   }

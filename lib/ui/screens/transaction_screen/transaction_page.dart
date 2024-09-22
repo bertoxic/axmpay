@@ -502,12 +502,13 @@ class _TransferScreenState extends State<TransferScreen> {
                           recipientBankCode: recipientDetails?.account?.bank,
                           recipientBankName: selectedBank?.bankName,
                           senderAccountNumber: userp.userdata?.accountNumber,
-                          senderAccountName: userp.userdata?.firstname,
+                          senderAccountName: "${userp.userdata?.username}",
                           narration: _transactionRemark!);
 
                       _showBottomSheet(context, transactionModel);
                     }else{
-                      CustomPopup.show(context: context, title: 'incomplete details',message: "please confirm your details are complete");
+                      CustomPopup.show(type: PopupType.error,
+                          context: context, title: 'incomplete details',message: "please confirm your details are complete");
                       print("recipient is not valid");
                     }
                   },
@@ -578,6 +579,7 @@ class _TransferScreenState extends State<TransferScreen> {
 
                 if (resp?.status == ResponseStatus.failed) {
                   CustomPopup.show(
+                    type: PopupType.error,
                     context: context,
                     title: resp?.status.toString() ?? "error",
                     message: "${resp?.message}",
@@ -595,6 +597,7 @@ class _TransferScreenState extends State<TransferScreen> {
               } else {
                 if (!mounted) return;
                 CustomPopup.show(
+                  type: PopupType.error,
                   context: context,
                   title: "Incorrect Passcode",
                   message: "please ensure you put a correct passcode",

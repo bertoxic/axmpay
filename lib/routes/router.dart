@@ -229,11 +229,13 @@ final GoRouter  _router = GoRouter(
       builder: (BuildContext context, GoRouterState state) {
         return PasscodeInputScreen();
       },
-    ),  GoRoute(
-      path: '/passcode_setup_screen',
+    ),
+    GoRoute(
+      path: '/passcode_setup_screen/:email',
       name: 'passcode_setup_screen',
       builder: (BuildContext context, GoRouterState state) {
-        return PasscodeSetupScreen();
+        final email = state.pathParameters['email'];
+        return PasscodeSetupScreen(email: email!);
       },
     ),
 
@@ -242,6 +244,14 @@ final GoRouter  _router = GoRouter(
       name: 'forgot_password_input_mail',
       builder: (BuildContext context, GoRouterState state) {
         return    const InputEmailRecovery();
+      },
+    ),
+
+    GoRoute(
+      path: '/earnings_dashboard',
+      name: 'earnings_dashboard',
+      builder: (BuildContext context, GoRouterState state) {
+        return  FAQs();
       },
     ),
 

@@ -29,10 +29,23 @@ class _PhotoPickerState extends State<PhotoPicker> {
   late UploadPicture picker;
   String _displayText = 'Select an image';
 
+  late TextEditingController _displayController;
+
   @override
   void initState() {
     super.initState();
+    _displayController = TextEditingController(text: 'Select an image');
     picker = UploadPicture();
+  }
+
+  void _updateController(Map<String, String?>? data) {
+    if (data != null) {
+      setState(() {
+        _displayController.text = data["imageName"] ?? 'Image selected';
+        widget.controller.text = data["base64Bytes"] ?? '';
+      });
+      widget.onChange(widget.controller.text);
+    }
   }
 
   Future<void> _getImageFromGalleryBase64() async {
@@ -45,15 +58,6 @@ class _PhotoPickerState extends State<PhotoPicker> {
     _updateController(data);
   }
 
-  void _updateController(Map<String, String?>? data) {
-    if (data != null) {
-      setState(() {
-        _displayText = data["imageName"] ?? 'Image selected';
-        widget.controller.text = data["base64Bytes"] ?? '';
-      });
-      widget.onChange(widget.controller.text);
-    }
-  }
 
   void _showCustomDialog(BuildContext context) {
     showDialog(
@@ -134,11 +138,14 @@ class _PhotoPickerState extends State<PhotoPicker> {
       hintText: widget.hintText,
       labelText: widget.labelText,
       prefixIcon: widget.prefixIcon,
-      controller: TextEditingController(text: _displayText),
+      controller: _displayController,
       fieldName: "fieldName",
       readOnly: true,
       onTap: () => _showCustomDialog(context),
       obscureText: false,
+      validator: widget.validator != null
+          ? (_) => widget.validator!(widget.controller.text)
+          : null,
     );
   }
 }

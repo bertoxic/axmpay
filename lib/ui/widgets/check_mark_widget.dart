@@ -70,12 +70,12 @@ class _CheckmarkWithSpotsState extends State<CheckmarkWithSpots> with SingleTick
               width: widget.size * 0.6,
               height: widget.size * 0.6,
               decoration: BoxDecoration(
-                color: widget.color.withOpacity(0.4),
+                color: widget.color.withOpacity(0.6),
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.check_outlined,
-                color: widget.color,
+                Icons.check,
+                color: Colors.white,
                 size: widget.size * 0.4,
               ),
             ),

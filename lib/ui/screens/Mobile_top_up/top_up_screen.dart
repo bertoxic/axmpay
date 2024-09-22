@@ -187,6 +187,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
                   phoneNumberValue = value.toString();
                   _checkPhoneNumber(value);
                 },
+                keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
                   fillColor: Colors.grey.shade100,
                   filled: true,
@@ -553,6 +554,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
         // Check if phone number is valid
         if (!phoneIsValid) {
           CustomPopup.show(
+            type: PopupType.error,
               context: context, message: "Please enter a valid phone number",title: "invalid phone number",
           );
           return;
@@ -561,6 +563,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
         // Check if service provider network is available
         if (serviceProviderNetwork == null || serviceProviderNetwork!.isEmpty) {
           CustomPopup.show(
+            type: PopupType.error,
             context: context, message: "Unable to determine service provider. Please try again.", title: 'No serviceProvider',
           );
           return;
@@ -569,6 +572,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
         // Check if amount is entered for airtime top-up
         if (!isDataSelected && (amountController.text.isEmpty || double.tryParse(amountController.text) == null)) {
           CustomPopup.show(
+            type: PopupType.error,
               context: context, message: "Please enter a valid amount for airtime top-up",title: "please enter a valid amount",
           );
           return;
@@ -577,6 +581,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
         // Check if data bundle is selected for data top-up
         if (isDataSelected && selectedDataBundle == null) {
           CustomPopup.show(
+            type: PopupType.error,
               context: context, message: "Please select a data bundle",title: 'missing data-bundle',
           );
           return;
@@ -613,24 +618,30 @@ class _MobileTopUpState extends State<MobileTopUp> {
               );
                   if(correctPass !=null){
               if (correctPass) {
-                ResponseResult? resp = await userProvider.buyAirtime(context, topup);
+                ResponseResult? resp;
+                if(isData){
+                  resp = await userProvider.topUpData(context, topup);
+                }else{
+                resp = await userProvider.buyAirtime(context, topup);}
                 if (resp?.status == ResponseStatus.failed) {
                   if (!mounted) return;
                   CustomPopup.show(
+                    type: PopupType.error,
                     context: context,
-                    title: "Error occurred: ${resp?.status.toString()}",
+                    title: "Top-up failed",
                     message: "${resp?.message.toString()}",
                   );
                 } else {
                   if (!mounted) return;
                   Navigator.pop(context); // Close the bottom sheet
-                  CustomPopup.show(
+                  CustomPopup.show( type: PopupType.success,
                       context: context, message:"Top-up successful", title: "Success"
                   );
                 }
               } else {
                 if (!mounted) return;
                 CustomPopup.show(
+                  type: PopupType.error,
                   context: context,
                   title: "Wrong passcode entered",
                   message: "Please use the correct passcode",
@@ -639,7 +650,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
               }
             } catch (e) {
               print("Error during top-up: $e");
-              CustomPopup.show(
+              CustomPopup.show(type: PopupType.error,
                   context: context, message: "Top-up failed: $e", title: "failed",
               );
             }

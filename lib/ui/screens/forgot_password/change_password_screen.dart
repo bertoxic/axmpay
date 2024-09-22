@@ -156,7 +156,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       title: "Password Change Success",
       message: "Your password has been updated",
       context: context,
-    );
+    ).then((value) => context.goNamed("login") );
   }
 
   String? _checkInputtedPassword(String? value) {

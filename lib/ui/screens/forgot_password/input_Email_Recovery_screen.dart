@@ -1,4 +1,5 @@
 import 'package:AXMPAY/main.dart';
+import 'package:AXMPAY/models/ResponseModel.dart';
 import 'package:AXMPAY/ui/widgets/custom_buttons.dart';
 import 'package:AXMPAY/ui/widgets/custom_dialog.dart';
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
@@ -21,6 +22,10 @@ class InputEmailRecovery extends StatefulWidget {
 class _InputEmailRecoveryState extends State<InputEmailRecovery> {
   final _inputEmailFormKey = GlobalKey<FormState>();
   String? email;
+
+  var isLoading=false;
+
+  TextEditingController _emailController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -86,8 +91,9 @@ class _InputEmailRecoveryState extends State<InputEmailRecovery> {
                       child: Column(
                         children: [
                           CustomTextField(
+                            controller: _emailController,
                             onChanged: (value) {
-                              email = value;
+                              email = _emailController.text;
                             },
                             validator: (value) => FormValidator.validate(
                               value,
@@ -99,14 +105,17 @@ class _InputEmailRecoveryState extends State<InputEmailRecovery> {
                             prefixIcon: Icon(Icons.email, color: colorScheme.primary),
                           ),
                           SizedBox(height: 24.h),
-                          CustomButton(
+                          CustomButton( isLoading: isLoading,
                             text: "Recover Password",
                             size: ButtonSize.large,
-                            onPressed: () async {
+                            onPressed:isLoading?null: () async {
                               if (_inputEmailFormKey.currentState!.validate()) {
+                                setState(() {
+                                  isLoading = true;
+                                });
                                 try {
-                                  String? status = await userProvider.sendVerificationCode(context, email!);
-                                  if (status.toString() != "failed") {
+                                  ResponseResult? resp = await userProvider.sendVerificationCode(context, email!);
+                                  if (resp?.status == ResponseStatus.success) {
                                     if (!mounted) return;
                                     context.pushNamed(
                                       "/forgot_password_otp",
@@ -117,24 +126,28 @@ class _InputEmailRecoveryState extends State<InputEmailRecovery> {
                                     await CustomPopup.show(
                                       backgroundColor: colorScheme.onPrimary,
                                       type: PopupType.error,
-                                      title: "Email Not Found",
-                                      message: "The email address was not found in our database.",
+                                      title: "Error",
+                                      message: "${resp?.message}",
                                       context: context,
                                     );
+                                    setState(() {
+                                      isLoading = false;
+                                    });
                                   }
                                 } catch (e) {
-                                  context.pushNamed(
-                                    "/forgot_password_otp",
-                                    pathParameters: {'email': email!},
-                                  );
+
                                   if (!mounted) return;
                                   await CustomPopup.show(
                                     backgroundColor: colorScheme.onPrimary,
                                     type: PopupType.error,
                                     title: "Error",
-                                    message: "An unexpected error occurred. Please try again.$e",
+                                    message: "An unexpected error occurred. Please try again.",
                                     context: context,
                                   );
+                                }finally{
+                                  setState(() {
+                                    isLoading = false;
+                                  });
                                 }
                               }
                             },

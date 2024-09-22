@@ -1,5 +1,5 @@
 
-enum ValidatorType { name, email, password, digits, remarks }
+enum ValidatorType { name, email, password, digits, remarks, isEmpty }
 
 class FormValidator {
   static String? validate(String? value, ValidatorType type, {String? fieldName}) {
@@ -18,6 +18,8 @@ class FormValidator {
         return validateDigits(value);
       case ValidatorType.remarks:
         return validateRemarks(value);
+      case ValidatorType.isEmpty:
+        return validateNotEmpty(value);
     }
   }
 
@@ -40,7 +42,12 @@ class FormValidator {
     }
     return null;
   }
-
+  static String? validateNotEmpty(String value) {
+    if (value.isEmpty) {
+      return 'This field cannot be empty';
+    }
+    return null;
+  }
   static String? validatePassword(String value) {
     if (value.length < 8) {
       return 'Password must be at least 8 characters long';

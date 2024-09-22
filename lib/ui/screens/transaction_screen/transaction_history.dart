@@ -134,7 +134,8 @@ class _TransactionItemState extends State<_TransactionItem> {
           print("Navigation completed");
         } catch (e) {
           if (mounted) {
-            CustomPopup.show(context: context, title: "error occured", message: "error fetching transaction details");
+            CustomPopup.show(type: PopupType.error,
+                context: context, title: "error occurred", message: "error fetching transaction details");
 
           }
         } finally {

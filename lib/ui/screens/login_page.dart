@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:AXMPAY/models/ResponseModel.dart';
 import 'package:AXMPAY/providers/user_service_provider.dart';
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
@@ -180,6 +182,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _handleLogin(AuthenticationProvider authProvider) async {
+    print("befyogamli@gufum.com");
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
@@ -187,38 +190,60 @@ class _LoginPageState extends State<LoginPage> {
         email: _emailController.text,
         password: _passwordController.text,
       );
-
       try {
         var resp = await authProvider.login(context, userDetails);
-        UserServiceProvider userServiceProvider = Provider.of<UserServiceProvider>(context,listen: false);
-        if (resp != null) {
-          if(resp.status== ResponseStatus.failed){
-            CustomPopup.show(
-              context: context, message: resp.message,title: "Error:${resp.status}",
+        if (!mounted) return;
+
+        UserServiceProvider userServiceProvider = Provider.of<UserServiceProvider>(context, listen: false);
+
+        if (resp == null) {
+          throw Exception('Login response is null');
+        }
+
+        if (resp.status == ResponseStatus.failed) {
+          CustomPopup.show(
+            type: PopupType.error,
+            context: context,
+            message: resp.message,
+            title: "Login Failed",
+          );
+          return;
+        }
+        if (userServiceProvider.userdata?.userStatus.toString() == "Verified") {
+          const storage = FlutterSecureStorage();
+          String? passCodeMapString = await storage.read(key: 'passcodeMap');
+
+          if (passCodeMapString == null) {
+            context.pushNamed(
+              'passcode_setup_screen',
+              pathParameters: {'email': userDetails.email??""},
             );
-            return;
-          }
-          if (userServiceProvider.userdata?.status == "Verified") {
-           const storage = FlutterSecureStorage();
-            bool hasPasscode = await storage.read(key: 'passcode')==null;
-            if (hasPasscode) {
-              if(!mounted) return;
-              context.pushNamed("passcode_setup_screen");
-            }else if(!hasPasscode){
-              if(!mounted) return;
-              context.goNamed("/home");
-            }
           } else {
-            if(!mounted) return;
-            context.goNamed("user_details_page");
+            var passCodeMap = jsonDecode(passCodeMapString);
+            if (passCodeMap["email"] == userDetails.email) {
+              context.goNamed("/home");
+            } else {
+              context.pushNamed(
+                'passcode_setup_screen',
+                pathParameters: {'email': userDetails.email??""},
+              );
+            }
           }
+        } else {
+          context.goNamed("user_details_page");
         }
       } catch (e) {
+        if (!mounted) return;
         CustomPopup.show(
-            context: context, message: 'Login failed: ${e.toString()}',title: "Error",
+          type: PopupType.error,
+          context: context,
+          message: 'Login failed: ${e.toString()}',
+          title: "Error",
         );
       } finally {
-        setState(() => _isLoading = false);
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
       }
     }
   }

@@ -36,7 +36,7 @@ class TopUpSuccessScreen extends StatelessWidget {
                       Center(
                         child: CheckmarkWithSpots(
                           size: 150.sp,
-                          color: Colors.green.shade400,
+                          color: Colors.green.shade500,
                           spotCount: 24,
                         ),
                       ),
@@ -141,11 +141,13 @@ class TopUpSuccessScreen extends StatelessWidget {
     if (receiptData != null) {
       ReceiptGenerator.generatePdf(context, receiptData!);
     } else {
-      CustomPopup.show(context: context, title: "unable to generate pdf", message:'Unable to generate PDF. Receipt data is missing.',
+      CustomPopup.show(type: PopupType.error,
+        context: context, title: "unable to generate pdf", message:'Unable to generate PDF. Receipt data is missing.',
       );
     }
     }catch(e){
-      CustomPopup.show(context: context, title: "Error", message: e.toString());
+      CustomPopup.show(type: PopupType.error,
+          context: context, title: "Error", message: e.toString());
     }
   }
   Widget _buildDetailRow(String label, String value) {

@@ -7,6 +7,8 @@ import 'package:AXMPAY/ui/screens/registration/registration_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../providers/user_service_provider.dart';
+
 class RegistrationController {
   final BuildContext context;
   final formKey = GlobalKey<FormState>();
@@ -22,10 +24,14 @@ class RegistrationController {
   final TextEditingController phone_number = TextEditingController();
   final TextEditingController placeOfBirthController = TextEditingController();
   final TextEditingController bvn = TextEditingController();
-  final TextEditingController street_address = TextEditingController();
+  final TextEditingController streetAddress = TextEditingController();
   final TextEditingController city = TextEditingController();
   final TextEditingController state = TextEditingController();
+  final TextEditingController localGovArea = TextEditingController();
+  final TextEditingController nearestLandMark = TextEditingController();
   final TextEditingController zip_code = TextEditingController();
+  final TextEditingController PEP = TextEditingController();
+  final TextEditingController houseNumber = TextEditingController();
   late UserDetails? userDetails;
   late WalletPayload? walletPayload;
   RegistrationController(this.context){
@@ -37,7 +43,17 @@ void _initializeController() {
       final provider = Provider.of<RegistrationProvider>(context, listen: false);
       userDetails = provider.userDetails;
       walletPayload = provider.walletPayload;
+      _initializeFormDetails();
 }
+
+  _initializeFormDetails(){
+    final providerx = Provider.of<UserServiceProvider>(context, listen: false);
+    final email = providerx.userdata?.email;
+    emailController.text = providerx.userdata?.email ?? '';
+    first_name.text = providerx.userdata?.firstname ?? '';
+    last_name.text = providerx.userdata?.lastname ?? '';
+    phone_number.text = providerx.userdata?.phone ?? '';
+  }
 
   Future<void> selectDate(BuildContext context) async {
     final provider = Provider.of<RegistrationProvider>(context, listen: false);
@@ -58,7 +74,7 @@ void _initializeController() {
         dateOfBirth: date_of_birth.text,
         email: emailController.text,
         firstName: first_name.text,
-        address: Address(street: street_address.text, city: city.text, state: state.text, zip: zip_code.text),
+        address: Address(street: streetAddress.text, city: city.text, state: state.text, houseNumber: houseNumber.text),
         bvn: bvn.text,
         nin: placeOfBirthController.text,
         phone: phone_number.text,
@@ -68,7 +84,7 @@ void _initializeController() {
     final provider = Provider.of<RegistrationProvider>(context, listen: false);
   }
   void createUserWalletPayload(){
-    var address = Address(street: street_address.text, city: city.text, state: state.text, zip: zip_code.text);
+    var address = Address(street: streetAddress.text, city: city.text, state: state.text, houseNumber: houseNumber.text);
     walletPayload = WalletPayload(
         lastName: last_name.text,
         dateOfBirth: date_of_birth.text,
@@ -80,8 +96,14 @@ void _initializeController() {
         refby: refby.text,
         country: country.text,
         userName: "${first_name.text}${last_name.text}",
-        gender: gender.text
-
+        gender: gender.text,
+        nearestLandmark: nearestLandMark.text,
+        houseNumber: houseNumber.text,
+        city: city.text,
+        state: state.text,
+        localGovernment: localGovArea.text,
+        streetName: streetAddress.text,
+        pep: PEP.text,
 
     );
     final provider = Provider.of<RegistrationProvider>(context, listen: false);
@@ -116,10 +138,15 @@ void _initializeController() {
     phone_number.dispose();
     placeOfBirthController.dispose();
     bvn.dispose();
-    street_address.dispose();
+    streetAddress.dispose();
     city.dispose();
     state.dispose();
     zip_code.dispose();
+    houseNumber.dispose();
+    PEP.dispose();
+    localGovArea.dispose();
+    nearestLandMark.dispose();
+
     // imageDisplayContoller.dispose();
    // imageInputController.dispose();
   }

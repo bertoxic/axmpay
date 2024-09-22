@@ -102,7 +102,7 @@ class TransactionDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildDetailItem('Transaction ID:', transaction.trxID),
-            _buildDetailItem('Account:', transaction.accountName),
+            _buildDetailItem((transaction.action == "Data" || transaction.action == "Airtime") ? "Description:" : "Account:", transaction.accountName),
             _buildDetailItem('Status:', transaction.status, isStatus: true),
             _buildDetailItem('Type:', transaction.type),
             _buildDetailItem('Fee:', formatter.format(transactionFee)),

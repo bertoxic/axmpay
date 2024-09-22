@@ -1,6 +1,8 @@
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
 
+import 'custom_textfield.dart';
+
 class CustomDropdown<T> extends StatefulWidget {
   final List<T> items;
   final T? initialValue;
@@ -153,6 +155,85 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> with SingleTicker
           ),
         ),
       ),
+    );
+  }
+}
+
+
+class DropdownTextField<T> extends StatefulWidget {
+  final Function(T?) onChange;
+  final TextEditingController controller;
+  final String? Function(String?)? validator;
+  final List<T> options;
+  final String labelText;
+  final String hintText;
+  final IconData prefixIcon;
+  final String fieldName;
+  final String Function(T) displayStringForOption;
+
+  const DropdownTextField({
+    Key? key,
+    required this.onChange,
+    required this.controller,
+    required this.options,
+    required this.labelText,
+    required this.hintText,
+    required this.prefixIcon,
+    required this.fieldName,
+    required this.displayStringForOption,
+    this.validator,
+  }) : super(key: key);
+
+  @override
+  _DropdownTextFieldState<T> createState() => _DropdownTextFieldState<T>();
+}
+
+class _DropdownTextFieldState<T> extends State<DropdownTextField<T>> {
+  T? _selectedOption;
+
+  void _showDropdown() async {
+    final RenderBox textFieldBox = context.findRenderObject() as RenderBox;
+    final textFieldPosition = textFieldBox.localToGlobal(Offset.zero);
+
+    final T? selectedOption = await showMenu<T>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        textFieldPosition.dx,
+        textFieldPosition.dy + textFieldBox.size.height,
+        textFieldPosition.dx + textFieldBox.size.width,
+        textFieldPosition.dy + textFieldBox.size.height,
+      ),
+      items: widget.options.map((T option) {
+        return PopupMenuItem<T>(
+          value: option,
+          child: Text(widget.displayStringForOption(option)),
+        );
+      }).toList(),
+    );
+
+    if (selectedOption != null) {
+      setState(() {
+        _selectedOption = selectedOption;
+        widget.controller.text = widget.displayStringForOption(selectedOption);
+        widget.onChange(selectedOption);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomTextField(
+      controller: widget.controller,
+      labelText: widget.labelText,
+      prefixIcon: Icon(widget.prefixIcon),
+      suffixIcon: Icon(Icons.arrow_drop_down),
+      hintText: _selectedOption != null
+          ? widget.displayStringForOption(_selectedOption!)
+          : widget.hintText,
+      readOnly: true,
+      onTap: _showDropdown,
+      validator: widget.validator,
+      fieldName: widget.fieldName,
     );
   }
 }

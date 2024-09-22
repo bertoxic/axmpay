@@ -49,6 +49,8 @@ CREATE TABLE IF NOT EXISTS userdatatable (
   id $integerType,
   api_key $textType,
   refby $textType,
+  verificationStatus $textType,
+  Tier $textType,
   refLink $textType,
   vkey $textType,
   refStatus $textType,

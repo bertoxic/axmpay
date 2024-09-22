@@ -82,15 +82,16 @@ class ApiService {
   // }
 
   Future<Response> get(BuildContext context, String endpoint, String? token) async {
+
     try {
       final response = await _dio.get(
         endpoint,
         options: await _getOptions(token,"GET"),
       );
-      handleResponse(response);
 
+      handleResponse(response);
       return response;
-    } on DioException catch (e) {
+    }  catch (e) {
       if(context.mounted){
         if (e is TokenExpiredException) {
           handleGlobalError(context, e);
@@ -98,7 +99,7 @@ class ApiService {
         if (e is DioException) {
           if (e.type == DioExceptionType.connectionError) {
             handleGlobalError(context, e);
-            //rethrow;
+            rethrow;
           }else if (e.type == DioExceptionType.connectionTimeout) {
             handleGlobalError(context, e);
             //rethrow;
@@ -131,9 +132,11 @@ class ApiService {
        handleResponse(response);
       return response;
     } on DioException catch (e) {
+      if (!context.mounted) rethrow;
       _handleDioException(context, e);
       rethrow;
     } catch (e) {
+      if (!context.mounted) rethrow;
       handleGlobalError(context, e);
       rethrow;
     }

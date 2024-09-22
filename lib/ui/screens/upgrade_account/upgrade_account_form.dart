@@ -2,19 +2,18 @@ import 'package:AXMPAY/models/ResponseModel.dart';
 import 'package:AXMPAY/providers/user_service_provider.dart';
 import 'package:AXMPAY/ui/screens/upgrade_account/upgrade_user_details_field.dart';
 import 'package:AXMPAY/ui/screens/upgrade_account/upgrade_account_controller.dart';
-import 'package:AXMPAY/ui/widgets/custom_buttons.dart';
 import 'package:AXMPAY/ui/widgets/custom_dialog.dart';
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:AXMPAY/ui/widgets/file_picker/photo_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../../constants/text_constants.dart';
 import '../../../main.dart';
 import '../../../models/user_model.dart';
 import '../../../providers/authentication_provider.dart';
 import '../../../utils/form_validator.dart';
 import '../../widgets/custom_container.dart';
+import '../../widgets/custom_dropdown.dart';
 import '../../widgets/custom_text/custom_apptext.dart';
 import '../../widgets/custom_textfield.dart';
 
@@ -25,21 +24,24 @@ class UpgradeAccountPage extends StatefulWidget {
   State<UpgradeAccountPage> createState() => _UpdateUserDetailsPageState();
 }
 
-class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleTickerProviderStateMixin{
+class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _formKey = GlobalKey<FormState>();
   late UpgradeAccountController _controller;
   late UserServiceProvider userprovider;
   late UserData userData;
+  bool _isLoading = false;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _controller = UpgradeAccountController(context);
-     userprovider = Provider.of<UserServiceProvider>(context, listen: false);
-     userData = userprovider.userdata!;
+    userprovider = Provider.of<UserServiceProvider>(context, listen: false);
+    userData = userprovider.userdata!;
   }
+
+  @override
   void dispose() {
     _tabController.dispose();
     _controller.dispose();
@@ -62,11 +64,11 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          tabs: [
-            Tab(text: 'Basic Info'),
+          tabs: const [
+           // Tab(text: 'Basic Info'),
             Tab(text: 'Identification'),
-            Tab(text: 'Address'),
-            Tab(text: 'Additional Info'),
+          //  Tab(text: 'Address'),
+          //  Tab(text: 'Additional Info'),
             Tab(text: 'Documents'),
           ],
         ),
@@ -76,30 +78,60 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
         child: TabBarView(
           controller: _tabController,
           children: [
-            _buildBasicInfoTab(),
+           // _buildBasicInfoTab(),
             _buildIdentificationTab(),
-            _buildAddressTab(),
-            _buildAdditionalInfoTab(),
+           // _buildAddressTab(),
+          //  _buildAdditionalInfoTab(),
             _buildDocumentsTab(),
           ],
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ElevatedButton(
-          child: Text('Submit'),
-          onPressed: () async {
-            if (_formKey.currentState!.validate()) {
-               _controller.createUserWalletPayload();
-               ResponseResult? responseResult = await _controller.upgradeUserWalletInServer();
-              if(responseResult?.status!= ResponseStatus.success){
-                CustomPopup.show(context: context,
-                    title: responseResult?.status.toString()??"",
-                    message: responseResult?.message??"");
-              }
-            }
-          },
-        ),
+      bottomNavigationBar: StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+              child: _isLoading
+                  ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+                  : const Text('Submit'),
+              onPressed: _isLoading
+                  ? null
+                  : () async {
+                setState(() => _isLoading = true);
+                bool isFormValid = true;
+                for (int i = 0; i < _tabController.length; i++) {
+                  _tabController.animateTo(i);
+                  await Future.delayed(const Duration(milliseconds: 300));
+                  if (!_formKey.currentState!.validate()) {
+                    isFormValid = false;
+                    break;
+                  }
+                }
+
+                if (isFormValid) {
+                  _controller.createUserWalletPayload();
+                  ResponseResult? responseResult = await _controller.upgradeUserWalletInServer();
+                  if (responseResult?.status != ResponseStatus.success) {
+                    if(!mounted) return;
+                    CustomPopup.show(
+                      type: PopupType.error,
+                      context: context,
+                      title: responseResult?.status.toString() ?? "",
+                      message: responseResult?.message ?? "",
+                    );
+                  }
+                }
+                setState(() => _isLoading = false);
+              },
+            ),
+          );
+        },
       ),
     );
   }
@@ -137,7 +169,9 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                     child: UpdateUserDetailsField(
                       labelText: 'BVN',
                       fieldController: _controller.bvnController,
-                      onChanged: (value) {}, fieldName: '',
+                      onChanged: (value) {},
+                      fieldName: 'BVN',
+                      validator:(value)=> FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "BVN"),
                     ),
                   ),
                   SpacedContainer(
@@ -153,13 +187,7 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                       labelText: 'Phone Number',
                       fieldController: _controller.phoneNumberController,
                       onChanged: (value) {}, fieldName: '',
-                    ),
-                  ),
-                  SpacedContainer(  
-                    child: UpdateUserDetailsField(
-                      labelText: 'Tier',
-                      fieldController: _controller.tierController,
-                      onChanged: (value) {}, fieldName: '',
+                      readOnly: true,
                     ),
                   ),
                   SpacedContainer(
@@ -202,13 +230,23 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                 SpacedContainer(
                   child: Column(
                     children: [
-                      SpacedContainer(
-                        child: UpdateUserDetailsField(
-                          labelText: 'ID Type',
-                          fieldController: _controller.idTypeController,
-                          onChanged: (value) {}, fieldName: '',
-                        ),
-                      ),
+                  SpacedContainer(
+                  child: DropdownTextField(
+                  controller: _controller.idTypeController,
+                    validator: (value)=>FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "Political exposed person"),
+                    onChange: (value ) {
+                      setState(() {
+                        _controller.idTypeController.text = value??""!;
+                      });
+
+                    }, options: const ["National ID","Driver's License","Voter's card","International PassPort"],
+                    labelText: 'Identification Type',
+                    hintText: 'Select type of identification?',
+                    prefixIcon: Icons.person_pin_outlined,
+                    fieldName: 'P.E.P',
+                    displayStringForOption: (options )  =>options,
+                  )
+                ),
                       SpacedContainer(
                         child: UpdateUserDetailsField(
                           labelText: 'ID Number',
@@ -221,15 +259,20 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                           labelText: 'ID Issue Date',
                           dateController: _controller.idIssueDateController,
                           context: context,
+                          firstDate:  DateTime.now().subtract(Duration(days: 5780)),
+                          lastDate:  DateTime.now(),
                           onChange: (value) {},
-                          //fieldName: '',
+                          validator:(value)=> FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "ID Issue Date"),
                         ),
                       ),
                       SpacedContainer(
                         child: DatePickerTextField(
                           labelText: 'ID Expiry Date',
+                          firstDate:  DateTime.now(),
+                          lastDate:  DateTime.now().add(const Duration(days: 10780)),
                           dateController: _controller.idExpiryDateController,
                           onChange: (value) {},
+                          validator:(value)=> FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "ID Expiry Date"),
                           context: context,
                           //fieldName: '',
                         ),
@@ -273,6 +316,8 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                         fieldController: _controller.houseNumberController,
                         onChanged: (value) {},
                         fieldName: '',
+                        validator:(value)=> FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "House Number"),
+
                       ),
                     ),
                     SpacedContainer(
@@ -281,6 +326,8 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                         fieldController: _controller.streetNameController,
                         onChanged: (value) {},
                         fieldName: '',
+                        validator:(value)=> FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "Street Name"),
+
                       ),
                     ),
                     SpacedContainer(
@@ -288,6 +335,7 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                         labelText: 'State',
                         fieldController: _controller.stateController,
                         onChanged: (value) {}, fieldName: '',
+                        validator:(value)=> FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "State"),
                       ),
                     ),
                     SpacedContainer(
@@ -295,6 +343,8 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                         labelText: 'City',
                         fieldController: _controller.cityController,
                         onChanged: (value) {}, fieldName: '',
+                        validator:(value)=> FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "City"),
+
                       ),
                     ),
                     SpacedContainer(
@@ -302,6 +352,8 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                         labelText: 'Local Government',
                         fieldController: _controller.localGovernmentController,
                         onChanged: (value) {}, fieldName: '',
+                        validator:(value)=> FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "Local Government"),
+
                       ),
                     ),
                   ],
@@ -341,6 +393,8 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                         labelText: 'PEP',
                         fieldController: _controller.pepController,
                         onChanged: (value) {}, fieldName: '',
+                        validator:(value)=> FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "PEP"),
+
                       ),
                     ),
                     SpacedContainer(  
@@ -348,6 +402,8 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                         labelText: 'Nearest Landmark',
                         fieldController: _controller.nearestLandMarkController,
                         onChanged: (value) {}, fieldName: '',
+                        validator:(value)=> FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "Landmark"),
+
                       ),
                     ),
                     SpacedContainer(
@@ -355,6 +411,8 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                         labelText: 'Place of Birth',
                         fieldController: _controller.placeOfBirthController,
                         onChanged: (value) {}, fieldName: '',
+                        validator:(value)=> FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "Place of Birth"),
+
                       ),
                     ),
                   ],
@@ -399,6 +457,11 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                           print(value);
                         },
                         controller: _controller.userPhotoController,
+                        validator: (value) {
+                          if (value != null && value is String) {
+                            return _controller.fileSizeValidator(value); }
+                          return null;
+                        },
                       ),
                     ),
                     SpacedContainer(
@@ -411,6 +474,11 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                           print(value);
                         },
                         controller: _controller.idCardFrontController,
+                        validator: (value) {
+                            if (value != null && value is String) {
+                            return _controller.fileSizeValidator(value); }
+                            return null;
+                    },
                       ),
                     ),
                     SpacedContainer(
@@ -423,6 +491,11 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                           print(value);
                         },
                         controller: _controller.idCardBackController,
+                        validator: (value) {
+                          if (value != null && value is String) {
+                            return _controller.fileSizeValidator(value); }
+                          return null;
+                        },
                       ),
                     ),
                     SpacedContainer(
@@ -435,6 +508,11 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                           print(value);
                         },
                         controller: _controller.customerSignatureController,
+                        validator: (value) {
+                          if (value != null && value is String) {
+                            return _controller.fileSizeValidator(value); }
+                          return null;
+                        },
                       ),
                     ),
                     SpacedContainer(
@@ -447,7 +525,13 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                           print(value);
                         },
                         controller: _controller.utilityBillController,
+                        validator: (value) {
+                          if (value != null && value is String) {
+                            return _controller.fileSizeValidator(value); }
+                          return null;
+                        },
                       ),
+
                     ),
                     SpacedContainer(
                       child: PhotoPicker(
@@ -459,6 +543,11 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                           print(value);
                         },
                         controller: _controller.proofOfAddressController,
+                        validator: (value) {
+                          if (value != null && value is String) {
+                            return _controller.fileSizeValidator(value); }
+                          return null;
+                        },
                       ),
                     ),
                   ],
@@ -479,6 +568,8 @@ class DatePickerTextField extends StatefulWidget {
   TextEditingController dateController;
   String? Function(String?)? validator;
   String?  labelText;
+  DateTime?  firstDate;
+  DateTime?  lastDate;
   DatePickerTextField({
     super.key,
     required this.context,
@@ -486,6 +577,8 @@ class DatePickerTextField extends StatefulWidget {
     required this.dateController,
     this.validator,
     this.labelText,
+    this.firstDate,
+    this.lastDate,
   });
 
   @override
@@ -499,14 +592,14 @@ class _DatePickerTextFieldState extends State<DatePickerTextField> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
+      firstDate: widget.firstDate??DateTime.now().subtract(Duration(days: 10342)),
+      lastDate: widget.lastDate??DateTime.now().add(Duration(days: 10780)),
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
         widget.dateController.text =
-            DateFormat('dd/MM/yyyy').format(_selectedDate!);
+            DateFormat('yyyy-MM-dd').format(_selectedDate!);
       });
     }
   }
@@ -521,7 +614,7 @@ class _DatePickerTextFieldState extends State<DatePickerTextField> {
       hintText: _selectedDate != null ? _selectedDate.toString() : 'YYYY-MM-DD',
       readOnly: true,
       onTap: _selectDate,
-      validator: validator,
+      validator: widget.validator,
       // onChanged: ,
       fieldName: '',
     );
@@ -530,7 +623,7 @@ class _DatePickerTextFieldState extends State<DatePickerTextField> {
 
 String? validator(String? input) {
   if (input == null || input.isEmpty) {
-    return "Name cannot be empty";
+    return "field cannot be empty";
   } else {
     return null;
   }

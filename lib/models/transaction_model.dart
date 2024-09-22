@@ -204,35 +204,35 @@ class DataBundleList {
 }
 class Address {
   String street;
+  String houseNumber;
   String city;
   String state;
-  String zip;
 
   Address({
     required this.street,
     required this.city,
     required this.state,
-    required this.zip,
+    required this.houseNumber,
   });
 
   Address.fromJSON(Map<String, dynamic> json)
       : street = json["street"] as String? ?? '',
         city = json["city"] as String? ?? '',
         state = json["state"] as String? ?? '',
-        zip = json["zip"] as String? ?? '';
+        houseNumber = json["houseNumber"] as String? ?? '';
 
   Map<String, dynamic> toJSON() {
     return {
       "street": street,
       "city": city,
       "state": state,
-      "zip": zip,
+      "houseNumber": houseNumber,
     };
   }
 
   @override
   String toString() {
-    return '$street, $city, $state zip: $zip';
+    return '$houseNumber $street, $city, $state';
   }
 }
 
@@ -244,23 +244,37 @@ class WalletPayload {
   String? refby;
   String BVN;
   String gender;
+  String state;
+  String houseNumber;
+  String streetName;
   String phone;
   String country;
+  String city;
+  String localGovernment;
+  String nearestLandmark;
+  String pep;
   String placeOfBirth;
   Address address;
 
   WalletPayload({
     required this.firstName,
     required this.lastName,
-    required this.userName,
     required this.dateOfBirth,
     this.refby,
     required this.gender,
     required this.BVN ,
     required this.phone ,
     required this.country,
+    required this.nearestLandmark,
+    required this.houseNumber,
+    required this.city,
+    required this.state,
+    required this.localGovernment,
+    required this.streetName,
+    required this.pep,
     required this.placeOfBirth,
     required this.address,
+    required this.userName,
   });
 
   WalletPayload.fromJSON(Map<String, dynamic> json)
@@ -273,7 +287,14 @@ class WalletPayload {
         gender = json['gender'] as String? ?? '',
         phone = json['phone'] as String? ?? '',
         country = json['country'] as String? ?? '',
+        state = json['state'] as String? ?? '',
+        city = json['city'] as String? ?? '',
+        streetName = json['streetName'] as String? ?? '',
+        localGovernment = json['localGovernment'] as String? ?? '',
+        pep = json['pep'] as String? ?? '',
+        nearestLandmark = json['nearestLandMark'] as String? ?? '',
         placeOfBirth = json['placeOfBirth'] as String? ?? '',
+        houseNumber = json['houseNumber'] as String? ?? '',
         address = Address.fromJSON(json['address'] as Map<String, dynamic>? ?? {});
 
   Map<String, dynamic> toJSON() {
@@ -288,13 +309,21 @@ class WalletPayload {
       "BVN": BVN,
       'country': country,
       'placeOfBirth': placeOfBirth,
-      'address': address.toString(),
+      'country': country,
+      'state': state,
+      'city': city,
+      'streetName': streetName,
+      'localGovernment': localGovernment,
+      'nearestLandmark': nearestLandmark,
+      'houseNumber': houseNumber,
+      'pep': pep,
+      'address': Address(city: city,state: state,street: streetName, houseNumber: houseNumber,).toJSON(),
     };
   }
 
   @override
   String toString() {
-    return 'WalletPayload(firstName: $firstName, lastName: $lastName, userName: $userName, dateOfBirth: $dateOfBirth, refby: $refby, gender: $gender, phone: $phone, country: $country, placeOfBirth: $placeOfBirth, address: $address)';
+    return 'WalletPayload(firstName: $firstName, lastName: $lastName,dateOfBirth: $dateOfBirth, refby: $refby, gender: $gender, phone: $phone, country: $country, placeOfBirth: $placeOfBirth, address: $address)';
   }
 }
 
@@ -374,9 +403,9 @@ class UpgradeWalletPayload {
       'pep': pep,
       'customerSignature': customerSignature,
       'utilityBill': utilityBill,
-      'nearestLandMark': nearestLandMark,
+      'nearestLandmark': nearestLandMark,
       'placeOfBirth': placeOfBirth,
-      'proofOfAddress': proofOfAddress,
+      'proofOfAddressVerification': proofOfAddress,
     };
   }
 

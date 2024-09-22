@@ -8,6 +8,7 @@ bool _isPopupShowing = false;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void handleGlobalError(BuildContext context, dynamic error) {
+  print("zzzzrrrrrrrrrrrrrxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxbbxxxxxxx ${_isPopupShowing} }");
   if (!_isPopupShowing) {
     _isPopupShowing = true;
     Map<String, dynamic> errorMap = getErrorMessage(error);
@@ -78,14 +79,14 @@ void showReloginDialog(BuildContext context) {
         TextButton(
           child: Text('Relogin', style: TextStyle(color: colorScheme.primary)),
           onPressed: () {
-            Navigator.of(context).pop();
+            Navigator.of(context,rootNavigator: true).pop();
             context.goNamed("login");
           },
         ),
         TextButton(
           child: Text('Cancel', style: TextStyle(color: colorScheme.secondary)),
           onPressed: () {
-            Navigator.of(context).pop();
+            Navigator.of(context, rootNavigator: true).pop();
           },
         ),
       ],
@@ -95,11 +96,11 @@ void showReloginDialog(BuildContext context) {
 
 void _showPopup(BuildContext context, Widget dialog) {
   showDialog(
-    context: navigatorKey.currentContext ?? context,
+    context: context,
     barrierDismissible: true,
-    builder: (BuildContext context) => dialog,
+    builder: (BuildContext dialogContext) => dialog,
   ).then((_) {
-    // Reset the flag when the dialog is closed
+    print("Dialog dismissed, setting isPopupShowing to false");
     _isPopupShowing = false;
   });
 }

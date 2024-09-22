@@ -38,35 +38,39 @@ class AuthenticationProvider extends ChangeNotifier {
           Map<String, dynamic> jsonData;
           if (response.data is String) {
             jsonData = jsonDecode(response.data);
+
           } else {
+
             jsonData = response.data;
           }
 
           if (jsonData["status"].toString() == "Failed") {
 
-             return ResponseResult(
+            return ResponseResult(
                status: ResponseStatus.failed,
                message: jsonData["message"] ?? "Verification failed",
-               data: null,
              );
-           }else{
 
-             String? token = jsonData["token"];
-             await SharedPreferencesUtil.saveString('auth_token', token??"");
+          }else{
+
+            String? token = jsonData["token"];
+
+            await SharedPreferencesUtil.saveString('auth_token', token??"");
              await SharedPreferencesUtil.saveString(
                  "isAuthenticated", _isAuthenticated.toString());
              setToken(token);
              await _saveTokenTOPref();
-             await userServiceProvider.getUserDetails(context);
 
-           notifyListeners();
+            var user= await userServiceProvider.getUserDetails(context);
+
+             notifyListeners();
            return ResponseResult(
              status: ResponseStatus.success,
              message: jsonData["message"] ?? "Verification successful",
-             data: null,
            );
            }
         }catch(e){
+
           print("error occurred in authenticationprovidder$e");
         }
 
@@ -78,9 +82,7 @@ class AuthenticationProvider extends ChangeNotifier {
     final res = await apiService.post( context,"/signup", details, "");
     if (res.statusCode == 200 || res.statusCode == 201) {
       _isAuthenticated = true;
-
       User.fromJSON(res.data);
-
       await SharedPreferencesUtil.saveString("auth_token", _token ?? "");
       await SharedPreferencesUtil.saveString(
           "isAuthenticated", _isAuthenticated.toString());

@@ -1,42 +1,29 @@
+import 'package:AXMPAY/main.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
-import 'package:vector_math/vector_math.dart' as vector;
+import 'dart:ui';
 
 class CustomBottomNavBar extends StatefulWidget {
   final List<BottomNavItem> items;
   final ValueChanged<int> onItemSelected;
   final int initialIndex;
-  final Color? backgroundColor;
-  final Color? selectedItemColor;
-  final Color? unselectedItemColor;
+  final Color selectedItemColor;
+  final Color unselectedItemColor;
   final double height;
   final double iconSize;
-  final TextStyle? selectedLabelStyle;
-  final TextStyle? unselectedLabelStyle;
-  final bool showLabels;
-  final bool enableAnimation;
-  final Curve animationCurve;
-  final Duration animationDuration;
-  final bool? extendBody;
 
   const CustomBottomNavBar({
-    super.key,
+    Key? key,
     required this.items,
     required this.onItemSelected,
     this.initialIndex = 0,
-    this.backgroundColor,
-    this.selectedItemColor,
-    this.unselectedItemColor,
-    this.height = 56.0,
+    this.selectedItemColor = const Color(0xff462eb4),
+    this.unselectedItemColor = Colors.grey,
+    this.height = 60.0,
     this.iconSize = 24.0,
-    this.selectedLabelStyle,
-    this.unselectedLabelStyle,
-    this.showLabels = true,
-    this.enableAnimation = true,
-    this.animationCurve = Curves.easeInOut,
-    this.animationDuration = const Duration(milliseconds: 300),
-    this.extendBody,
   })  : assert(items.length >= 2 && items.length <= 5),
-        assert(initialIndex >= 0 && initialIndex < items.length);
+        assert(initialIndex >= 0 && initialIndex < items.length),
+        super(key: key);
 
   @override
   _CustomBottomNavBarState createState() => _CustomBottomNavBarState();
@@ -45,7 +32,9 @@ class CustomBottomNavBar extends StatefulWidget {
 class _CustomBottomNavBarState extends State<CustomBottomNavBar> with SingleTickerProviderStateMixin {
   late int _selectedIndex;
   late AnimationController _animationController;
-  late List<Animation<double>> _animations;
+  late Animation<double> _animation;
+  late Animation<double> _positionAnimation;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
@@ -53,33 +42,17 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> with SingleTick
     _selectedIndex = widget.initialIndex;
     _animationController = AnimationController(
       vsync: this,
-      duration: widget.animationDuration,
+      duration: const Duration(milliseconds: 300),
     );
-    _initializeAnimations();
-  }
-
-  void _initializeAnimations() {
-    _animations = List.generate(
-      widget.items.length,
-          (index) => Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(
-          parent: _animationController,
-          curve: Interval(
-            index / widget.items.length,
-            (index + 1) / widget.items.length,
-            curve: widget.animationCurve,
-          ),
-        ),
-      ),
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
     );
-  }
-
-  @override
-  void didUpdateWidget(CustomBottomNavBar oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.items.length != oldWidget.items.length) {
-      _initializeAnimations();
-    }
+    _positionAnimation = Tween<double>(begin: widget.initialIndex.toDouble(), end: widget.initialIndex.toDouble()).animate(_animation);
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 0.5), weight: 1),
+      TweenSequenceItem(tween: Tween<double>(begin: 0.5, end: 1.0), weight: 1),
+    ]).animate(_animation);
   }
 
   @override
@@ -91,13 +64,14 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> with SingleTick
   void _onItemTapped(int index) {
     if (index != _selectedIndex) {
       setState(() {
+        _positionAnimation = Tween<double>(
+          begin: _selectedIndex.toDouble(),
+          end: index.toDouble(),
+        ).animate(_animation);
         _selectedIndex = index;
       });
       widget.onItemSelected(index);
-      if (widget.enableAnimation) {
-        _animationController.reset();
-        _animationController.forward();
-      }
+      _animationController.forward(from: 0.0);
     }
   }
 
@@ -105,85 +79,93 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> with SingleTick
   Widget build(BuildContext context) {
     return Container(
       height: widget.height,
+      margin: EdgeInsets.symmetric(horizontal: 28.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: widget.backgroundColor ?? Theme.of(context).bottomAppBarColor,
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
+            color: Colors.black.withOpacity(0.0),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(widget.items.length, (index) {
-          return _buildNavItem(index);
-        }),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer.withOpacity(0.7),
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final containerWidth = constraints.maxWidth;
+                final itemWidth = containerWidth / widget.items.length;
+                final circleSize = widget.height * 0.8;
+                final horizontalPadding = (itemWidth - circleSize) / 2;
+
+                return Stack(
+                  children: [
+                    AnimatedBuilder(
+                      animation: _animationController,
+                      builder: (context, child) {
+                        return Positioned(
+                          left: _positionAnimation.value * itemWidth + horizontalPadding,
+                          top: (widget.height - circleSize) / 2,
+                          child: Transform.scale(
+                            scale: _scaleAnimation.value,
+                            child: Container(
+                              width: circleSize,
+                              height: circleSize,
+                              decoration: BoxDecoration(
+                                color: widget.selectedItemColor.withOpacity(0.2),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: List.generate(widget.items.length, (index) {
+                        return _buildNavItem(index);
+                      }),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildNavItem(int index) {
     final bool isSelected = index == _selectedIndex;
-    final Color itemColor = isSelected
-        ? widget.selectedItemColor ?? Theme.of(context).primaryColor
-        : widget.unselectedItemColor ?? Theme.of(context).unselectedWidgetColor;
+    final Color itemColor = isSelected ? widget.selectedItemColor : widget.unselectedItemColor;
 
-    return InkWell(
-      onTap: () => _onItemTapped(index),
-      child: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return Transform.translate(
-            offset: Offset(0, isSelected ? -8 * _animations[index].value : 0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildIcon(widget.items[index].icon, itemColor, index),
-                if (widget.showLabels) ...[
-                  const SizedBox(height: 4),
-                  _buildLabel(widget.items[index].label, itemColor, isSelected),
-                ],
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildIcon(IconData icon, Color color, int index) {
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return Transform.rotate(
-          angle: vector.radians(360 * _animations[index].value),
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _onItemTapped(index),
+        child: Container(
+          height: widget.height,
           child: Icon(
-            icon,
-            color: color,
+            widget.items[index].icon,
+            color: itemColor,
             size: widget.iconSize,
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildLabel(String label, Color color, bool isSelected) {
-    return AnimatedDefaultTextStyle(
-      duration: widget.animationDuration,
-      style: isSelected
-          ? widget.selectedLabelStyle ??
-          TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12)
-          : widget.unselectedLabelStyle ??
-          TextStyle(color: color, fontSize: 12),
-      child: Text(label),
+        ),
+      ),
     );
   }
 }
 
 class BottomNavItem {
   final IconData icon;
-  final String label;
 
-  BottomNavItem({required this.icon, required this.label});
+  BottomNavItem({required this.icon});
 }

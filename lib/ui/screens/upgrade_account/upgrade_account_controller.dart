@@ -1,4 +1,6 @@
 
+import 'dart:convert';
+
 import 'package:AXMPAY/models/ResponseModel.dart';
 import 'package:AXMPAY/models/transaction_model.dart';
 import 'package:AXMPAY/models/user_model.dart';
@@ -54,9 +56,15 @@ void _initializeController() {
     final providerx = Provider.of<UserServiceProvider>(context, listen: false);
     final email = providerx.userdata?.email;
     emailController.text = email ?? '';
-    accountNameController.text = "${providerx.userdata?.firstname} ${providerx.userdata?.lastname}" ?? '';
+    accountNameController.text = "${providerx.userdata?.fullName}" ?? '';
     accountNumberController.text = "${providerx.userdata?.accountNumber}";
     bvnController.text = "${providerx.userdata?.bvn}" ?? '';
+    phoneNumberController.text = "${providerx.userdata?.phone}" ?? '';
+    tierController.text = providerx.userdata?.tier.toString()??"";
+    bvnController.text = providerx.userdata?.bvn.toString()??"";
+    tierController.text = providerx.userdata?.tier.toString()??"";
+    tierController.text = providerx.userdata?.tier.toString()??"";
+
    // email.text = "${providerx.userdata?.firstname} ${providerx.userdata?.lastname}" ?? '';
   }
   Future<void> selectDate(BuildContext context) async {
@@ -72,7 +80,16 @@ void _initializeController() {
     }
   }
 
+  String? fileSizeValidator(String base64String) {
+    const int maxSizeInBytes = 5 * 1024 * 1024;
 
+    int fileSizeInBytes = base64Decode(base64String).length;
+
+    if (fileSizeInBytes > maxSizeInBytes) {
+      return 'File size should not exceed 5MB';
+    }
+    return null;
+  }
 
   // void updateUserDetailsModel(){
   //    userDetails = UserDetails(

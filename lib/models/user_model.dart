@@ -127,8 +127,7 @@ class UserDetails {
 
 
 class UserData {
- // final String status;
-  final int id;
+  final String id;
   final String apiKey;
   final String refby;
   final String refLink;
@@ -138,7 +137,6 @@ class UserData {
   final String userStatus;
   final String phoneStatus;
   final String emailStatus;
-  final String typeId;
   final String bvn;
   final String nin;
   final String type;
@@ -148,6 +146,14 @@ class UserData {
   final String accountNumber;
   final String customerId;
   final String availableBalance;
+  final String tier;
+  final String verificationStatus;
+  final String idType;
+  final String idNumber;
+  final String idCardFront;
+  final String idCardBack;
+  final String idIssueDate;
+  final String idExpiryDate;
   final String imageName;
   final String firstname;
   final String lastname;
@@ -155,17 +161,26 @@ class UserData {
   final String gender;
   final String email;
   final String phone;
-  final String status;
   final String country;
+  final String lga;
+  final String houseNumber;
+  final String streetName;
+  final String state;
+  final String city;
+  final String nearestLandmark;
+  final String placeOfBirth;
   final String address;
+  final String userPhoto;
+  final String pep;
+  final String clientSignature;
+  final String utilityBill;
+  final String proofOfAddress;
   final String username;
   final String password;
   final String date;
 
   UserData({
-   // required this.status,
     required this.id,
-    required this.status,
     required this.apiKey,
     required this.refby,
     required this.refLink,
@@ -175,7 +190,6 @@ class UserData {
     required this.userStatus,
     required this.phoneStatus,
     required this.emailStatus,
-    required this.typeId,
     required this.bvn,
     required this.nin,
     required this.type,
@@ -185,6 +199,14 @@ class UserData {
     required this.accountNumber,
     required this.customerId,
     required this.availableBalance,
+    required this.tier,
+    required this.verificationStatus,
+    required this.idType,
+    required this.idNumber,
+    required this.idCardFront,
+    required this.idCardBack,
+    required this.idIssueDate,
+    required this.idExpiryDate,
     required this.imageName,
     required this.firstname,
     required this.lastname,
@@ -193,174 +215,258 @@ class UserData {
     required this.email,
     required this.phone,
     required this.country,
+    required this.lga,
+    required this.houseNumber,
+    required this.streetName,
+    required this.state,
+    required this.city,
+    required this.nearestLandmark,
+    required this.placeOfBirth,
     required this.address,
+    required this.userPhoto,
+    required this.pep,
+    required this.clientSignature,
+    required this.utilityBill,
+    required this.proofOfAddress,
     required this.username,
     required this.password,
     required this.date,
   });
-  factory UserData.fromJson(Map<String, dynamic> json) {
+
+  factory UserData.fromMap(Map<String, dynamic> map) {
     return UserData(
-      //status: json['status'],
-      id: json['data']['id'],
-      status: json['data']['status'],
-      apiKey: json['data']['api_key'],
-      refby: json['data']['refby'],
-      refLink: json['data']['refLink'],
-      vkey: json['data']['vkey'],
-      refStatus: json['data']['refStatus'],
-      earn: json['data']['earn'],
-      userStatus: json['data']['status'],
-      phoneStatus: json['data']['phoneStatus'],
-      emailStatus: json['data']['emailStatus'],
-      typeId: json['data']['Type_ID'],
-      bvn: json['data']['BVN'],
-      nin: json['data']['NIN'],
-      type: json['data']['type'],
-      aid: json['data']['AID'],
-      accountStatus: json['data']['accountStatus'],
-      fullName: json['data']['fullName'],
-      accountNumber: json['data']['accountNumber'],
-      customerId: json['data']['customerID'],
-      availableBalance: json['data']['availableBalance'],
-      imageName: json['data']['ImageName'],
-      firstname: json['data']['firstname'],
-      lastname: json['data']['lastname'],
-      dob: json['data']['DOB'],
-      gender: json['data']['gender'],
-      email: json['data']['email'],
-      phone: json['data']['phone'],
-      country: json['data']['country'],
-      address: json['data']['address'],
-      username: json['data']['username'],
-      password: json['data']['password'],
-      date: json['data']['Date'],
-    );
-  }
-  factory UserData.fromMap(Map<String, dynamic> json) {
-    return UserData(
-      //status: json['status'],
-      id: json['id'],
-      status: json['status'],
-      apiKey: json['api_key'],
-      refby: json['refby'],
-      refLink: json['refLink'],
-      vkey: json['vkey'],
-      refStatus: json['refStatus'],
-      earn: json['earn'],
-      userStatus: json['status'],
-      phoneStatus: json['phoneStatus'],
-      emailStatus: json['emailStatus'],
-      typeId: json['Type_ID'],
-      bvn: json['BVN'],
-      nin: json['NIN'],
-      type: json['type'],
-      aid: json['AID'],
-      accountStatus: json['accountStatus'],
-      fullName: json['fullName'],
-      accountNumber: json['accountNumber'],
-      customerId: json['customerID'],
-      availableBalance: json['availableBalance'],
-      imageName: json['ImageName'],
-      firstname: json['firstname'],
-      lastname: json['lastname'],
-      dob: json['DOB'],
-      gender: json['gender'],
-      email: json['email'],
-      phone: json['phone'],
-      country: json['country'],
-      address: json['address'],
-      username: json['username'],
-      password: json['password'],
-      date: json['Date'],
+      id: _parseStringOrNum(map['id']) ?? '0',
+      apiKey: map['api_key']?.toString() ?? '',
+      refby: map['refby']?.toString() ?? '',
+      refLink: map['refLink']?.toString() ?? '',
+      vkey: map['vkey']?.toString() ?? '',
+      refStatus: map['refStatus']?.toString() ?? '',
+      earn: _parseStringOrNum(map['earn']) ?? '',
+      userStatus: map['status']?.toString() ?? '',
+      phoneStatus: map['phoneStatus']?.toString() ?? '',
+      emailStatus: map['emailStatus']?.toString() ?? '',
+      bvn: map['BVN']?.toString() ?? '',
+      nin: map['NIN']?.toString() ?? '',
+      type: map['type']?.toString() ?? '',
+      aid: map['AID']?.toString() ?? '',
+      accountStatus: map['accountStatus']?.toString() ?? '',
+      fullName: map['fullName']?.toString() ?? '',
+      accountNumber: map['accountNumber']?.toString() ?? '',
+      customerId: map['customerID']?.toString() ?? '',
+      availableBalance: _parseStringOrNum(map['availableBalance']) ?? '',
+      tier: _parseStringOrNum(map['Tier']) ?? '0',
+      verificationStatus: map['verificationStatus']?.toString() ?? '',
+      idType: map['IDType']?.toString() ?? '',
+      idNumber: map['ID_Number']?.toString() ?? '',
+      idCardFront: map['IDCardFront']?.toString() ?? '',
+      idCardBack: map['IDCardBack']?.toString() ?? '',
+      idIssueDate: map['ID_IssueDate']?.toString() ?? '',
+      idExpiryDate: map['ID_ExpiryDate']?.toString() ?? '',
+      imageName: map['ImageName']?.toString() ?? '',
+      firstname: map['firstname']?.toString() ?? '',
+      lastname: map['lastname']?.toString() ?? '',
+      dob: map['DOB']?.toString() ?? '',
+      gender: map['gender']?.toString() ?? '',
+      email: map['email']?.toString() ?? '',
+      phone: map['phone']?.toString() ?? '',
+      country: map['country']?.toString() ?? '',
+      lga: map['LGA']?.toString() ?? '',
+      houseNumber: map['houseNumber']?.toString() ?? '',
+      streetName: map['streetName']?.toString() ?? '',
+      state: map['State']?.toString() ?? '',
+      city: map['City']?.toString() ?? '',
+      nearestLandmark: map['nearestLandmark']?.toString() ?? '',
+      placeOfBirth: map['place_Of_Birth']?.toString() ?? '',
+      address: map['address']?.toString() ?? '',
+      userPhoto: map['userPhoto']?.toString() ?? '',
+      pep: map['PEP']?.toString() ?? '',
+      clientSignature: map['clientSignature']?.toString() ?? '',
+      utilityBill: map['utilityBill']?.toString() ?? '',
+      proofOfAddress: map['proof_of_Address']?.toString() ?? '',
+      username: map['username']?.toString() ?? '',
+      password: map['password']?.toString() ?? '',
+      date: map['Date']?.toString() ?? '',
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      //'status': status,
+      'id': id,
+      'api_key': apiKey,
+      'refby': refby,
+      'refLink': refLink,
+      'vkey': vkey,
+      'refStatus': refStatus,
+      'earn': earn,
+      'status': userStatus,
+      'phoneStatus': phoneStatus,
+      'emailStatus': emailStatus,
+      'BVN': bvn,
+      'NIN': nin,
+      'type': type,
+      'AID': aid,
+      'accountStatus': accountStatus,
+      'fullName': fullName,
+      'accountNumber': accountNumber,
+      'customerID': customerId,
+      'availableBalance': availableBalance,
+      'Tier': tier,
+      'verificationStatus': verificationStatus,
+      'IDType': idType,
+      'ID_Number': idNumber,
+      'IDCardFront': idCardFront,
+      'IDCardBack': idCardBack,
+      'ID_IssueDate': idIssueDate,
+      'ID_ExpiryDate': idExpiryDate,
+      'ImageName': imageName,
+      'firstname': firstname,
+      'lastname': lastname,
+      'DOB': dob,
+      'gender': gender,
+      'email': email,
+      'phone': phone,
+      'country': country,
+      'LGA': lga,
+      'houseNumber': houseNumber,
+      'streetName': streetName,
+      'State': state,
+      'City': city,
+      'nearestLandmark': nearestLandmark,
+      'place_Of_Birth': placeOfBirth,
+      'address': address,
+      'userPhoto': userPhoto,
+      'PEP': pep,
+      'clientSignature': clientSignature,
+      'utilityBill': utilityBill,
+      'proof_of_Address': proofOfAddress,
+      'username': username,
+      'password': password,
+      'Date': date,
+    };}
 
-        'id': id,
-        'status': status,
-        'api_key': apiKey,
-        'refby': refby,
-        'refLink': refLink,
-        'vkey': vkey,
-        'refStatus': refStatus,
-        'earn': earn,
-        'status': userStatus,
-        'phoneStatus': phoneStatus,
-        'emailStatus': emailStatus,
-        'Type_ID': typeId,
-        'BVN': bvn,
-        'NIN': nin,
-        'type': type,
-        'AID': aid,
-        'accountStatus': accountStatus,
-        'fullName': fullName,
-        'accountNumber': accountNumber,
-        'customerID': customerId,
-        'availableBalance': availableBalance,
-        'ImageName': imageName,
-        'firstname': firstname,
-        'lastname': lastname,
-        'DOB': dob,
-        'gender': gender,
-        'email': email,
-        'phone': phone,
-        'country': country,
-        'address': address,
-        'username': username,
-        'password': password,
-        'Date': date,
-
-    };
+  factory UserData.fromJson(Map<String, dynamic> responseData) {
+    Map<String, dynamic> json = responseData["data"];
+    return UserData(
+      id: _parseStringOrNum(json['id']) ?? '0',
+      apiKey: json['api_key']?.toString() ?? '',
+      refby: json['refby']?.toString() ?? '',
+      refLink: json['refLink']?.toString() ?? '',
+      vkey: json['vkey']?.toString() ?? '',
+      refStatus: json['refStatus']?.toString() ?? '',
+      earn: _parseStringOrNum(json['earnBalance']) ?? '0',
+      userStatus: json['status']?.toString() ?? '',
+      phoneStatus: json['phoneStatus']?.toString() ?? '',
+      emailStatus: json['emailStatus']?.toString() ?? '',
+      bvn: json['BVN']?.toString() ?? '',
+      nin: json['NIN']?.toString() ?? '',
+      type: json['type']?.toString() ?? '',
+      aid: json['AID']?.toString() ?? '',
+      accountStatus: json['accountStatus']?.toString() ?? '',
+      fullName: json['fullName']?.toString() ?? '',
+      accountNumber: json['accountNumber']?.toString() ?? '',
+      customerId: json['customerID']?.toString() ?? '',
+      availableBalance: _parseStringOrNum(json['availableBalance']) ?? '0',
+      tier: _parseStringOrNum(json['Tier']) ?? '0',
+      verificationStatus: json['verificationStatus']?.toString() ?? '',
+      idType: json['IDType']?.toString() ?? '',
+      idNumber: json['ID_Number']?.toString() ?? '',
+      idCardFront: json['IDCardFront']?.toString() ?? '',
+      idCardBack: json['IDCardBack']?.toString() ?? '',
+      idIssueDate: json['ID_IssueDate']?.toString() ?? '',
+      idExpiryDate: json['ID_ExpiryDate']?.toString() ?? '',
+      imageName: json['ImageName']?.toString() ?? '',
+      firstname: json['firstname']?.toString() ?? '',
+      lastname: json['lastname']?.toString() ?? '',
+      dob: json['DOB']?.toString() ?? '',
+      gender: json['gender']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      phone: json['phone']?.toString() ?? '',
+      country: json['country']?.toString() ?? '',
+      lga: json['LGA']?.toString() ?? '',
+      houseNumber: json['houseNumber']?.toString() ?? '',
+      streetName: json['streetName']?.toString() ?? '',
+      state: json['State']?.toString() ?? '',
+      city: json['City']?.toString() ?? '',
+      nearestLandmark: json['nearestLandmark']?.toString() ?? '',
+      placeOfBirth: json['place_Of_Birth']?.toString() ?? '',
+      address: json['address']?.toString() ?? '',
+      userPhoto: json['userPhoto']?.toString() ?? '',
+      pep: json['PEP']?.toString() ?? '',
+      clientSignature: json['clientSignature']?.toString() ?? '',
+      utilityBill: json['utilityBill']?.toString() ?? '',
+      proofOfAddress: json['proof_of_Address']?.toString() ?? '',
+      username: json['username']?.toString() ?? '',
+      password: json['password']?.toString() ?? '',
+      date: json['Date']?.toString() ?? '',
+    );
   }
+
+// Helper method to parse string or numeric values
+  static String _parseStringOrNum(dynamic value) {
+    if (value == null) return '';
+    if (value is String) return value;
+    if (value is int || value is double) return value.toString();
+    return '';
+  }
+
   Map<String, dynamic> toJson() {
     return {
-      //'status': status,
-      'data': {
-        'id': id,
-        'status': status,
-        'api_key': apiKey,
-        'refby': refby,
-        'refLink': refLink,
-        'vkey': vkey,
-        'refStatus': refStatus,
-        'earn': earn,
-        'status': userStatus,
-        'phoneStatus': phoneStatus,
-        'emailStatus': emailStatus,
-        'Type_ID': typeId,
-        'BVN': bvn,
-        'NIN': nin,
-        'type': type,
-        'AID': aid,
-        'accountStatus': accountStatus,
-        'fullName': fullName,
-        'accountNumber': accountNumber,
-        'customerID': customerId,
-        'availableBalance': availableBalance,
-        'ImageName': imageName,
-        'firstname': firstname,
-        'lastname': lastname,
-        'DOB': dob,
-        'gender': gender,
-        'email': email,
-        'phone': phone,
-        'country': country,
-        'address': address,
-        'username': username,
-        'password': password,
-        'Date': date,
-      },
+      'id': id,
+      'api_key': apiKey,
+      'refby': refby,
+      'refLink': refLink,
+      'vkey': vkey,
+      'refStatus': refStatus,
+      'earn': earn,
+      'status': userStatus,
+      'phoneStatus': phoneStatus,
+      'emailStatus': emailStatus,
+      'BVN': bvn,
+      'NIN': nin,
+      'type': type,
+      'AID': aid,
+      'accountStatus': accountStatus,
+      'fullName': fullName,
+      'accountNumber': accountNumber,
+      'customerID': customerId,
+      'availableBalance': availableBalance,
+      'Tier': tier,
+      'verificationStatus': verificationStatus,
+      'IDType': idType,
+      'ID_Number': idNumber,
+      'IDCardFront': idCardFront,
+      'IDCardBack': idCardBack,
+      'ID_IssueDate': idIssueDate,
+      'ID_ExpiryDate': idExpiryDate,
+      'ImageName': imageName,
+      'firstname': firstname,
+      'lastname': lastname,
+      'DOB': dob,
+      'gender': gender,
+      'email': email,
+      'phone': phone,
+      'country': country,
+      'LGA': lga,
+      'houseNumber': houseNumber,
+      'streetName': streetName,
+      'State': state,
+      'City': city,
+      'nearestLandmark': nearestLandmark,
+      'place_Of_Birth': placeOfBirth,
+      'address': address,
+      'userPhoto': userPhoto,
+      'PEP': pep,
+      'clientSignature': clientSignature,
+      'utilityBill': utilityBill,
+      'proof_of_Address': proofOfAddress,
+      'username': username,
+      'password': password,
+      'Date': date,
     };
   }
-@override
-String toString() {
-  return 'UserData(id: $id, apiKey: $apiKey, ...)';
 }
 
-}
+
 
 class Wallet {
   final String status;

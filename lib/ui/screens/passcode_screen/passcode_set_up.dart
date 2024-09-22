@@ -5,15 +5,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class PasscodeSetupScreen extends StatelessWidget {
-  const PasscodeSetupScreen({super.key});
+  final String email;
+  const PasscodeSetupScreen({super.key, required this.email});
 
   @override
   Widget build(BuildContext context) {
-    return  _PasscodeSetupScreenContent();
+    return  _PasscodeSetupScreenContent( email);
   }
 }
 
 class _PasscodeSetupScreenContent extends StatelessWidget {
+  final String email;
+   _PasscodeSetupScreenContent( this.email);
+
   @override
   Widget build(BuildContext context) {
     final model = Provider.of<PasscodeSetupModel>(context);
@@ -28,42 +32,46 @@ class _PasscodeSetupScreenContent extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Padding(
-        padding:  EdgeInsets.symmetric(horizontal: 24.0.w, vertical: 16.h).copyWith(top: 8.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Setting up', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
-             SizedBox(height: 8.h),
-             Text('Your PIN code', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.primary)),
-             SizedBox(height: 12.h),
-            Text(
-              'To set up your PIN create 4 digit code\nthen confirm it below',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+      body: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false, overscroll: false),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding:  EdgeInsets.symmetric(horizontal: 24.0.w, vertical: 16.h).copyWith(top: 8.h),
+            child: Column (
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Setting up', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+                 SizedBox(height: 8.h),
+                 Text('Your PIN code', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.primary)),
+                Text(
+                  'To set up your PIN create 4 digit code\nthen confirm it below',
+                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                ),
+                 SizedBox(height: 8.h),
+                Text(
+                  'PIN CODE',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[600]),
+                ),
+                 SizedBox(height: 12.h),
+                _buildPinCodeRow(model, isConfirmation: false),
+                 SizedBox(height: 24.h),
+                if (model.isConfirming) ...[
+                  Text(
+                    'CONFIRM YOUR PIN CODE',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[600]),
+                  ),
+                   SizedBox(height: 8.h),
+                  _buildPinCodeRow(model, isConfirmation: true),
+                ],
+                if (model.passcode.length == 4 && model.confirmedPasscode.length == 4)
+                  _buildValidationMessage(model),
+                SizedBox(height: 24.h),
+                _buildNumberPad(model),
+                 SizedBox(height: 16.h),
+                _buildContinueButton(model, context, email),
+              ],
             ),
-             SizedBox(height: 24.h),
-            Text(
-              'PIN CODE',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[600]),
-            ),
-             SizedBox(height: 8.h),
-            _buildPinCodeRow(model, isConfirmation: false),
-             SizedBox(height: 24.h),
-            if (model.isConfirming) ...[
-              Text(
-                'CONFIRM YOUR PIN CODE',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[600]),
-              ),
-               SizedBox(height: 8.h),
-              _buildPinCodeRow(model, isConfirmation: true),
-            ],
-            if (model.passcode.length == 4 && model.confirmedPasscode.length == 4)
-              _buildValidationMessage(model),
-            const Spacer(),
-            _buildNumberPad(model),
-             SizedBox(height: 16.h),
-            _buildContinueButton(model, context),
-          ],
+          ),
         ),
       ),
     );
@@ -214,17 +222,18 @@ class _PasscodeSetupScreenContent extends StatelessWidget {
     );
   }
 
-  Widget _buildContinueButton(PasscodeSetupModel model, BuildContext context) {
+  Widget _buildContinueButton(PasscodeSetupModel model, BuildContext context, String email) {
     return AnimatedOpacity(
       opacity: model.passcode.length == 4 && model.confirmedPasscode.length == 4 ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 300),
       child: ElevatedButton(
         onPressed: model.passcode.length == 4 && model.confirmedPasscode.length == 4 && model.passcode == model.confirmedPasscode
             ? () async {
-          await model.savePasscode();
+          await model.savePasscode(email);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('PIN set successfully!')),
           );
+          model.resetAndClearPassCodeField();
           Navigator.of(context).pop();
         }
             : null,

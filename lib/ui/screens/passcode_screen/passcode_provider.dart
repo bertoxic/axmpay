@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -67,14 +69,20 @@ class PasscodeSetupModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-  Future<void> savePasscode() async {
+     resetAndClearPassCodeField(){
+    _passcode = '';
+    _isConfirming= false;
+    _confirmedPasscode="";
+    notifyListeners();
+}
+  Future<void> savePasscode(String email) async {
     if (_passcode == _confirmedPasscode && _passcode.length == 4) {
       final storage = FlutterSecureStorage();
-      await storage.write(key: 'passcode', value: _passcode);
-      String? pass = await storage.read(key: "passcode");
-      //await storage.delete(key: "passcode");
-       pass = await storage.read(key: "passcode");
+      Map<String, dynamic> passCodeMap = {"email":email,"passcode":_passcode};
+      await storage.write(key: 'passcodeMap', value: jsonEncode(passCodeMap));
+      String? pass = await storage.read(key: "passcodeMap");
+       pass = await storage.read(key: "passcodeMap");
+       resetAndClearPassCodeField();
       notifyListeners();
     }
   }

@@ -18,6 +18,7 @@ class MainWrapperPage extends StatefulWidget {
 
 class _MainWrapperPageState extends State<MainWrapperPage> {
   late Future<void> _initFuture;
+
   @override
   void initState() {
     _initFuture = _initializeUserDetails();
@@ -66,43 +67,15 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
 
   @override
   Widget build(BuildContext context) {
-    // ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
-    //   WidgetsBinding.instance.addPostFrameCallback((_) {
-    //    // handleGlobalError(context, errorDetails.exception);
-    //   });
-    //
-    //   return const Scaffold(
-    //     body: Center(
-    //       child: Text('An error occurred. Please try again.'),
-    //     ),
-    //   );
-    // };
     return Scaffold(
-      backgroundColor: Colors.grey,
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () {},
-      //   backgroundColor: colorScheme.primaryContainer,
-      //   child:  Icon(Icons.water_drop, color: colorScheme.primary,),
-      // ),
-      bottomNavigationBar: CustomBottomNavBar(
-        items: [
-          BottomNavItem(icon: Icons.home, label: "Home"),
-          BottomNavItem(icon: Icons.send_and_archive_rounded, label: "transfer"),
-          BottomNavItem(icon: Icons.format_align_center, label: "history"),
-          BottomNavItem(icon: Icons.person, label: "profile"),
-        ],
-        onItemSelected: (int value) {
-          setState(() {
-            goToBranch(value);
-          });
-        },
-      ),
-      body: SizedBox(
+      body: Stack(
+        children: [
+        SizedBox(
         height: double.infinity,
         width: double.infinity,
-        child:   FutureBuilder<void>(
-    future: _initFuture,
-    builder: (context, snapshot) {
+        child: FutureBuilder<void>(
+          future: _initFuture,
+          builder: (context, snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
     return const Scaffold(
     body: Center(child: CircularProgressIndicator()),
@@ -157,6 +130,24 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
     ),
 
       ),
-    );
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 2,
+            child: CustomBottomNavBar(
+              items: [
+                BottomNavItem(icon: Icons.home),
+                BottomNavItem(icon: Icons.send_and_archive_rounded),
+                BottomNavItem(icon: Icons.format_align_center),
+                BottomNavItem(icon: Icons.person),
+              ],
+              onItemSelected: (int value) {
+                setState(() {
+                  goToBranch(value);
+                });
+              },
+            ),
+          ),
+    ],),);
   }
 }

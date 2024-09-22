@@ -1,8 +1,13 @@
 
 import 'package:AXMPAY/main.dart';
 import 'package:AXMPAY/models/transaction_model.dart';
+import 'package:AXMPAY/models/user_model.dart';
 import 'package:AXMPAY/providers/user_service_provider.dart';
+import 'package:AXMPAY/ui/screens/earnings_screen/earnings_dashboard.dart';
 import 'package:AXMPAY/ui/screens/informational_screens/frequently_asked_questions.dart';
+import 'package:AXMPAY/ui/screens/passcode_screen/passcode_set_up.dart';
+import 'package:AXMPAY/ui/screens/registration/update_user_details_page.dart';
+import 'package:AXMPAY/ui/screens/upgrade_account/upgrade_account_form.dart';
 import 'package:AXMPAY/ui/widgets/custom_dialog.dart';
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
@@ -12,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../widgets/custom_container/wavey_container.dart';
 import '../transaction_screen/success_receipt_screen.dart';
 
 class HomePage extends StatefulWidget {
@@ -37,6 +43,7 @@ class _HomePageState extends State<HomePage> {
 
   String? serviceProviderNetwork;
   late Future<List<TransactionHistoryModel>> _transactionHistoryFuture;
+  late Future <UserData?> _userDetailsFuture;
   final formatter = NumberFormat.currency(locale: 'en_US', symbol: '\₦');
    double? balance;
   @override
@@ -47,50 +54,60 @@ class _HomePageState extends State<HomePage> {
     serviceProviderController = TextEditingController();
     userProvider =  Provider.of<UserServiceProvider>(context, listen: false);
     _transactionHistoryFuture = _fetchTransactionHistory();
+    _userDetailsFuture = _fetchUserDetails();
   }
   Future<List<TransactionHistoryModel>> _fetchTransactionHistory() {
     return Provider.of<UserServiceProvider>(context, listen: false).fetchTransactionHistory(context);
   }
+ Future<UserData?> _fetchUserDetails() {
+    return Provider.of<UserServiceProvider>(context, listen: false).getUserDetails(context);
+  }
 
-  void _retryFetchingTransactions() {
+  Future<void> _retryFetchingTransactions() async {
     setState(() {
       _transactionHistoryFuture = _fetchTransactionHistory();
+      _userDetailsFuture = _fetchUserDetails();
+
     });
+    await _transactionHistoryFuture;
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     balance = double.tryParse(userProvider.userdata?.availableBalance?.toString() ?? '0');
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: colorScheme.background,
+        backgroundColor: Theme.of(context).colorScheme.background,
         actions: [
           IconButton(
-            icon: Icon(Icons.help, color: colorScheme.primary),
+            icon: Icon(Icons.help, color: Theme.of(context).colorScheme.primary),
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) =>  FAQs()),
+                MaterialPageRoute(builder: (_) => FAQs()),
               );
             },
           ),
           IconButton(
-            icon: Icon(Icons.notifications, color: colorScheme.onSurface),
+            icon: Icon(Icons.notifications, color: Theme.of(context).colorScheme.onSurface),
             onPressed: () {
+              // Add notification functionality
             },
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: RefreshIndicator(
+        onRefresh: _retryFetchingTransactions,
         child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           child: Container(
-            color: colorScheme.background,
+            color: Theme.of(context).colorScheme.background,
             child: Column(
               children: [
                 Consumer<UserServiceProvider>(
                     builder: (context, userProvider, child) {
-                    return _buildUserInfoCard(userProvider);
-                  }
+                      return _buildUserInfoCard(userProvider);
+                    }
                 ),
                 _buildQuickActionsCard(),
                 _buildTransactionHistoryCard(),
@@ -98,7 +115,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        ),
+      ),
     );
   }
 
@@ -166,7 +183,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: SizedBox( width: 50, height: 50,
+                  child: SizedBox( width: 30.w, height: 30.w,
                       child: SvgIcon("assets/images/axmpay_logo.svg", color: Colors.grey.shade200, width: 36.w, height: 40.h)),
                 ),
               ],
@@ -192,7 +209,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 ElevatedButton.icon(
                   onPressed: () {
-                    Clipboard.setData(ClipboardData(text: userProvider.userdata!.accountNumber));
+                    Clipboard.setData(ClipboardData(text: userProvider.userdata!.accountNumber??""));
                     ScaffoldMessenger.of(context).showSnackBar(
                        SnackBar(content: Text('Account number copied to clipboard'),backgroundColor: colorScheme.primary),
                     );
@@ -235,8 +252,8 @@ class _HomePageState extends State<HomePage> {
                 _buildQuickActionButton(Icons.send, "Transfer", () => context.pushNamed("/transferPage")),
                 _buildQuickActionButton(Icons.phone_android, "Recharge", () => context.pushNamed("top_up")),
                 _buildQuickActionButton(Icons.history, "History", () => context.pushNamed("/transaction_history_page")),
-                 // _buildQuickActionButton(Icons.history, "History", (){  Navigator.of(context).push(
-                 //     MaterialPageRoute(builder: (_) =>  TopUpSuccessScreen()));},)
+                 _buildQuickActionButton(Icons.history, "History", (){  Navigator.of(context).push(
+                     MaterialPageRoute(builder: (_) =>  EarningBalanceDashboard()));},)
                     ],
             ),
           ],
@@ -290,7 +307,7 @@ class _HomePageState extends State<HomePage> {
             ),
             SizedBox(height: 8.h),
             SizedBox(
-              height: 320.h,
+              height: 360.h,
               child: FutureBuilder<List<TransactionHistoryModel>>(
                 future: _fetchTransactionHistory(),
                 builder: (context, snapshot) {
@@ -364,7 +381,7 @@ class _HomePageState extends State<HomePage> {
                           style: TextStyle(fontSize: 9.sp, color: Colors.grey[600]),
                         ),
                         Text(
-                          "${userProvider.userdata?.username .toUpperCase()} ${userProvider.userdata?.lastname.toUpperCase()}",
+                          "${userProvider.userdata?.fullName?.toUpperCase()??"" .toUpperCase()}",
                           style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 8.h),
@@ -384,7 +401,7 @@ class _HomePageState extends State<HomePage> {
                         SizedBox(height: 16.h),
                         ElevatedButton(
                             onPressed: () {
-                              Clipboard.setData(ClipboardData(text: userProvider.userdata!.accountNumber));
+                              Clipboard.setData(ClipboardData(text: userProvider.userdata!.accountNumber??""));
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Account number copied to clipboard')),
                               );
@@ -441,7 +458,9 @@ class _TransactionItemWidgetState extends State<TransactionItemWidget> {
           );
         } catch (e) {
           if (mounted) {
-           CustomPopup.show(context: context,
+           CustomPopup.show(
+               type: PopupType.error,
+               context: context,
                title: "Error occurred", message: "unable to get transaction details");
           }
         } finally {

@@ -35,7 +35,7 @@ class ReceiptGenerator {
                       shape: pw.BoxShape.circle,
                     ),
                     child: pw.Icon(
-                      pw.IconData(0xe876), // check icon
+                      const pw.IconData(0xe876), // check icon
                       color: PdfColors.green,
                       size: 40,
                     ),

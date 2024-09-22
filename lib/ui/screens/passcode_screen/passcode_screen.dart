@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -144,7 +146,9 @@ class _PasscodeInputScreenState extends State<PasscodeInputScreen> {
   }
   Future<bool?> confirmPasscode(String passcode)async{
     final storage = FlutterSecureStorage();
-    String? pass = await storage.read(key: "passcode");
+    String? passCodeMapString = await storage.read(key: "passcodeMap");
+    var passCodeMap = jsonDecode(passCodeMapString??"");
+    String pass = passCodeMap["passcode"];
     print("secondhand person is $pass vs first is $passcode, ... ${passcode==pass}");
 
     return (passcode==pass);
