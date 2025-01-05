@@ -408,7 +408,7 @@ class _HomePageState extends State<HomePage> {
                               Navigator.of(context).pop();
                             },
                             style: ElevatedButton.styleFrom(
-                              primary: colorScheme.onPrimary,
+                              backgroundColor: colorScheme.onPrimary,
                             ),
                             child: Text('Copy Account Number')
                         ),

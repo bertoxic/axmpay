@@ -527,8 +527,7 @@ class UserServiceProvider extends ChangeNotifier {
     }
   }
 
-  Future<ResponseResult?> getNetworkProvider(
-      BuildContext context, String phoneNumber) async {
+  Future<ResponseResult?> getNetworkProvider(BuildContext context, String phoneNumber) async {
     try {
       String? token = await SharedPreferencesUtil.getString("auth_token");
       if (!context.mounted) return null;
@@ -560,8 +559,7 @@ class UserServiceProvider extends ChangeNotifier {
     }
   }
 
-  Future<DataBundleList?>? getDataPlans(
-      BuildContext context, String phoneNumber) async {
+  Future<DataBundleList?>? getDataPlans(BuildContext context, String phoneNumber) async {
     try {
       String? token = await SharedPreferencesUtil.getString("auth_token");
       if (!context.mounted) return null;
@@ -588,8 +586,7 @@ class UserServiceProvider extends ChangeNotifier {
     }
   }
 
-  Future<ResponseResult?> buyAirtime(
-      BuildContext context, TopUpPayload topUpPayload) async {
+  Future<ResponseResult?> buyAirtime(BuildContext context, TopUpPayload topUpPayload) async {
     try {
       String? token = await SharedPreferencesUtil.getString("auth_token");
       if (!context.mounted) return null;
@@ -622,8 +619,7 @@ class UserServiceProvider extends ChangeNotifier {
     }
   }
 
-  Future<ResponseResult?> topUpData(
-      BuildContext context, TopUpPayload topUpPayload) async {
+  Future<ResponseResult?> topUpData( BuildContext context, TopUpPayload topUpPayload) async {
     try {
       String? token = await SharedPreferencesUtil.getString("auth_token");
       if (!context.mounted) return null;
@@ -655,8 +651,7 @@ class UserServiceProvider extends ChangeNotifier {
       rethrow;
     }
     }
-    Future<ResponseResult?> cashOutEarnings(
-      BuildContext context, String amount) async {
+    Future<ResponseResult?> cashOutEarnings(BuildContext context, String amount) async {
     Map<String,dynamic> data = {"totalAmount":amount};
     try {
       String? token = await SharedPreferencesUtil.getString("auth_token");
@@ -669,16 +664,48 @@ class UserServiceProvider extends ChangeNotifier {
       } else {
         jsonData = response.data;
       }
-      if (jsonData["status"] == "failed") {
+      if (jsonData["status"].toString().toLowerCase() == "failed") {
         return ResponseResult(
           status: ResponseStatus.failed,
-          message: jsonData["message"] ?? "dataTopUp failed",
+          message: jsonData["message"] ?? "earningTopUp failed",
           data: jsonData["data"] as Map<String, dynamic>?,
         );
       }
       return ResponseResult(
         status: ResponseStatus.success,
-        message: jsonData["message"] ?? "DataTopUp successful",
+        message: jsonData["message"] ?? "earning withdrawal successful",
+        data: jsonData["data"] as Map<String, dynamic>?,
+      );
+    } catch (e) {
+      if (!context.mounted) {
+        rethrow;
+      }
+      handleExceptionGlobally(context, e);
+      rethrow;
+    }
+  }
+
+  Future<ResponseResult?> fetchReferralDetails(BuildContext context) async {
+    try {
+      String? token = await SharedPreferencesUtil.getString("auth_token");
+      if (!context.mounted) return null;
+      final response = await apiService.get(context, "fetchReferralDetails.php", token);
+      Map<String, dynamic> jsonData;
+      if (response.data is String) {
+        jsonData = jsonDecode(response.data);
+      } else {
+        jsonData = response.data;
+      }
+      if (jsonData["status"] == "failed") {
+        return ResponseResult(
+          status: ResponseStatus.failed,
+          message: jsonData["message"] ?? "Verification failed",
+          data: jsonData["data"] as Map<String, dynamic>?,
+        );
+      }
+      return ResponseResult(
+        status: ResponseStatus.success,
+        message: jsonData["message"] ?? "Verification successful",
         data: jsonData["data"] as Map<String, dynamic>?,
       );
     } catch (e) {
@@ -690,6 +717,8 @@ class UserServiceProvider extends ChangeNotifier {
     }
   }
 }
+
+
 
 void handleExceptionGlobally(BuildContext context, dynamic e) {
   print("Caught exception of type: ${e.runtimeType}");

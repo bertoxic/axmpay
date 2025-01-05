@@ -209,7 +209,7 @@ class _LoginPageState extends State<LoginPage> {
           );
           return;
         }
-        if (userServiceProvider.userdata?.userStatus.toString() == "Verified") {
+        if (userServiceProvider.userdata?.userStatus.toString() != "Verified") {
           const storage = FlutterSecureStorage();
           String? passCodeMapString = await storage.read(key: 'passcodeMap');
 

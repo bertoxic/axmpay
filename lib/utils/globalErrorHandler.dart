@@ -17,7 +17,7 @@ class GlobalErrorHandler extends StatelessWidget {
       return Scaffold(
         body: Center(
           child: Container( height: 800.h, width:  double.maxFinite,
-              color: Colors.red,
+              color: Colors.grey,
               child: Text('An error occurred. Please try again.${errorDetails.exception.toString()}')),
         ),
       );

@@ -165,6 +165,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             icon: Icons.mail,
             title: "Contact us",
             color: Colors.orange,
+            onTap: ()=>context.pushNamed("contact_us")
           ),
           _buildOptionTile(
             context,

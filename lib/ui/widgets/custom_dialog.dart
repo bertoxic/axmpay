@@ -66,7 +66,7 @@ class CustomPopup extends StatelessWidget {
             children: <Widget>[
               Text(
                 title,
-                style: titleStyle ?? Theme.of(context).textTheme.headline6?.copyWith(
+                style: titleStyle ?? Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: _getIconColor(),
                 ),
@@ -75,7 +75,7 @@ class CustomPopup extends StatelessWidget {
               AppText.body(
                 message,
                 textAlign: TextAlign.center,
-                style: messageStyle ?? Theme.of(context).textTheme.bodyText2,
+                style: messageStyle ?? Theme.of(context).textTheme.bodyMedium,
               ),
               SizedBox(height: 24.h),
               _buildActionButtons(context),
@@ -112,7 +112,7 @@ class CustomPopup extends StatelessWidget {
             action.onPressed();
           },
           style: ElevatedButton.styleFrom(
-            primary: action.color ?? _getIconColor(),
+            backgroundColor: action.color ?? _getIconColor(),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
