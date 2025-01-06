@@ -18,6 +18,6 @@ class ResponseResult {
 
   @override
   String toString() {
-    return 'ResponseResult(status: $status, message: $message, data: $data)';
+    return '{status: $status, message: $message, data: $data}';
   }
 }

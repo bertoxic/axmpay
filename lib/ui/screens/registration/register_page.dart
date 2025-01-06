@@ -26,6 +26,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  bool _agreedToTerms = false;
   final _formKey = GlobalKey<FormState>();
   late UserServiceProvider userServiceProvider;
   PreRegisterDetails registerDetails = PreRegisterDetails(lastName: "", firstName: "", password: "", email: "");
@@ -176,7 +177,37 @@ class _RegisterPageState extends State<RegisterPage> {
                         validator: (value) => validateConfirmPassword(value, _passwordController.text),
                       ),
                       SizedBox(height: 40.h),
-                      // Enhanced sign up button
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _agreedToTerms,
+                            onChanged: (value) => setState(() => _agreedToTerms = value ?? false),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => context.pushNamed("terms_and_conditions"),
+                              child: Text.rich(
+                                TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: 'I agree to the ',
+                                      style: TextStyle(color: Colors.grey[600]),
+                                    ),
+                                    TextSpan(
+                                      text: 'Terms and Conditions',
+                                      style: TextStyle(
+                                        color: Theme.of(context).colorScheme.primary,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20.h),
                       Container(
                         width: double.infinity,
                         height: 55.h,

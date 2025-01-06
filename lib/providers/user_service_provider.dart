@@ -391,26 +391,83 @@ class UserServiceProvider extends ChangeNotifier {
   Future<String> createAccount(
       BuildContext context, PreRegisterDetails userDetails) async {
     try {
-      Map<String, dynamic> data = userDetails.toJSON();
-      final response =
-          await apiService.post(context, "createAccount.php?", data, null);
+      print("Starting account creation process...");
 
-      if (response.data == null) {
-        throw Exception("no response from the server");
+      // Ensure `userDetails` has valid data
+      if (userDetails == null) {
+        throw Exception("User details cannot be null.");
       }
-      var jsonData = jsonDecode(response.data);
-      // if (jsonData["status"]=="failed") {
-      //   throw Exception(jsonData["message"]);
-      // }
+
+      // Convert user details to JSON
+      Map<String, dynamic> data = userDetails.toJSON();
+
+      // Check if `data` is a valid map
+      if (data.isEmpty) {
+        throw Exception("User details data is empty.");
+      }
+
+      // Make API call
+      final response =
+      await apiService.post(context, "createAccount.php?", data, null);
+
+      // Check if response is null
+      if (response == null) {
+        throw Exception("No response received from the server.");
+      }
+
+      // Check if response data is null or empty
+      if (response.data == null || response.data.toString().isEmpty) {
+        throw Exception("Response data is null or empty.");
+      }
+
+      // Debugging: Log response details
+      print("Response code: ${response.statusCode}");
+      print("Raw response data: ${response.data}");
+
+      // Check if response data is already a Map
+      dynamic jsonData;
+      if (response.data is Map<String, dynamic>) {
+        jsonData = response.data;
+      } else if (response.data is String) {
+        // Decode JSON string if necessary
+        try {
+          jsonData = jsonDecode(response.data);
+        } catch (error) {
+          print("Error decoding response data: $error");
+          throw Exception("Failed to decode response data: ${response.data}");
+        }
+      } else {
+        throw Exception("Response data is neither a Map nor a valid JSON string.");
+      }
+
+      // Validate decoded JSON structure
+      if (jsonData is! Map<String, dynamic>) {
+        throw Exception("Decoded response is not a valid JSON object.");
+      }
+
+      // Check for status in the JSON response
+      if (!jsonData.containsKey("status")) {
+        throw Exception("Response does not contain 'status' field.");
+      }
+
+      // Return status as a string
       return jsonData["status"].toString();
     } catch (e) {
+      // Ensure context is mounted before handling exceptions
       if (!context.mounted) {
         rethrow;
       }
+
+      // Log the caught exception for debugging
+      print("Caught exception of type: ${e.runtimeType}");
+      print("Error creating account: $e");
+
+      // Handle exception globally and rethrow
       handleExceptionGlobally(context, e);
       rethrow;
     }
   }
+
 
   Future<String> updateUserDetails(
       BuildContext context, String email, String password) async {

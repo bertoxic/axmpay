@@ -9,37 +9,73 @@ class PhotoPicker extends StatefulWidget {
   final Function(String?) onChange;
   final TextEditingController controller;
   final String? Function(String?)? validator;
-  final String?  hintText;
-  final String?  labelText;
-  final Widget?  prefixIcon;
+  final String? hintText;
+  final String? labelText;
+  final Widget? prefixIcon;
 
   const PhotoPicker({
     super.key,
     required this.context,
     required this.onChange,
     required this.controller,
-    this.validator, this.hintText, this.labelText, this.prefixIcon,
+    this.validator,
+    this.hintText,
+    this.labelText,
+    this.prefixIcon,
   });
 
   @override
   _PhotoPickerState createState() => _PhotoPickerState();
 }
 
-class _PhotoPickerState extends State<PhotoPicker> {
+class _PhotoPickerState extends State<PhotoPicker> with AutomaticKeepAliveClientMixin {
   late UploadPicture picker;
   String _displayText = 'Select an image';
-
   late TextEditingController _displayController;
+
+  @override
+  bool get wantKeepAlive => true;  // Add this to maintain state
 
   @override
   void initState() {
     super.initState();
-    _displayController = TextEditingController(text: 'Select an image');
+    _displayController = TextEditingController(
+        text: widget.controller.text.isNotEmpty ? 'Image selected' : 'Select an image'
+    );
     picker = UploadPicture();
+
+    // Add listener to main controller
+    widget.controller.addListener(_syncDisplayText);
+  }
+
+  void _syncDisplayText() {
+    if (mounted) {
+      setState(() {
+        _displayController.text = widget.controller.text.isNotEmpty
+            ? 'Image selected'
+            : 'Select an image';
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_syncDisplayText);
+    _displayController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Keep this for backward compatibility
+    if (widget.controller.text.isNotEmpty && _displayController.text == 'Select an image') {
+      _displayController.text = 'Image selected';
+    }
   }
 
   void _updateController(Map<String, String?>? data) {
-    if (data != null) {
+    if (data != null && mounted) {
       setState(() {
         _displayController.text = data["imageName"] ?? 'Image selected';
         widget.controller.text = data["base64Bytes"] ?? '';
@@ -58,41 +94,108 @@ class _PhotoPickerState extends State<PhotoPicker> {
     _updateController(data);
   }
 
-
   void _showCustomDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
-          ),
+          backgroundColor: Colors.transparent,
           child: Container(
-            height: 340.0.h,
+            height: 520.0.h,
             width: 400.0.w,
-            padding: const EdgeInsets.all(20.0),
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: BorderRadius.circular(20.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  spreadRadius: 5,
+                  blurRadius: 15,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                AppText.title("UPLOAD FILES"),
-                SizedBox(height: 40.0.h),
-                _buildOptionButton(
-                  icon: Icons.camera_enhance_sharp,
-                  text: 'Select Image from Camera',
-                  onTap: _getImageFromCameraBase64,
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 20.h),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Center(
+                    child: AppText.title(
+                      "Upload Image",
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontSize: 24.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
-                SizedBox(height: 20.0.h),
-                _buildOptionButton(
-                  icon: Icons.photo_camera_back_sharp,
-                  text: 'Select Image from Gallery',
-                  onTap: _getImageFromGalleryBase64,
+
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildOptionButton(
+                          icon: Icons.camera_enhance_rounded,
+                          text: 'Take Photo',
+                          subtext: 'Use your camera to capture a new photo',
+                          onTap: _getImageFromCameraBase64,
+                          context: context,
+                        ),
+                        _buildOptionButton(
+                          icon: Icons.photo_library_rounded,
+                          text: 'Choose from Gallery',
+                          subtext: 'Select an existing photo from your device',
+                          onTap: _getImageFromGalleryBase64,
+                          context: context,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10.h),
+                          child: Text(
+                            'Please ensure the image is clear and well-lit',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14.0,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                SizedBox(height: 20.0.h),
-                const Text('Please ensure the image is clear.'),
-                SizedBox(height: 20.0.h),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
+
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: TextButton.styleFrom(
+                      minimumSize: Size(double.infinity, 45.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: Theme.of(context).primaryColor.withOpacity(0.5),
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -105,28 +208,71 @@ class _PhotoPickerState extends State<PhotoPicker> {
   Widget _buildOptionButton({
     required IconData icon,
     required String text,
+    required String subtext,
     required Function() onTap,
+    required BuildContext context,
   }) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 8.w),
-      decoration: BoxDecoration(
-        border: Border.all(width: 0.4),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: GestureDetector(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         onTap: () async {
           await onTap();
           Navigator.of(context).pop();
         },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              text,
-              style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.normal),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 20.w),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Theme.of(context).primaryColor.withOpacity(0.2),
+              width: 1.5,
             ),
-            Icon(icon),
-          ],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  icon,
+                  color: Theme.of(context).primaryColor,
+                  size: 24,
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      text,
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      subtext,
+                      style: TextStyle(
+                        fontSize: 12.0,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Theme.of(context).primaryColor,
+                size: 16,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -134,6 +280,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);  // Add this line for AutomaticKeepAliveClientMixin
     return CustomTextField(
       hintText: widget.hintText,
       labelText: widget.labelText,

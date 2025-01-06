@@ -18,6 +18,7 @@ import 'package:AXMPAY/ui/widgets/custom_textfield.dart';
 import '../../models/user_model.dart';
 import '../../providers/authentication_provider.dart';
 import '../widgets/custom_dialog.dart';
+import '../widgets/svg_maker/svg_icon.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -92,29 +93,26 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                             child: Container(
                               width: 120.w,
                               height: 120.h,
+                              padding: EdgeInsets.symmetric(vertical: 12.w,horizontal: 12.w),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    Colors.white.withOpacity(0.2),
-                                    Colors.white.withOpacity(0.1),
+                                    Colors.white.withOpacity(0.2).withOpacity(0),
+                                    Colors.white.withOpacity(0.1).withOpacity(0),
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(30),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
+                                    color: Colors.black.withOpacity(0.2).withOpacity(0),
                                     blurRadius: 20,
                                     spreadRadius: 5,
                                   ),
                                 ],
                               ),
-                              child: Icon(
-                                Icons.account_balance_wallet,
-                                size: 60,
-                                color: Colors.white,
-                              ),
+                              child:SvgIcon("assets/images/axmpay_logo.svg", color: Colors.grey.shade200, width: 24.w, height: 40.h),
                             ),
                           );
                         },

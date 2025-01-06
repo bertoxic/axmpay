@@ -43,8 +43,8 @@ class ApiService {
         return handler.next(response);
       },
       onError: (DioException e, handler) {
-        print('Error: ${e.message}');
-        print('Error Response: ${e.response?.data}');
+        print('Errorxx: ${e.message.toString()}');
+        print('Error Responsexxxxx: ${e.response?.data}');
         return handler.next(e);
       },
     ));
@@ -113,7 +113,6 @@ class ApiService {
           handleGlobalError(context, e);}
          // rethrow;
         }
-       // handleGlobalError(context, e);
       }
      rethrow;
     }

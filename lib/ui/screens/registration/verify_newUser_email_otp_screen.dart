@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
+import 'package:animated_text_kit/animated_text_kit.dart';
 import '../../widgets/custom_dialog.dart';
 import '../../widgets/custom_textfield.dart';
 
@@ -22,15 +22,42 @@ class NewUserOTPVerificationScreen extends StatefulWidget {
   _NewUserOTPVerificationScreenState createState() => _NewUserOTPVerificationScreenState();
 }
 
-class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScreen> {
+class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScreen> with SingleTickerProviderStateMixin {
   final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   final _inputOTPFormKey = GlobalKey<FormState>();
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
   String? otp;
   bool _isLoading = false;
+  int? _resendSeconds = 30;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    _animationController.forward();
+    _startResendTimer();
+  }
+
+  void _startResendTimer() {
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted && _resendSeconds! > 0) {
+        setState(() => _resendSeconds = _resendSeconds! - 1);
+        _startResendTimer();
+      }
+    });
+  }
 
   @override
   void dispose() {
+    _animationController.dispose();
     for (var controller in _controllers) {
       controller.dispose();
     }
@@ -49,99 +76,188 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
           otp = _controllers.map((c) => c.text).join();
         });
       }
+    } else if (_controllers[index].text.isEmpty && index > 0) {
+      _focusNodes[index - 1].requestFocus();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
-
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(height: 40.h),
-                Icon(Icons.lock_outline, size: 80.h, color: colorScheme.primary),
-                SizedBox(height: 24.h),
-                AppText.title(
-                  "OTP Verification",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 28.sp, fontWeight: FontWeight.bold),
+      body: Column(
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    colorScheme.primary.withOpacity(0.3),
+                    colorScheme.secondary.withOpacity(0.8),
+                  ],
                 ),
-                SizedBox(height: 16.h),
-                AppText.body(
-                  "Please enter the 6-digit code sent to:",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16.sp, color: colorScheme.onSurface.withOpacity(0.7)),
-                ),
-                SizedBox(height: 8.h),
-                AppText.body(
-                  widget.preRegisterDetails.email,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: colorScheme.primary),
-                ),
-                SizedBox(height: 32.h),
-                Form(
-                  key: _inputOTPFormKey,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: List.generate(
-                      6,
-                          (index) => SizedBox(
-                        width: 50.w,
-                        child: CustomTextField(
-                          validator: (value) => FormValidator.validate(value, ValidatorType.digits, fieldName: "Digit ${index + 1}"),
-                          controller: _controllers[index],
-                          focusNode: _focusNodes[index],
-                          textAlign: TextAlign.center,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(1),
-                            FilteringTextInputFormatter.digitsOnly,
+              ),
+              child: Center(
+                child: SafeArea(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            SizedBox(height: 40.h),
+                            Hero(
+                              tag: 'lockIcon',
+                              child: Container(
+                                padding: EdgeInsets.all(20.w),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                child: Icon(
+                                  Icons.lock_outline,
+                                  size: 60.h,
+                                  color: colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 24.h),
+                            AnimatedTextKit(
+                              animatedTexts: [
+                                FadeAnimatedText(
+                                  'OTP Verification',
+                                  textAlign: TextAlign.center,
+                                  textStyle: TextStyle(
+                                    fontSize: 28.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              ],
+                              totalRepeatCount: 1,
+                            ),
+                            SizedBox(height: 16.h),
+                            AppText.body(
+                              "Please enter the 6-digit code sent to:",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                color: colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            AppText.body(
+                              widget.preRegisterDetails.email,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.primary,
+                              ),
+                            ),
+                            SizedBox(height: 32.h),
+                            Form(
+                              key: _inputOTPFormKey,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: List.generate(
+                                  6,
+                                      (index) => SizedBox(
+                                    width: 45.w,
+                                    height: 55.h,
+                                    child: CustomTextField(
+                                      validator: (value) => FormValidator.validate(
+                                        value,
+                                        ValidatorType.digits,
+                                        fieldName: "Digit ${index + 1}",
+                                      ),
+                                      controller: _controllers[index],
+                                      focusNode: _focusNodes[index],
+                                      textAlign: TextAlign.center,
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [
+                                        LengthLimitingTextInputFormatter(1),
+                                        FilteringTextInputFormatter.digitsOnly,
+                                      ],
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: colorScheme.surface,
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                            color: colorScheme.primary,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        errorBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(
+                                            color: colorScheme.error,
+                                            width: 2,
+                                          ),
+                                        ),
+                                      ),
+                                      onChanged: (_) => _onChanged(index),
+                                      fieldName: 'Digit ${index + 1}',
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 32.h),
+                            if (_isLoading)
+                              Center(
+                                child: CircularProgressIndicator(
+                                  color: colorScheme.primary,
+                                  strokeWidth: 3,
+                                ),
+                              )
+                            else
+                              CustomButton(
+                                size: ButtonSize.large,
+                                text: "Verify OTP",
+                                onPressed: _verifyOTP,
+
+                              ),
+                            SizedBox(height: 24.h),
+                            TextButton(
+                              onPressed: _resendSeconds == 0
+                                  ? () {
+                                setState(() => _resendSeconds = 30);
+                                _startResendTimer();
+                                // TODO: Implement resend OTP functionality
+                              }
+                                  : null,
+                              child: Text(
+                                _resendSeconds == 0
+                                    ? "Resend Code"
+                                    : "Resend Code in $_resendSeconds seconds",
+                                style: TextStyle(
+                                  color: _resendSeconds == 0
+                                      ? colorScheme.primary
+                                      : colorScheme.onSurface.withOpacity(0.5),
+                                  fontSize: 16.sp,
+                                ),
+                              ),
+                            ),
                           ],
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: colorScheme.primary),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                            ),
-                          ),
-                          onChanged: (_) => _onChanged(index),
-                          fieldName: 'Digit ${index + 1}',
                         ),
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: 32.h),
-                _isLoading
-                    ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
-                    : CustomButton(
-                  size: ButtonSize.large,
-                  text: "Verify OTP",
-                  onPressed: _verifyOTP,
-                ),
-                SizedBox(height: 24.h),
-                TextButton(
-                  onPressed: () {
-                    // TODO: Implement resend OTP functionality
-                  },
-                  child: Text(
-                    "Didn't receive the code? Resend",
-                    style: TextStyle(color: colorScheme.primary, fontSize: 16.sp),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -153,11 +269,11 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
 
     try {
       final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
-      final resp = await userProvider.emailVerification(context, otp!);
-
+      ResponseResult resp = await userProvider.emailVerification(context, otp!);
+      print("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz ${resp.status}");
       if (!mounted) return;
 
-      if (resp.status.toString() == "failed") {
+      if (resp.status == ResponseStatus.failed) {
         await CustomPopup.show(
           backgroundColor: colorScheme.onPrimary,
           type: PopupType.error,
@@ -166,10 +282,12 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
           context: context,
         );
       } else {
-        context.pushNamed("login", pathParameters: {"email": widget.preRegisterDetails.email, "otp": otp!});
+        context.pushNamed(
+          "login",
+          pathParameters: {"email": widget.preRegisterDetails.email, "otp": otp!},
+        );
       }
     } catch (e) {
-
       await CustomPopup.show(
         backgroundColor: colorScheme.onPrimary,
         type: PopupType.error,

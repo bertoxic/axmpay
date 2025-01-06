@@ -8,7 +8,6 @@ bool _isPopupShowing = false;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void handleGlobalError(BuildContext context, dynamic error) {
-  print("zzzzrrrrrrrrrrrrrxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxbbxxxxxxx ${_isPopupShowing} }");
   if (!_isPopupShowing) {
     _isPopupShowing = true;
     Map<String, dynamic> errorMap = getErrorMessage(error);

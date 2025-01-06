@@ -50,56 +50,116 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
 
   @override
   Widget build(BuildContext context) {
-    DateTime selectedDate;
-    UserDetails userdetails = UserDetails(
-      firstName: "",
-      lastName: "",
-      dateOfBirth: "",
-      email: "",
-    );
-    final authProvider = Provider.of<AuthenticationProvider>(context);
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Upgrade Wallet'),
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          tabs: const [
-           // Tab(text: 'Basic Info'),
-            Tab(text: 'Identification'),
-          //  Tab(text: 'Address'),
-          //  Tab(text: 'Additional Info'),
-            Tab(text: 'Documents'),
-          ],
+        elevation: 0,
+        backgroundColor: theme.colorScheme.primary,
+        title: Text(
+          'Upgrade Wallet',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(60.h),
+          child: Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              indicatorColor: Colors.white,
+              indicatorWeight: 3,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              labelStyle: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+              tabs: const [
+                Tab(
+                  icon: Icon(Icons.badge_outlined),
+                  text: 'Identification',
+                ),
+                Tab(
+                  icon: Icon(Icons.document_scanner_outlined),
+                  text: 'Documents',
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: TabBarView(
-          controller: _tabController,
-          children: [
-           // _buildBasicInfoTab(),
-            _buildIdentificationTab(),
-           // _buildAddressTab(),
-          //  _buildAdditionalInfoTab(),
-            _buildDocumentsTab(),
-          ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              theme.colorScheme.primary.withOpacity(0.05),
+              Colors.white,
+            ],
+          ),
+        ),
+        child: Form(
+          key: _formKey,
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildIdentificationTab(),
+              _buildDocumentsTab(),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
+          return Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -5),
+                ),
+              ],
+            ),
             child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               child: _isLoading
                   ? const SizedBox(
-                width: 20,
-                height: 20,
+                width: 24,
+                height: 24,
                 child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               )
-                  : const Text('Submit'),
+                  : Text(
+                'Submit',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
               onPressed: _isLoading
                   ? null
                   : () async {
@@ -116,9 +176,10 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
 
                 if (isFormValid) {
                   _controller.createUserWalletPayload();
-                  ResponseResult? responseResult = await _controller.upgradeUserWalletInServer();
+                  ResponseResult? responseResult =
+                  await _controller.upgradeUserWalletInServer();
                   if (responseResult?.status != ResponseStatus.success) {
-                    if(!mounted) return;
+                    if (!mounted) return;
                     CustomPopup.show(
                       type: PopupType.error,
                       context: context,
@@ -136,6 +197,277 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
     );
   }
 
+  Widget _buildIdentificationTab() {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
+        child: Column(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(16.w),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.verified_user_outlined,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 24.w,
+                        ),
+                        SizedBox(width: 12.w),
+                        Text(
+                          "Identification Details",
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(height: 1, color: Colors.grey.withOpacity(0.2)),
+                  Padding(
+                    padding: EdgeInsets.all(16.w),
+                    child: Column(
+                      children: [
+                        _buildDropdownField(
+                          controller: _controller.idTypeController,
+                          options: const [
+                            "National ID",
+                            "Driver's License",
+                            "Voter's card",
+                            "International PassPort"
+                          ],
+                          labelText: 'Identification Type',
+                          hintText: 'Select type of identification',
+                          icon: Icons.badge_outlined,
+                        ),
+                        SizedBox(height: 16.h),
+                        _buildTextField(
+                          controller: _controller.idNumberController,
+                          labelText: 'ID Number',
+                          icon: Icons.numbers_outlined,
+                        ),
+                        SizedBox(height: 16.h),
+                        _buildDateField(
+                          controller: _controller.idIssueDateController,
+                          labelText: 'ID Issue Date',
+                          firstDate: DateTime.now().subtract(Duration(days: 5780)),
+                          lastDate: DateTime.now(),
+                          icon: Icons.calendar_today_outlined,
+                        ),
+                        SizedBox(height: 16.h),
+                        _buildDateField(
+                          controller: _controller.idExpiryDateController,
+                          labelText: 'ID Expiry Date',
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime.now().add(const Duration(days: 10780)),
+                          icon: Icons.event_outlined,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDocumentsTab() {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(16.w),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.upload_file_outlined,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 24.w,
+                    ),
+                    SizedBox(width: 12.w),
+                    Text(
+                      "Required Documents",
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(height: 1, color: Colors.grey.withOpacity(0.2)),
+              Padding(
+                padding: EdgeInsets.all(16.w),
+                child: Column(
+                  children: [
+                    _buildDocumentUploader(
+                      controller: _controller.userPhotoController,
+                      label: "User Photo",
+                      icon: Icons.person_outline,
+                    ),
+                    SizedBox(height: 16.h),
+                    _buildDocumentUploader(
+                      controller: _controller.idCardFrontController,
+                      label: "ID Card Front",
+                      icon: Icons.credit_card_outlined,
+                    ),
+                    SizedBox(height: 16.h),
+                    _buildDocumentUploader(
+                      controller: _controller.idCardBackController,
+                      label: "ID Card Back",
+                      icon: Icons.credit_card_outlined,
+                    ),
+                    SizedBox(height: 16.h),
+                    _buildDocumentUploader(
+                      controller: _controller.customerSignatureController,
+                      label: "Customer Signature",
+                      icon: Icons.draw_outlined,
+                    ),
+                    SizedBox(height: 16.h),
+                    _buildDocumentUploader(
+                      controller: _controller.utilityBillController,
+                      label: "Utility Bill",
+                      icon: Icons.receipt_outlined,
+                    ),
+                    SizedBox(height: 16.h),
+                    _buildDocumentUploader(
+                      controller: _controller.proofOfAddressController,
+                      label: "Proof of Address",
+                      icon: Icons.home_outlined,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdownField({required TextEditingController controller, required List<String> options, required String labelText, required String hintText, required IconData icon,}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: DropdownTextField(
+        controller: controller,
+        validator: (value) =>
+            FormValidator.validate(value, ValidatorType.isEmpty, fieldName: labelText),
+        onChange: (value) {
+          setState(() {
+            controller.text = value ?? "";
+          });
+        },
+        options: options,
+        labelText: labelText,
+        hintText: hintText,
+        prefixIcon: icon,
+        displayStringForOption: (option) => option, fieldName: '',
+      ),
+    );
+  }
+
+  Widget _buildTextField({required TextEditingController controller, required String labelText, required IconData icon,}){
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: UpdateUserDetailsField(
+        labelText: labelText,
+        fieldController: controller,
+        onChanged: (value) {},
+        fieldName: '',
+        prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
+      ),
+    );
+  }
+
+  Widget _buildDateField({required TextEditingController controller, required String labelText, required DateTime firstDate, required DateTime lastDate, required IconData icon,}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: DatePickerTextField(
+        labelText: labelText,
+        dateController: controller,
+        context: context,
+        firstDate: firstDate,
+        lastDate: lastDate,
+        onChange: (value) {},
+        validator: (value) =>
+            FormValidator.validate(value, ValidatorType.isEmpty, fieldName: labelText),
+      ),
+    );
+  }
+
+  Widget _buildDocumentUploader({required TextEditingController controller, required String label, required IconData icon,}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: PhotoPicker(
+        hintText: label,
+        labelText: label,
+        prefixIcon: Icon(
+          icon,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        context: context,
+        onChange: (value) {
+          print(value);
+        },
+        controller: controller,
+        validator: (value) {
+          if (value != null && value is String) {
+            return _controller.fileSizeValidator(value);
+          }
+          return null;
+        },
+      ),
+    );
+  }
   Widget _buildBasicInfoTab() {
     return SingleChildScrollView(
       child: Column(
@@ -175,14 +507,14 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                     ),
                   ),
                   SpacedContainer(
-                    child: UpdateUserDetailsField( 
+                    child: UpdateUserDetailsField(
                       labelText: 'Account Name',
                       fieldController: _controller.accountNameController,
                       onChanged: (value) {}, fieldName: '',
                       readOnly: true,
                     ),
                   ),
-                  SpacedContainer(  
+                  SpacedContainer(
                     child: UpdateUserDetailsField(
                       labelText: 'Phone Number',
                       fieldController: _controller.phoneNumberController,
@@ -206,88 +538,6 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
       ),
     );
   }
-
-  Widget _buildIdentificationTab() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          SizedBox(height: 10.h,),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 12.w),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(20.w),
-            ),
-            child: Column(
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.h),
-                    child: AppText.body("identification"),
-                  ),
-                ),
-                SpacedContainer(
-                  child: Column(
-                    children: [
-                  SpacedContainer(
-                  child: DropdownTextField(
-                  controller: _controller.idTypeController,
-                    validator: (value)=>FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "Political exposed person"),
-                    onChange: (value ) {
-                      setState(() {
-                        _controller.idTypeController.text = value??""!;
-                      });
-
-                    }, options: const ["National ID","Driver's License","Voter's card","International PassPort"],
-                    labelText: 'Identification Type',
-                    hintText: 'Select type of identification?',
-                    prefixIcon: Icons.person_pin_outlined,
-                    fieldName: 'P.E.P',
-                    displayStringForOption: (options )  =>options,
-                  )
-                ),
-                      SpacedContainer(
-                        child: UpdateUserDetailsField(
-                          labelText: 'ID Number',
-                          fieldController: _controller.idNumberController,
-                          onChanged: (value) {}, fieldName: '',
-                        ),
-                      ),
-                      SpacedContainer(
-                        child: DatePickerTextField(
-                          labelText: 'ID Issue Date',
-                          dateController: _controller.idIssueDateController,
-                          context: context,
-                          firstDate:  DateTime.now().subtract(Duration(days: 5780)),
-                          lastDate:  DateTime.now(),
-                          onChange: (value) {},
-                          validator:(value)=> FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "ID Issue Date"),
-                        ),
-                      ),
-                      SpacedContainer(
-                        child: DatePickerTextField(
-                          labelText: 'ID Expiry Date',
-                          firstDate:  DateTime.now(),
-                          lastDate:  DateTime.now().add(const Duration(days: 10780)),
-                          dateController: _controller.idExpiryDateController,
-                          onChange: (value) {},
-                          validator:(value)=> FormValidator.validate(value, ValidatorType.isEmpty,fieldName: "ID Expiry Date"),
-                          context: context,
-                          //fieldName: '',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildAddressTab() {
     return SingleChildScrollView(
       child: Padding(
@@ -425,140 +675,7 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
     );
   }
 
-  Widget _buildDocumentsTab() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding:  EdgeInsets.symmetric(vertical: 16.0.h),
-        child:   Container(
-          margin: EdgeInsets.symmetric(horizontal: 12.w),
-          decoration: BoxDecoration(
-            color: colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(20.w),
-          ),
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.h),
-                  child: AppText.body("Documents"),
-                ),
-              ),
-              SpacedContainer(
-                child: Column(
-                  children: [
-                    SpacedContainer(
-                      child: PhotoPicker(
-                        hintText: "User Photo",
-                        labelText: "User Photo",
-                        prefixIcon: const Icon(Icons.photo),
-                        context: context,
-                        onChange: (value) {
-                          print(value);
-                        },
-                        controller: _controller.userPhotoController,
-                        validator: (value) {
-                          if (value != null && value is String) {
-                            return _controller.fileSizeValidator(value); }
-                          return null;
-                        },
-                      ),
-                    ),
-                    SpacedContainer(
-                      child: PhotoPicker(  
-                        hintText: "ID Card Front",
-                        labelText: "ID Card Front",
-                        prefixIcon: const Icon(Icons.credit_card),
-                        context: context,
-                        onChange: (value) {
-                          print(value);
-                        },
-                        controller: _controller.idCardFrontController,
-                        validator: (value) {
-                            if (value != null && value is String) {
-                            return _controller.fileSizeValidator(value); }
-                            return null;
-                    },
-                      ),
-                    ),
-                    SpacedContainer(
-                      child: PhotoPicker(  
-                        hintText: "ID Card Back",
-                        labelText: "ID Card Back",
-                        prefixIcon: const Icon(Icons.credit_card),
-                        context: context,
-                        onChange: (value) {
-                          print(value);
-                        },
-                        controller: _controller.idCardBackController,
-                        validator: (value) {
-                          if (value != null && value is String) {
-                            return _controller.fileSizeValidator(value); }
-                          return null;
-                        },
-                      ),
-                    ),
-                    SpacedContainer(
-                      child: PhotoPicker(  
-                        hintText: "Customer Signature",
-                        labelText: "Customer Signature",
-                        prefixIcon: const Icon(Icons.draw),
-                        context: context,
-                        onChange: (value) {
-                          print(value);
-                        },
-                        controller: _controller.customerSignatureController,
-                        validator: (value) {
-                          if (value != null && value is String) {
-                            return _controller.fileSizeValidator(value); }
-                          return null;
-                        },
-                      ),
-                    ),
-                    SpacedContainer(
-                      child: PhotoPicker(  
-                        hintText: "Utility Bill",
-                        labelText: "Utility Bill",
-                        prefixIcon: const Icon(Icons.receipt),
-                        context: context,
-                        onChange: (value) {
-                          print(value);
-                        },
-                        controller: _controller.utilityBillController,
-                        validator: (value) {
-                          if (value != null && value is String) {
-                            return _controller.fileSizeValidator(value); }
-                          return null;
-                        },
-                      ),
 
-                    ),
-                    SpacedContainer(
-                      child: PhotoPicker(
-                        hintText: "Proof of Address",
-                        labelText: "Proof of Address",
-                        prefixIcon: const Icon(Icons.home),
-                        context: context,
-                        onChange: (value) {
-                          print(value);
-                        },
-                        controller: _controller.proofOfAddressController,
-                        validator: (value) {
-                          if (value != null && value is String) {
-                            return _controller.fileSizeValidator(value); }
-                          return null;
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
   }
 
 

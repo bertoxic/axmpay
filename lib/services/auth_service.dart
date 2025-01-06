@@ -26,8 +26,6 @@ class AuthService {
           ""
       );
 
-      print("Full responsexlogin: $response");
-      print("Response status codexlogin: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         print("Response received with status 200");
