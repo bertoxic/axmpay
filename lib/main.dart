@@ -1,6 +1,7 @@
 
 import 'package:AXMPAY/providers/Custom_Widget_State_Provider.dart';
 import 'package:AXMPAY/providers/user_service_provider.dart';
+import 'package:AXMPAY/ui/screens/homeScreen/home_screen.dart';
 import 'package:AXMPAY/ui/screens/informational_screens/Information_Screen_Provider.dart';
 import 'package:AXMPAY/ui/screens/passcode_screen/passcode_provider.dart';
 import 'package:AXMPAY/ui/screens/registration/registration_provider.dart';

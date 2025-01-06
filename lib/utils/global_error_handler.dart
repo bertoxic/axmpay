@@ -22,9 +22,9 @@ void handleGlobalError(BuildContext context, dynamic error) {
       showGeneralErrorDialog(context, error);
     }
 
-    // Future.delayed(Duration(seconds: 1), () {
-    //   _isPopupShowing = false;
-    // });
+    Future.delayed(Duration(seconds: 1), () {
+      _isPopupShowing = false;
+    });
   }
 }
 

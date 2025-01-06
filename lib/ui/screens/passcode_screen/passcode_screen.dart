@@ -1,9 +1,7 @@
 import 'dart:convert';
-
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
 import '../../../main.dart';
 
 class PasscodeInputScreen extends StatefulWidget {
@@ -15,6 +13,7 @@ class PasscodeInputScreen extends StatefulWidget {
 
 class _PasscodeInputScreenState extends State<PasscodeInputScreen> {
   String _passcode = '';
+  final double keypadSpacing = 16.0;
 
   void _addDigit(String digit) {
     if (_passcode.length < 4) {
@@ -34,125 +33,221 @@ class _PasscodeInputScreenState extends State<PasscodeInputScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isSmallScreen = size.height < 600;
+
     return Scaffold(
-      backgroundColor: Colors.black.withOpacity(0.2),
-      body: Container(
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-          color: Colors.white
-        ),
-        padding:  EdgeInsets.symmetric(horizontal: 24.w, vertical: 40.h),
-        child: Column(
-          children: [
-            // const CircleAvatar(
-            //   radius: 40,
-            //   backgroundImage: AssetImage('assets/profile_image.jpg'), // Replace with profile image
-            // ),
-            const Text(
-              'Enter Your Passcode!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      backgroundColor: Colors.black54,
+      body: Center(
+        child: SingleChildScrollView(
+          child: Container(
+           // margin: EdgeInsets.symmetric(horizontal: size.width * 0.1),
+            constraints: BoxConstraints(
+              maxWidth: size.width,
+              maxHeight: isSmallScreen ? size.height * 0.9 : size.height * 0.7,
             ),
-             SizedBox(height: 20.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(4, (index) {
-                return Container(
-                  margin:  EdgeInsets.symmetric(horizontal: 8.w),
-                  width: 12.w,
-                  height: 12.h,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: index < _passcode.length ? Colors.blue : Colors.grey.shade300,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 20,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.sp).copyWith(bottom: 4.sp, top: 4.sp),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        _buildHeader(),
+                        SizedBox(height: 20.h,),
+                        _buildPasscodeDots(),
+                        SizedBox(height: 20.h,),
+                        _buildKeypad(context),
+                        _buildContinueButton(context),
+                      ],
+                    ),
                   ),
-                );
-              }),
+                ),
+              ],
             ),
-             SizedBox(height: 20.h),
-            GridView.count(
-              crossAxisCount: 3,
-              shrinkWrap: true,
-              childAspectRatio: 1.5,
-              children: List.generate(12, (index) {
-                if (index == 9) {
-                  return _buildKeypadButton(
-                    child:   Icon(Icons.arrow_back, color: colorScheme.primary),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  );
-                } else if (index == 10) {
-                  return _buildKeypadButton(
-                    child: const Text('0', style: TextStyle(fontSize: 24)),
-                    onPressed: () => _addDigit('0'),
-                  );
-                } else if (index == 11) {
-                  return _buildKeypadButton(
-                    child:  Icon(Icons.backspace, color: colorScheme.primary),
-                    onPressed: _removeDigit,
-                  );
-                } else {
-                  return _buildKeypadButton(
-                    child: Text('${index + 1}', style: const TextStyle(fontSize: 24)),
-                    onPressed: () => _addDigit('${index + 1}'),
-                  );
-                }
-              }),
-            ),
-             SizedBox(height: 32.h),
-
-            _buildContinueButton(context, _passcode)
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildKeypadButton({required Widget child, required VoidCallback onPressed}) {
-    return InkWell(
-      onTap: onPressed,
-      child: Container(
-        margin:  const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.grey.shade200,
-        ),
-        child: Center(child: child),
-      ),
-    );
-  }
-  Widget _buildContinueButton( BuildContext context, String passcode) {
-    return AnimatedOpacity(
-      opacity: passcode.length == 4 ? 1.0 : 0.0,
-      duration: const Duration(milliseconds: 300),
-      child: ElevatedButton(
-        onPressed: passcode.length == 4
-            ? () async {
-          bool? correctPass = await confirmPasscode(passcode);
-          Navigator.pop(context,correctPass);
-        }
-            : null,
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: colorScheme.primary,
-          minimumSize:  Size(double.infinity, 50.h),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
           ),
         ),
-        child: const Text('SEND'),
       ),
     );
-
   }
-  Future<bool?> confirmPasscode(String passcode)async{
+
+  Widget _buildHeader() {
+    return Column(
+      children: [
+
+        Text(
+          'Enter Your Passcode',
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        SizedBox(height: 8),
+        Text(
+          'Please enter your 4-digit security code',
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPasscodeDots() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(4, (index) {
+        final isFilled = index < _passcode.length;
+        return AnimatedContainer(
+          duration: Duration(milliseconds: 200),
+          margin: EdgeInsets.symmetric(horizontal: 8),
+          width: isFilled ? 16 : 12,
+          height: isFilled ? 16 : 12,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isFilled ? colorScheme.primary : Colors.grey[300],
+            border: isFilled
+                ? null
+                : Border.all(color: Colors.grey[400]!, width: 1.5),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildKeypad(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final buttonSize = (constraints.maxWidth - (keypadSpacing * 4)) / 3;
+
+        return Container(
+          constraints: BoxConstraints(maxWidth: 300),
+          child: Column(
+            children: List.generate(4, (row) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(3, (col) {
+                  final index = row * 3 + col;
+                  return _buildKeypadButton(
+                    index: index,
+                    size: buttonSize,
+                  );
+                }),
+              );
+            }),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildKeypadButton({required int index, required double size}) {
+    Widget child;
+    VoidCallback? onPressed;
+
+    if (index == 9) {
+      child = Icon(Icons.close, color: colorScheme.primary);
+      onPressed = () => Navigator.of(context).pop();
+    } else if (index == 10) {
+      child = Text('0',
+          style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87));
+      onPressed = () => _addDigit('0');
+    } else if (index == 11) {
+      child = Icon(Icons.backspace_rounded, color: colorScheme.primary);
+      onPressed = _removeDigit;
+    } else {
+      child = Text(
+        '${index + 1}',
+        style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w500,
+            color: Colors.black87),
+      );
+      onPressed = () => _addDigit('${index + 1}');
+    }
+
+    return Padding(
+      padding: EdgeInsets.all(keypadSpacing / 2),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(size / 2),
+          child: Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey[100],
+            ),
+            child: Center(child: child),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContinueButton(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 16.sp),
+      child: AnimatedOpacity(
+        opacity: _passcode.length == 4 ? 1.0 : 0.0,
+        duration: Duration(milliseconds: 300),
+        child: Container(
+          width: double.infinity,
+          height: 40.h,
+          child: ElevatedButton(
+            onPressed: _passcode.length == 4
+                ? () async {
+              bool? correctPass = await confirmPasscode(_passcode);
+              Navigator.pop(context, correctPass);
+            }
+                : null,
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: colorScheme.primary,
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: Text(
+              'CONFIRM',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<bool?> confirmPasscode(String passcode) async {
     final storage = FlutterSecureStorage();
     String? passCodeMapString = await storage.read(key: "passcodeMap");
-    var passCodeMap = jsonDecode(passCodeMapString??"");
-    String pass = passCodeMap["passcode"];
-    print("secondhand person is $pass vs first is $passcode, ... ${passcode==pass}");
-
-    return (passcode==pass);
+    var passCodeMap = jsonDecode(passCodeMapString ?? "{}");
+    String pass = passCodeMap["passcode"] ?? "";
+    return (passcode == pass);
   }
-
 }
-

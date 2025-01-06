@@ -1,4 +1,5 @@
 
+import 'package:AXMPAY/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 import '../../widgets/svg_maker/svg_icon.dart';
@@ -27,7 +28,7 @@ class TopUpController{
          return Colors.red;
          case "MTN":
          return null;}
-      return Colors.purple;
+      return AppColors.lightgrey;
     }
 
 }

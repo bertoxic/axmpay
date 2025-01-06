@@ -31,38 +31,107 @@ class _FAQsState extends State<FAQs> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar( iconTheme: IconThemeData(color: Colors.grey.shade200),
-        title: Text("FAQs",style: TextStyle(color: Colors.grey.shade200),),
+      appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
+        title: Text(
+          "FAQs",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         elevation: 0,
         backgroundColor: colorScheme.primary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+        ),
       ),
-      body: FutureBuilder<AxmpayFaqList?>(
-        future: _faqsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasData && snapshot.data!.faqs != null) {
-            if (_isExpanded.isEmpty) {
-              _isExpanded = List.generate(snapshot.data!.faqs!.length, (_) => false);
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              colorScheme.primary.withOpacity(0.1),
+              Colors.white,
+            ],
+          ),
+        ),
+        child: FutureBuilder<AxmpayFaqList?>(
+          future: _faqsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                child: CircularProgressIndicator(
+                  color: colorScheme.primary,
+                ),
+              );
+            } else if (snapshot.hasData && snapshot.data!.faqs != null) {
+              if (_isExpanded.isEmpty) {
+                _isExpanded = List.generate(snapshot.data!.faqs!.length, (_) => false);
+              }
+              return _buildFAQList(snapshot.data!.faqs!);
+            } else {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.question_answer_outlined,
+                      size: 48.sp,
+                      color: colorScheme.primary.withOpacity(0.5),
+                    ),
+                    SizedBox(height: 16.h),
+                    Text(
+                      "No FAQs available",
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        color: colorScheme.primary.withOpacity(0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              );
             }
-            return _buildFAQList(snapshot.data!.faqs!);
-          } else {
-            return const Center(child: Text("No FAQs available"));
-          }
-        },
+          },
+        ),
       ),
     );
   }
 
   Widget _buildFAQList(List<AxmpayFaq> faqs) {
     return CustomScrollView(
+      physics: BouncingScrollPhysics(),
       slivers: [
         SliverToBoxAdapter(
-          child: SpacedContainer(
-            child: AppText.display(
-              "Frequently Asked Questions",
-              color: colorScheme.primary,
-              textAlign: TextAlign.center,
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 24.h),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.help_outline_rounded,
+                  size: 48.sp,
+                  color: colorScheme.primary,
+                ),
+                SizedBox(height: 16.h),
+                AppText.display(
+                  "Frequently Asked Questions",
+                  color: colorScheme.primary,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                AppText.body(
+                  "Find answers to common questions",
+                  color: colorScheme.primary.withOpacity(0.7),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14.sp),
+                ),
+              ],
             ),
           ),
         ),
@@ -75,51 +144,90 @@ class _FAQsState extends State<FAQs> {
             ),
           ),
         ),
+        SliverPadding(padding: EdgeInsets.only(bottom: 24.h)),
       ],
     );
   }
 
   Widget _buildFAQItem(AxmpayFaq faq, int index) {
-    return Card(
-      elevation: 2,
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 200),
       margin: EdgeInsets.symmetric(vertical: 8.h),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          backgroundColor: Colors.grey.shade50,
-          leading: CircleAvatar(
-            radius: 12.sp,
-            backgroundColor: _isExpanded[index]
-                ? Colors.green.withOpacity(0.7)
-                : Colors.grey.withOpacity(0.5),
-            child: Icon(Icons.question_mark, size: 12.sp, color: Colors.white),
+      child: Card(
+        elevation: _isExpanded[index] ? 4 : 2,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: _isExpanded[index]
+                ? colorScheme.primary.withOpacity(0.2)
+                : Colors.transparent,
           ),
-          title: Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.h),
-            child: AppText.title(
-              faq.question,
-              style: TextStyle(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.primary,
+        ),
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            backgroundColor: Colors.white,
+            collapsedBackgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            leading: AnimatedContainer(
+              duration: Duration(milliseconds: 200),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: _isExpanded[index]
+                      ? [colorScheme.primary, colorScheme.primary.withOpacity(0.7)]
+                      : [Colors.grey.withOpacity(0.5), Colors.grey.withOpacity(0.3)],
+                ),
+              ),
+              child: CircleAvatar(
+                radius: 16.sp,
+                backgroundColor: Colors.transparent,
+                child: Icon(
+                  _isExpanded[index] ? Icons.remove : Icons.add,
+                  size: 16.sp,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-          children: [
-            Padding(
-              padding: EdgeInsets.all(16.sp),
-              child: Text(
-                faq.answer,
-                style: TextStyle(fontSize: 11.sp, color: colorScheme.onSurface),
+            title: Padding(
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              child: AppText.title(
+                faq.question,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: _isExpanded[index]
+                      ? colorScheme.primary
+                      : colorScheme.onSurface,
+                ),
               ),
             ),
-          ],
-          onExpansionChanged: (expanded) {
-            setState(() {
-              _isExpanded[index] = expanded;
-            });
-          },
+            children: [
+              Container(
+                padding: EdgeInsets.all(16.sp),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withOpacity(0.05),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(16),
+                  ),
+                ),
+                child: Text(
+                  faq.answer,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: colorScheme.onSurface.withOpacity(0.8),
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+            onExpansionChanged: (expanded) {
+              setState(() {
+                _isExpanded[index] = expanded;
+              });
+            },
+          ),
         ),
       ),
     );

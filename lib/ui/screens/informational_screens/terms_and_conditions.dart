@@ -28,7 +28,11 @@ class _TermsAndConditionsState extends State<TermsAndConditions> {
   }
 
   List<TermSection> _sortTerms(List<TermSection> terms) {
-    return terms..sort((a, b) => a.sectionNumber.compareTo(b.sectionNumber));
+    return terms..sort((a, b) {
+      int aNum = int.tryParse(a.sectionNumber.toString()) ?? 0;
+      int bNum = int.tryParse(b.sectionNumber.toString()) ?? 0;
+      return aNum.compareTo(bNum);
+    });
   }
 
   @override

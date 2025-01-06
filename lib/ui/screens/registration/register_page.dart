@@ -44,112 +44,220 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create your account'),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        foregroundColor: Theme.of(context).colorScheme.onBackground,
-      ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.all(24.w),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome!',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    'Please fill in your details to create an account.',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  SizedBox(height: 32.h),
-                  buildTextField(
-                    controller: _firstNameController,
-                    labelText: 'First Name',
-                    prefixIcon: Icons.person_outline,
-                    onChanged: (value) => registerDetails.firstName = value,
-                  ),
-                  SizedBox(height: 16.h),
-                  buildTextField(
-                    controller: _lastNameController,
-                    labelText: 'Last Name',
-                    prefixIcon: Icons.person_outline,
-                    onChanged: (value) => registerDetails.lastName = value,
-                  ),
-                  SizedBox(height: 16.h),
-                  buildTextField(
-                    controller: _emailController,
-                    labelText: 'Email',
-                    prefixIcon: Icons.email_outlined,
-                    keyboardType: TextInputType.emailAddress,
-                    onChanged: (value) => registerDetails.email = value,
-                    validator: (value) => validateEmail(value),
-                  ),
-                  SizedBox(height: 16.h),
-                  buildTextField(
-                    controller: _passwordController,
-                    labelText: 'Password',
-                    prefixIcon: Icons.lock_outline,
-                    obscureText: _obscurePassword,
-                    suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                    ),
-                    validator: (value) => validatePassword(value),
-                  ),
-                  SizedBox(height: 16.h),
-                  buildTextField(
-                    controller: _confirmPasswordController,
-                    labelText: 'Confirm Password',
-                    prefixIcon: Icons.lock_outline,
-                    obscureText: _obscureConfirmPassword,
-                    suffixIcon: IconButton(
-                      icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
-                    ),
-                    validator: (value) => validateConfirmPassword(value, _passwordController.text),
-                  ),
-                  SizedBox(height: 32.h),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      onPressed: isLoading ? null : _handleRegistration,
-                      child: isLoading
-                          ? SizedBox(
-                        height: 24.h,
-                        width: 24.w,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                      )
-                          : Text('Sign Up', style: TextStyle(fontSize: 16.sp)),
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-                  Center(
-                    child: TextButton(
-                      onPressed: () => context.pushNamed("login"),
-                      child: Text(
-                        'Already have an account? Sign in',
-                        style: TextStyle(color: Theme.of(context).colorScheme.primary),
-                      ),
-                    ),
-                  ),
-                ],
+        child: Stack(
+          children: [
+            // Background design
+            Positioned(
+              top: -100,
+              right: -100,
+              child: Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                ),
               ),
             ),
-          ),
+            Positioned(
+              bottom: -50,
+              left: -50,
+              child: Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                ),
+              ),
+            ),
+            // Main content
+            SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 20.h),
+                      // Back button
+                      IconButton(
+                        icon: Icon(Icons.arrow_back_ios, color: Theme.of(context).colorScheme.primary),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      SizedBox(height: 20.h),
+                      // Welcome text with animation
+                      TweenAnimationBuilder(
+                        tween: Tween<double>(begin: 0, end: 1),
+                        duration: Duration(milliseconds: 500),
+                        builder: (context, double value, child) {
+                          return Opacity(
+                            opacity: value,
+                            child: Padding(
+                              padding: EdgeInsets.only(top: 20 * value),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Create Account',
+                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            Text(
+                              'Start your journey with us today.',
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 40.h),
+                      // Form fields with enhanced styling
+                      buildTextField(
+                        controller: _firstNameController,
+                        labelText: 'First Name',
+                        prefixIcon: Icons.person_outline,
+                        onChanged: (value) => registerDetails.firstName = value,
+                      ),
+                      SizedBox(height: 16.h),
+                      buildTextField(
+                        controller: _lastNameController,
+                        labelText: 'Last Name',
+                        prefixIcon: Icons.person_outline,
+                        onChanged: (value) => registerDetails.lastName = value,
+                      ),
+                      SizedBox(height: 16.h),
+                      buildTextField(
+                        controller: _emailController,
+                        labelText: 'Email',
+                        prefixIcon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        onChanged: (value) => registerDetails.email = value,
+                        validator: validateEmail,
+                      ),
+                      SizedBox(height: 16.h),
+                      buildTextField(
+                        controller: _passwordController,
+                        labelText: 'Password',
+                        prefixIcon: Icons.lock_outline,
+                        obscureText: _obscurePassword,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        ),
+                        validator: validatePassword,
+                      ),
+                      SizedBox(height: 16.h),
+                      buildTextField(
+                        controller: _confirmPasswordController,
+                        labelText: 'Confirm Password',
+                        prefixIcon: Icons.lock_outline,
+                        obscureText: _obscureConfirmPassword,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                        ),
+                        validator: (value) => validateConfirmPassword(value, _passwordController.text),
+                      ),
+                      SizedBox(height: 40.h),
+                      // Enhanced sign up button
+                      Container(
+                        width: double.infinity,
+                        height: 55.h,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          gradient: LinearGradient(
+                            colors: [
+                              Theme.of(context).colorScheme.primary,
+                              Theme.of(context).colorScheme.secondary,
+                            ],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                          onPressed: isLoading ? null : _handleRegistration,
+                          child: isLoading
+                              ? SizedBox(
+                            height: 24.h,
+                            width: 24.w,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                              : Text(
+                            'Create Account',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20.h),
+                      // Enhanced sign in link
+                      Center(
+                        child: TextButton(
+                          onPressed: () => context.pushNamed("login"),
+                          child: RichText(
+                            text: TextSpan(
+                              style: TextStyle(fontSize: 14.sp),
+                              children: [
+                                TextSpan(
+                                  text: 'Already have an account? ',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: 'Sign in',
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20.h),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -159,7 +267,7 @@ class _RegisterPageState extends State<RegisterPage> {
     required TextEditingController controller,
     required String labelText,
     required IconData prefixIcon,
-     String? fieldName,
+    String? fieldName,
     bool obscureText = false,
     TextInputType? keyboardType,
     Widget? suffixIcon,
@@ -172,25 +280,17 @@ class _RegisterPageState extends State<RegisterPage> {
       keyboardType: keyboardType,
       onChanged: onChanged,
       validator: validator,
-        labelText: labelText,
-        prefixIcon: Icon(prefixIcon),
-        suffixIcon: suffixIcon,
-      // decoration: InputDecoration(
-      //   labelText: labelText,
-      //   prefixIcon: Icon(prefixIcon),
-      //   suffixIcon: suffixIcon,
-      //   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-      //   filled: true,
-      //   fillColor: Theme.of(context).colorScheme.surface,
-      // ),
-      fieldName: fieldName??"",
+      labelText: labelText,
+      prefixIcon: Icon(prefixIcon, color: Theme.of(context).colorScheme.primary),
+      suffixIcon: suffixIcon,
+      fieldName: fieldName ?? "",
     );
   }
 
+  // Keeping the existing validation and registration handling methods
   void _handleRegistration() async {
     if (_formKey.currentState!.validate()) {
       setState(() => isLoading = true);
-
       registerDetails.password = _confirmPasswordController.text;
 
       try {
@@ -205,9 +305,18 @@ class _RegisterPageState extends State<RegisterPage> {
         }
       } catch (e) {
         print('Error creating account: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create account: $e')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to create account: $e'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+        }
       } finally {
         if (mounted) {
           setState(() => isLoading = false);

@@ -21,42 +21,57 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
 
   @override
   void initState() {
-    _initFuture = _initializeUserDetails();
     super.initState();
+    // Set up error builder for this widget's subtree
+    ErrorWidget.builder = (FlutterErrorDetails details) {
+      return Material(
+        child: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'An error occurred: ${details.exception}',
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _retryInitialization,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    };
+
+    _initFuture = _initializeUserDetails();
   }
 
   Future<void> _initializeUserDetails() async {
-    if(mounted) {
-      final userProvider = Provider.of<UserServiceProvider>(
-          context, listen: false);
-      final userData = await userProvider.getUserDetails(context);
+    try {
       if (!mounted) return;
+
+      final userProvider = Provider.of<UserServiceProvider>(
+          context,
+          listen: false
+      );
+
+      await userProvider.getUserDetails(context);
+      if (!mounted) return;
+
       await userProvider.getBankNames(context);
       if (!mounted) return;
-      await userProvider.getUserDetails(context);
-    }
-  }
-  void goToBranch(int index) async {
-    widget.navigationShell.goBranch(
-      index,
-      initialLocation: index == widget.navigationShell.currentIndex,
-    );
-    // Call getUserDetails after navigation
-    await _refreshUserDetails(index);
-  }
 
-  Future<void> _refreshUserDetails(int index) async {
-   // final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
-    // switch(index){
-    //   case 0 :
-    //     await userProvider.getUserDetails(context);
-    //     if(!mounted) return;
-    //     context.goNamed("/home");
-    //     return;
-    //  case 3 :
-    //     await userProvider.fetchTransactionHistory(context);
-    //     return;
-    // }
+      await userProvider.getUserDetails(context);
+    } catch (error) {
+      if (mounted) {
+        handleGlobalError(context, error);
+      }
+      rethrow;
+    }
   }
 
   void _retryInitialization() {
@@ -70,66 +85,68 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
     return Scaffold(
       body: Stack(
         children: [
-        SizedBox(
-        height: double.infinity,
-        width: double.infinity,
-        child: FutureBuilder<void>(
-          future: _initFuture,
-          builder: (context, snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-    return const Scaffold(
-    body: Center(child: CircularProgressIndicator()),
-    );
-    } else if (snapshot.hasError)
-    {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-      handleGlobalError(context, snapshot.error);
-    }
-    );
-      return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-               Text('error: ${snapshot.error} '),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _retryInitialization,
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
-      );
-    } else if (snapshot.connectionState == ConnectionState.done) {
-     final  userProvider = Provider.of<UserServiceProvider>(context,listen: false);
-      if (userProvider.userdata ==null) {
-        return Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Data is null'),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _retryInitialization,
-                  child: const Text('Retry'),
-                ),
-              ],
+          SizedBox(
+            height: double.infinity,
+            width: double.infinity,
+            child: FutureBuilder<void>(
+              future: _initFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    handleGlobalError(context, snapshot.error);
+                  });
+
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('An error occurred. Please try again.'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _retryInitialization,
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final userProvider = Provider.of<UserServiceProvider>(
+                    context,
+                    listen: false
+                );
+
+                if (userProvider.userdata == null) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    handleGlobalError(
+                        context,
+                        'User data is not available. Please try again.'
+                    );
+                  });
+
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Please retry loading your data'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _retryInitialization,
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return widget.navigationShell;
+              },
             ),
           ),
-        );
-      }else{
-        return widget.navigationShell;
-      }
-
-    }else {
-    return widget.navigationShell;
-    }
-    },
-    ),
-
-      ),
           Positioned(
             left: 0,
             right: 0,
@@ -148,6 +165,46 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
               },
             ),
           ),
-    ],),);
+        ],
+      ),
+    );
+  }
+
+  Future<void> goToBranch(int index) async {
+    try {
+      widget.navigationShell.goBranch(
+        index,
+        initialLocation: index == widget.navigationShell.currentIndex,
+      );
+      await _refreshUserDetails(index);
+    } catch (error) {
+      if (mounted) {
+        handleGlobalError(context, error);
+      }
+    }
+  }
+
+  Future<void> _refreshUserDetails(int index) async {
+    try {
+      final userProvider = Provider.of<UserServiceProvider>(
+          context,
+          listen: false
+      );
+
+      switch(index) {
+        case 0:
+          await userProvider.getUserDetails(context);
+          if (!mounted) return;
+          context.goNamed("/home");
+          break;
+        case 3:
+          await userProvider.fetchTransactionHistory(context);
+          break;
+      }
+    } catch (error) {
+      if (mounted) {
+        handleGlobalError(context, error);
+      }
+    }
   }
 }

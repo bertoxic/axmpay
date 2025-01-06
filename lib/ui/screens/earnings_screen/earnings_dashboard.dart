@@ -263,10 +263,8 @@ class _EarningBalanceDashboardState extends State<EarningBalanceDashboard>
                   color: Colors.grey.shade200,
                 ),
                 const Spacer(),
-                GestureDetector(
-                  onTap: () => _showCustomDialog(context,amtCtrl),
-                  child: CustomButton(text: "Withdraw",foregroundColor:AppColors.primary,backgroundColor: AppColors.lightgrey,),
-                ),
+                CustomButton( onPressed:() => _showCustomDialog(context,amtCtrl),
+                  text: "Withdraw",foregroundColor:AppColors.primary,backgroundColor: AppColors.lightgrey,),
               ],
             ),
           ),
@@ -281,116 +279,222 @@ class _EarningBalanceDashboardState extends State<EarningBalanceDashboard>
       left: 0,
       right: 0,
       child: SpacedContainer(
-        margin: EdgeInsets.symmetric(vertical: 4.h, horizontal: 12.w),
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 12.w),
-        containerColor: colorScheme.onPrimaryContainer,
-        borderRadius: BorderRadius.circular(20),
-        child: Column(
-          children: [
-            Container(
-              color: Colors.white,
-              child: Column(
-                children: [
-                  TabBar(
-                    controller: _tabController,
-                    labelColor: Colors.deepPurple,
-                    unselectedLabelColor: Colors.grey,
-                    indicatorColor: Colors.deepPurple,
-                    tabs: const [
-                      Tab(text: 'Verified referrals'),
-                      Tab(text: 'Inactive referrals'), // Updated tab text
-                    ],
+        margin: EdgeInsets.symmetric(vertical: 4.h, horizontal: 1.w),
+        padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 1.w),
+        containerColor: colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                spreadRadius: 0,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Theme(
+                data: Theme.of(context).copyWith(
+                  tabBarTheme: TabBarTheme(
+                    labelStyle: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
+                    ),
+                    unselectedLabelStyle: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
-                  if (isLoading)
-                    SizedBox(
-                      height: 200.h,
-                      child: const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
-                  else
-                    SizedBox(
-                      height: 500.h,
-                      child: TabBarView(
-                        controller: _tabController,
+                ),
+                child: TabBar(
+                  controller: _tabController,
+                  labelColor: colorScheme.primary,
+                  unselectedLabelColor: Colors.grey[400],
+                  indicatorColor: colorScheme.primary,
+                  indicatorWeight: 3,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  tabs: [
+                    Tab(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          _buildReferralList(activeReferrals, true),
-                          _buildReferralList(_tabController.index == 1 ? inactiveReferrals : pendingReferrals, false),
+                          Icon(Icons.check_circle_outline, size: 20.sp),
+                          SizedBox(width: 8.w),
+                          const Text('Verified'),
                         ],
                       ),
                     ),
-                ],
+                    Tab(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.pending_outlined, size: 20.sp),
+                          SizedBox(width: 8.w),
+                          const Text('Inactive'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              if (isLoading)
+                Container(
+                  height: 200.h,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                      strokeWidth: 3,
+                    ),
+                  ),
+                )
+              else
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  height: 500.h,
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildReferralList(activeReferrals, true),
+                      _buildReferralList(_tabController.index == 1 ? inactiveReferrals : pendingReferrals, false),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-
-
   Widget _buildReferralList(List<ReferralData> referrals, bool isActive) {
     return Column(
       children: [
         Container(
+          margin: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
           decoration: BoxDecoration(
-            color: AppColors.primary,
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(8.sp),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Total Referrals: ${referralData?['totalReferrals'] ?? 0}',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.lightgrey,
-                  ),
-                ),
-                Text(
-                  isActive
-                      ? 'Active Referrals: ${referralData?['activeReferrals'] ?? 0}'
-                      : 'Inactive Referrals: ${referralData?['pendingReferrals'] ?? 0}',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.lightgrey,
-                  ),
-                ),
+            gradient: LinearGradient(
+              colors: [
+                colorScheme.primary,
+                colorScheme.primary.withOpacity(0.8),
               ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildStatCard(
+                'Total Referrals',
+                '${referralData?['totalReferrals'] ?? 0}',
+                Icons.people_outline,
+              ),
+              Container(
+                height: 40.h,
+                width: 1,
+                color: Colors.white.withOpacity(0.3),
+              ),
+              _buildStatCard(
+                isActive ? 'Active' : 'Inactive',
+                isActive
+                    ? '${referralData?['activeReferrals'] ?? 0}'
+                    : '${referralData?['pendingReferrals'] ?? 0}',
+                isActive ? Icons.verified_user_outlined : Icons.hourglass_empty,
+              ),
+            ],
           ),
         ),
         Expanded(
           child: referrals.isEmpty
               ? Center(
-            child: Text(
-              'No ${isActive ? 'active' : 'inactive'} referrals',
-              style: TextStyle(
-                fontSize: 16.sp,
-                color: Colors.grey,
-              ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isActive ? Icons.people_outline : Icons.pending_actions,
+                  size: 48.sp,
+                  color: Colors.grey[300],
+                ),
+                SizedBox(height: 16.h),
+                Text(
+                  'No ${isActive ? 'active' : 'inactive'} referrals yet',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           )
               : ListView.builder(
-            padding: EdgeInsets.all(1.sp),
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
             itemCount: referrals.length,
             itemBuilder: (context, index) {
               final referral = referrals[index];
-              return _buildReferralCard(referral);
+              return AnimatedScale(
+                scale: 1.0,
+                duration: Duration(milliseconds: 200 + (index * 50)),
+                child: _buildReferralCard(referral),
+              );
             },
           ),
         ),
-        SizedBox(height:100.h)
+        SizedBox(height: 100.h),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(String label, String value, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.all(8.sp),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: Colors.white,
+            size: 20.sp,
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: Colors.white.withOpacity(0.8),
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 20.sp,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
 
   Widget _buildReferralCard(ReferralData referral) {
-    // Fix for empty username
     final String displayChar = referral.username.isNotEmpty
         ? referral.username[0].toUpperCase()
         : '?';
@@ -399,61 +503,148 @@ class _EarningBalanceDashboardState extends State<EarningBalanceDashboard>
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            spreadRadius: 0,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: ListTile(
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: 16.w,
-          vertical: 8.h,
-        ),
-        leading: CircleAvatar(
-          backgroundColor: referral.avatarColor,
-          child: Text(
-            displayChar,
-            style: const TextStyle(color: Colors.white),
-          ),
-        ),
-        title: Text(
-          referral.username.isEmpty ? 'Unknown User' : referral.username,
-          style: const TextStyle(
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        subtitle: Text(
-          'Status: ${_tabController.index == 1 ? 'Inactive' : referral.status}',
-          style: TextStyle(
-            color: Colors.grey[600],
-          ),
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              'Revenue:',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 12.sp,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              // Handle tap
+            },
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: 20.w,
+                vertical: 16.h,
+              ),
+              child: Row(
+                children: [
+                  Hero(
+                    tag: 'avatar_${referral.username}',
+                    child: Container(
+                      width: 50.w,
+                      height: 50.w,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            referral.avatarColor,
+                            referral.avatarColor.withOpacity(0.8),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: referral.avatarColor.withOpacity(0.3),
+                            blurRadius: 8,
+                            spreadRadius: 0,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          displayChar,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          referral.username.isEmpty ? 'Unknown User' : referral.username,
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8.w,
+                                vertical: 4.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _getStatusColor(referral.status).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                _tabController.index == 1 ? 'Inactive' : referral.status,
+                                style: TextStyle(
+                                  color: _getStatusColor(referral.status),
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Revenue',
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        formatter.format(referral.revenue),
+                        style: TextStyle(
+                          color: Colors.green[600],
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            Text(
-              formatter.format(referral.revenue),
-              style: const TextStyle(
-                color: Colors.green,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return Colors.green[600]!;
+      case 'pending':
+        return Colors.orange[600]!;
+      case 'inactive':
+        return Colors.grey[600]!;
+      default:
+        return Colors.blue[600]!;
+    }
   }
   void  _showCustomDialog(BuildContext context, TextEditingController _amountController) {
     showDialog(

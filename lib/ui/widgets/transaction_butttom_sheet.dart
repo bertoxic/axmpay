@@ -1,7 +1,6 @@
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
 import 'package:AXMPAY/models/transaction_model.dart';
-
 import '../../models/recepients_model.dart';
 import '../../utils/color_generator.dart';
 import 'custom_buttons.dart';
@@ -29,139 +28,159 @@ class _BottomTransactionConfirmSheetContentState
     extends State<BottomTransactionConfirmSheetContent> {
   bool _isLoading = false;
 
+  Widget _buildTransactionDetail(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          AppText.body(
+            label,
+            color: Colors.grey.shade600,
+            style: TextStyle(fontSize: 14.sp),
+          ),
+          AppText.body(
+            value,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView(
       controller: widget.controller,
       children: [
-        // ... (keep all the existing UI elements)
-        SizedBox(height: 10.h),
+        SizedBox(height: 12.h),
         Center(
           child: Container(
-            width: 40.h,
+            width: 40.w,
             height: 4.h,
             decoration: BoxDecoration(
               color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(4),
             ),
           ),
         ),
-        SizedBox(height: 10.h),
+        SizedBox(height: 20.h),
         Container(
           decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: SpacedContainer(
-            margin: EdgeInsets.all(12.sp),
+            margin: EdgeInsets.all(16.sp).copyWith(top: 4),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
-                  child: AppText.headline("\₦${widget.transactionModel?.amount}"),
-                ),
-                SizedBox(
-                  height: 16.h,
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4.h),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
                     children: [
-                      AppText.body(
-                        "Account number",
-                        color: Colors.grey.shade500,
+                      AppText.headline(
+                        "₦${widget.transactionModel?.amount}",
+                        style: TextStyle(
+                          fontSize: 32.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
                       ),
-                      AppText.body("${widget.transactionModel?.recipientAccount}"),
+                      SizedBox(height: 8.h),
+                      AppText.body(
+                        "Transaction Details",
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          color: Colors.grey[600],
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4.0.h),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                SizedBox(height: 24.h),
+                Container(
+                  padding: EdgeInsets.all(16.sp),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
                     children: [
-                      AppText.body(
+                      _buildTransactionDetail(
+                        "Account Number",
+                        "${widget.transactionModel?.recipientAccount}",
+                      ),
+                      Divider(height: 16.h),
+                      _buildTransactionDetail(
                         "Recipient's Name",
-                        color: Colors.grey.shade500,
+                        "${widget.transactionModel?.recipientAccountName}",
                       ),
-                      AppText.body("${widget.transactionModel?.recipientAccountName}"),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4.0.h),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      AppText.body(
+                      Divider(height: 16.h),
+                      _buildTransactionDetail(
                         "Recipient's Bank",
-                        color: Colors.grey.shade500,
+                        "${widget.transactionModel?.recipientBankName}",
                       ),
-                      AppText.body("${widget.transactionModel?.recipientBankName}"),
+                      Divider(height: 16.h),
+                      _buildTransactionDetail(
+                        "Amount",
+                        "₦${widget.transactionModel?.amount}",
+                      ),
                     ],
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4.h),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      AppText.body(
-                        "Amount:",
-                        color: Colors.grey.shade500,
-                      ),
-                      AppText.body(" ${widget.transactionModel?.amount}")
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: 20.h,
-                ),
+                SizedBox(height: 24.h),
                 Container(
                   decoration: BoxDecoration(
-                      color: getRandomColor().withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8)),
-                  padding:
-                  EdgeInsets.symmetric(horizontal: 10.w, vertical: 16.w),
-                  width: double.maxFinite,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.blue.withOpacity(0.2)),
+                  ),
+                  padding: EdgeInsets.all(16.sp),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.wallet_sharp,
-                        color: getRandomColor(),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AppText.caption("Account to be Debited"),
-                          AppText.caption(
-                              "${widget.transactionModel?.senderAccountName}"),
-                          AppText.caption(
-                            "${widget.transactionModel?.senderAccountNumber}",
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        ],
-                      ),
-                      // SizedBox(width: 30.w,),
                       Row(
                         children: [
-                          AppText.caption(
-                            "Top up ",
-                            style: const TextStyle(fontSize: 12),
+                          Icon(
+                            Icons.account_balance_wallet,
+                            color: Colors.blue,
+                            size: 20.sp,
                           ),
-                          const Icon(
-                            Icons.arrow_forward_ios_outlined,
-                            size: 12,
-                          )
+                          SizedBox(width: 8.w),
+                          AppText.body(
+                            "Source Account",
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: Colors.grey[600],
+                            ),
+                          ),
                         ],
+                      ),
+                      SizedBox(height: 12.h),
+                      AppText.body(
+                        "${widget.transactionModel?.senderAccountName}",
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      AppText.body(
+                        "${widget.transactionModel?.senderAccountNumber}",
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: Colors.grey[600],
+                        ),
                       ),
                     ],
                   ),
                 ),
-                SizedBox(height: 40.h),
+                SizedBox(height: 32.h),
                 CustomButton(
-                  text: "SEND",
+                  text: "CONFIRM PAYMENT",
                   size: ButtonSize.large,
                   width: double.maxFinite,
                   onPressed: _isLoading ? null : _handleTap,
@@ -173,14 +192,19 @@ class _BottomTransactionConfirmSheetContentState
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
-                      :  Text("SEND"),
-                )
+                      : Text(
+                    "CONFIRM PAYMENT",
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                SizedBox(height:80.h),
               ],
             ),
           ),
         ),
-
-
       ],
     );
   }
@@ -191,7 +215,6 @@ class _BottomTransactionConfirmSheetContentState
         _isLoading = true;
       });
 
-
       try {
         await widget.onTap!();
       } finally {
@@ -201,7 +224,6 @@ class _BottomTransactionConfirmSheetContentState
           });
         }
       }
-
 
       Navigator.pop(context);
     }

@@ -45,6 +45,8 @@ dependencies:
   open_file: ^3.3.2
   screenshot: ^3.0.0
   font_awesome_flutter:
+  shimmer: ^3.0.0
+  url_launcher: ^6.2.4
 #  flutter_plugin_android_lifecycle: ^2.0.23
 
 

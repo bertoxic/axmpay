@@ -1,4 +1,3 @@
-
 import 'package:AXMPAY/constants/app_colors.dart';
 import 'package:AXMPAY/main.dart';
 import 'package:AXMPAY/models/ResponseModel.dart';
@@ -16,7 +15,6 @@ import 'package:AXMPAY/ui/widgets/custom_textfield.dart';
 import 'package:AXMPAY/utils/form_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../models/transaction_model.dart';
 import '../../../models/user_model.dart';
@@ -30,8 +28,6 @@ class TransferScreen extends StatefulWidget {
   @override
   State<TransferScreen> createState() => _TransferScreenState();
 }
-
-
 
 class _TransferScreenState extends State<TransferScreen> {
   final _transactionFormKey = GlobalKey<FormState>();
@@ -55,7 +51,7 @@ class _TransferScreenState extends State<TransferScreen> {
   void initState() {
     super.initState();
     final userProvider =
-        Provider.of<UserServiceProvider>(context, listen: false);
+    Provider.of<UserServiceProvider>(context, listen: false);
     userProvider.getBankNames(context);
     _bankSelectorController.addListener(_filterItems);
     _accountNumberController.addListener(_accountNumberCheck);
@@ -124,395 +120,32 @@ class _TransferScreenState extends State<TransferScreen> {
   Widget build(BuildContext context) {
     final userp = Provider.of<UserServiceProvider>(context);
     totalItems = userp.bankListResponse?.bankList ?? [];
-    accountRequestDetails.senderAccountNumber =
-        userp.userdata?.accountNumber.toString();
+    accountRequestDetails.senderAccountNumber = userp.userdata?.accountNumber.toString();
     userData = userp.userdata;
+
     return Form(
       key: _transactionFormKey,
       child: Scaffold(
-
-        appBar: AppBar(),
-        body: SpacedContainer(
-          containerColor: Colors.grey.shade200,
-          margin: const EdgeInsets.all(8),
-          child: SingleChildScrollView(
+        backgroundColor: Colors.grey.shade100,
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          title: AppText.subtitle('Send Money', color: colorScheme.primary),
+          centerTitle: true,
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12.0.sp),
-                  child: _buildUserInfo(userp),
-                ),
-                SpacedContainer(
-                    //height: double.maxFinite,
-                    containerColor: colorScheme.surfaceVariant,
-                    borderRadius: BorderRadius.circular(8),
-                    padding: EdgeInsets.all(8.sp),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            AppText.subtitle("Select Bank"),
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            GestureDetector(
-                              onTap: () async {
-                                Bank? result = await ScrollablePopup.show(
-                                    context: context,
-                                    isDismissible: true,
-                                    child: StatefulBuilder(
-                                      builder: (BuildContext context,
-                                          StateSetter setState) {
-                                        return SizedBox(
-                                          width: 340.h,
-                                          height: 800.h,
-                                          child: Consumer<UserServiceProvider>(
-                                            builder: (context,
-                                                userServiceProvider, child) {
-                                              return Column(
-                                                children: [
-                                                  SizedBox(
-                                                      height: 36.h,
-                                                      width: 240.w,
-                                                      child: CustomTextField(
-                                                        controller:
-                                                            _bankSelectorController,
-                                                        onChanged: (value) {
-                                                          setState(() {
-                                                            _filterItems();
-                                                            _accountNumberCheck();
-                                                          });
-                                                        },
-                                                        fieldName: "fieldName",
-                                                        hintText: "search bank",
-                                                      )),
-                                                  SizedBox(
-                                                    width: 340.h,
-                                                    height: 720.h,
-                                                    child: ListView.builder(
-                                                      itemCount:
-                                                          filterSearch.length,
-                                                      itemBuilder:
-                                                          (BuildContext context,
-                                                              int index) {
-                                                        final item =
-                                                            filterSearch[
-                                                                index];
-                                                        Color itemColor =
-                                                            getRandomColor();
-                                                        return ListTile(
-                                                          onTap: () {
-                                                            var selectedIndex =
-                                                                filterSearch.indexWhere(
-                                                                    (element) =>
-                                                                        element
-                                                                            .bankName ==
-                                                                        item.bankName);
-                                                            setState(() {
-                                                              selectedBank =
-                                                                  filterSearch[
-                                                                      selectedIndex];
-                                                            });
-                                                            _accountNumberCheck();
-                                                            Navigator.pop(
-                                                                context,
-                                                                selectedBank);
-                                                          },
-                                                          leading: Container(
-                                                              padding:
-                                                                  EdgeInsets
-                                                                      .all(
-                                                                          8.sp),
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            100),
-                                                                color: itemColor
-                                                                    .withOpacity(
-                                                                        0.2),
-                                                              ),
-                                                              child: Icon(
-                                                                Icons
-                                                                    .home_work_outlined,
-                                                                size: 12.sp,
-                                                              )),
-                                                          iconColor: itemColor,
-                                                          title: AppText.caption(
-                                                              item.bankName ??
-                                                                  ""),
-                                                          // Add more widgets (e.g., subtitle, trailing icon) as needed
-                                                        );
-                                                      },
-                                                    ),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          ),
-                                        );
-                                      },
-                                    ));
-                                if (result != null) {
-                                  setState(() {
-                                    selectedBank = result;
-                                  });
-                                }
-                              },
-                              child: Consumer<UserServiceProvider>(builder:
-                                  (context, userServiceProvider, child) {
-                                return Container(
-                                  width: double.maxFinite,
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                          color: Colors.grey.shade200,
-                                          width: 2.w)),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      SizedBox(
-                                        width: 280.w,
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: SingleChildScrollView(
-                                                scrollDirection:
-                                                    Axis.horizontal,
-                                                physics: const ScrollPhysics(),
-                                                child: AppText.caption(
-                                                    selectedBank?.bankName ??
-                                                        "Select a Bank ..."),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const Expanded(
-                                        child:  Icon(
-                                          Icons.arrow_drop_down,
-                                          color: Colors.grey,
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                );
-                              }),
-                            ),
-                            SizedBox(
-                              height: 16.h,
-                            ),
-                            Container(
-                              width: double.maxFinite,
-                              decoration: BoxDecoration(
-                                  color: AppColors.white,
-                                  borderRadius: BorderRadius.circular(8)),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  AppText.body("Account Number"),
-                                  SizedBox(
-                                    height: 8.sp,
-                                  ),
-                                  SizedBox(
-                                    child: CustomTextField(
-                                        validator: (value) =>
-                                        bankValidator(value),
-                                        keyboardType: TextInputType.phone,
-                                        controller: _accountNumberController,
-                                        onChanged: (value) {
-                                          _accountNumberController;
-                                        },
-                                        hintText: "Recipient's account number",
-                                        fieldName: "accountNumber"),
-                                  ),
-                                  accountNumberSet
-                                      ? Column(
-                                          children: [
-                                            SizedBox(
-                                              height: 10.h,
-                                            ),
-                                            _recipientDetailsFuture == null
-                                                ? const SizedBox(
-                                              child: Text("input a valid account details"),
-                                            )  // or some placeholder widget
-                                                :
-                                            FutureBuilder(
-                                                future: _recipientDetailsFuture,
-                                                builder: (context, snapshot) {
-                                                  recipientDetails =
-                                                      snapshot.data;
-                                                  if (snapshot
-                                                          .connectionState ==
-                                                      ConnectionState
-                                                          .waiting) {
-                                                    return  Center(
-                                                        child: SizedBox(
-                                                            height: 20.h,
-                                                            width: 15.w,
-                                                            child:
-                                                                const CircularProgressIndicator(
-                                                              strokeWidth: 2,
-                                                            )));
-                                                  } else if (snapshot
-                                                      .hasError) {
-                                                    String errorMessage =
-
-                                                    'An unexpected error occurred';
-                                                    if (snapshot.error
-                                                        is Exception) {
-                                                      errorMessage = (snapshot
-                                                                  .error
-                                                              as Exception)
-                                                          .toString()
-                                                          .replaceFirst(
-                                                              'Exception: ',
-                                                              '');
-                                                    }
-                                                    return  Center(
-                                                        child: Text(
-                                                      'unable to get receiver\'s account',
-                                                      style: TextStyle(
-                                                          color: Colors.red),
-                                                    ));
-                                                  } else {
-                                                    recipientDetails = snapshot.data;
-                                                    return Center(
-                                                        child: Text(
-                                                            'Receiver: ${snapshot.data?.account?.name}'));
-                                                  }
-                                                })
-                                          ],
-                                        )
-                                      : const SizedBox(),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    )),
-                SizedBox(
-                  height: 20.h,
-                ),
-                Container(
-                  padding: EdgeInsets.all(12.sp),
-                  decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(8)),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          AppText.body("Amount"),
-                          SizedBox(
-                            width: 12.sp,
-                          ),
-                          Container(
-                            decoration: BoxDecoration(
-                                color: Colors.indigo.shade200,
-                                borderRadius: BorderRadius.circular(16)),
-                            child: SpacedContainer(
-                              padding: EdgeInsets.all(2.sp),
-                              child: AppText.caption(
-                                "transaction amount",
-                                style: TextStyle(fontSize: 9.sp),
-                                color: Colors.indigoAccent.shade100,
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                      SizedBox(
-                        height: 8.sp,
-                      ),
-                      SizedBox(
-                        child: CustomTextField(
-                          validator: (value) => FormValidator.validate(
-                              value, ValidatorType.digits,
-                              fieldName: "transaction_amount"),
-                          controller: _amountController,
-                          hintText: "  100 - 50 000 000",
-                          prefix: AppText.body("\₦"),
-                          fieldName: "transaction_amount",
-                          onChanged: (value) {
-                            setState(() {
-                              _transactionAmount =
-                                  int.parse(_amountController.value.text);
-                            });
-                          },
-                        ),
-                      ),
-                      SizedBox(
-                        height: 20.h,
-                      ),
-                      Container(
-                        width: double.maxFinite,
-                        decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(8)),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AppText.body("Remark"),
-                            SizedBox(
-                              height: 8.sp,
-                            ),
-                            SizedBox(
-                              child: CustomTextField(
-                                validator: (value) => FormValidator.validate(
-                                    value, ValidatorType.remarks,
-                                    fieldName: "remark"),
-                                controller: _remarkController,
-                                hintText: "write anything here",
-                                fieldName: "remark",
-                                onChanged: (value) {
-                                  setState(() {
-                                    _transactionRemark =
-                                        _remarkController.value.text;
-                                  });
-                                },
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: 20.h,
-                ),
-                CustomButton(
-                  text: "Confirm",
-                  type: ButtonType.elevated,
-                  size: ButtonSize.large,
-                  width: 220.w,
-                  onPressed: () {
-                    if (_transactionFormKey.currentState!.validate()&&accountNumberSet && isRecipientValid()) {
-                      TransactionModel transactionModel = TransactionModel(
-                          amount: _transactionAmount!,
-                          recipientAccount: recipientDetails?.account?.number,
-                          recipientAccountName: recipientDetails?.account?.name,
-                          recipientBankCode: recipientDetails?.account?.bank,
-                          recipientBankName: selectedBank?.bankName,
-                          senderAccountNumber: userp.userdata?.accountNumber,
-                          senderAccountName: "${userp.userdata?.username}",
-                          narration: _transactionRemark!);
-
-                      _showBottomSheet(context, transactionModel);
-                    }else{
-                      CustomPopup.show(type: PopupType.error,
-                          context: context, title: 'incomplete details',message: "please confirm your details are complete");
-                      print("recipient is not valid");
-                    }
-                  },
-                )
+                SizedBox(height: 16.h),
+                _buildUserInfo(userp),
+                SizedBox(height: 24.h),
+                _buildTransferForm(),
+                SizedBox(height: 32.h),
+                _buildConfirmButton(),
+                SizedBox(height: 120.h),
               ],
             ),
           ),
@@ -520,6 +153,484 @@ class _TransferScreenState extends State<TransferScreen> {
       ),
     );
   }
+
+  Widget _buildTransferForm() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildBankSelection(),
+        SizedBox(height: 20.h),
+        _buildAccountNumberSection(),
+        SizedBox(height: 20.h),
+        _buildAmountSection(),
+        SizedBox(height: 20.h),
+        _buildRemarkSection(),
+      ],
+    );
+  }
+
+  Widget _buildBankSelection() {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: EdgeInsets.all(16.sp),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppText.body("Select Bank", color: Colors.grey.shade700),
+            SizedBox(height: 12.h),
+            GestureDetector(
+              onTap: () async {
+                Bank? result = await ScrollablePopup.show(
+                  context: context,
+                  isDismissible: true,
+                  child: StatefulBuilder(
+                    builder: (BuildContext context, StateSetter setState) {
+                      return _buildBankSelectionPopup();
+                    },
+                  ),
+                );
+                if (result != null) {
+                  setState(() {
+                    selectedBank = result;
+                  });
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.account_balance, color: colorScheme.primary, size: 20.sp),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: AppText.body(
+                        selectedBank?.bankName ?? "Select a Bank...",
+                        color: selectedBank != null ? Colors.black87 : Colors.grey,
+                      ),
+                    ),
+                    Icon(Icons.arrow_drop_down, color: Colors.grey.shade600),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccountNumberSection() {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: EdgeInsets.all(16.sp),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppText.body("Account Number", color: Colors.grey.shade700),
+            SizedBox(height: 12.h),
+            CustomTextField(
+              validator: (value) => bankValidator(value),
+              keyboardType: TextInputType.phone,
+              controller: _accountNumberController,
+              onChanged: (value) => _accountNumberController,
+              hintText: "Enter recipient's account number",
+              fieldName: "accountNumber",
+              prefixIcon: Icon(Icons.account_circle_outlined, color: colorScheme.primary),
+            ),
+            if (accountNumberSet) ...[
+              SizedBox(height: 16.h),
+              _buildRecipientDetails(),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAmountSection() {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: EdgeInsets.all(16.sp),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                AppText.body("Amount", color: Colors.grey.shade700),
+                SizedBox(width: 8.w),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: AppText.caption(
+                    "₦100 - ₦50,000,000",
+                    color: colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 12.h),
+            CustomTextField(
+              validator: (value) => FormValidator.validate(
+                value,
+                ValidatorType.digits,
+                fieldName: "transaction_amount",
+              ),
+              controller: _amountController,
+              hintText: "Enter amount",
+              prefix: AppText.body("₦", color: colorScheme.primary),
+              fieldName: "transaction_amount",
+              onChanged: (value) {
+                setState(() {
+                  _transactionAmount = int.tryParse(_amountController.value.text);
+                });
+              },
+              prefixIcon: Icon(Icons.account_balance_wallet_outlined, color: colorScheme.primary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRemarkSection() {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: EdgeInsets.all(16.sp),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppText.body("Remark", color: Colors.grey.shade700),
+            SizedBox(height: 12.h),
+            CustomTextField(
+              validator: (value) => FormValidator.validate(
+                value,
+                ValidatorType.remarks,
+                fieldName: "remark",
+              ),
+              controller: _remarkController,
+              hintText: "Add a note",
+              fieldName: "remark",
+              onChanged: (value) {
+                setState(() {
+                  _transactionRemark = _remarkController.value.text;
+                });
+              },
+              prefixIcon: Icon(Icons.note_alt_outlined, color: colorScheme.primary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecipientDetails() {
+    if (_recipientDetailsFuture == null) {
+      return const SizedBox();
+    }
+
+    return FutureBuilder(
+      future: _recipientDetailsFuture,
+      builder: (context, snapshot) {
+        recipientDetails = snapshot.data;
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: SizedBox(
+              height: 20.h,
+              width: 20.w,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.primary,
+              ),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              'Unable to verify account',
+              style: TextStyle(color: Colors.red.shade400),
+            ),
+          );
+        } else if (snapshot.hasData) {
+          return Container(
+            padding: EdgeInsets.all(12.sp),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle, color: colorScheme.primary, size: 20.sp),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: AppText.body(
+                    'Account verified: ${snapshot.data?.account?.name}',
+                    color: colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return const SizedBox();
+      },
+    );
+  }
+
+  Widget _buildConfirmButton() {
+    return Center(
+      child: CustomButton(
+        text: "Confirm Transfer",
+        type: ButtonType.elevated,
+        size: ButtonSize.large,
+        width: 280.w,
+        onPressed: () {
+          if (_transactionFormKey.currentState!.validate() &&
+              accountNumberSet &&
+              isRecipientValid()) {
+            TransactionModel transactionModel = TransactionModel(
+              amount: _transactionAmount!,
+              recipientAccount: recipientDetails?.account?.number,
+              recipientAccountName: recipientDetails?.account?.name,
+              recipientBankCode: recipientDetails?.account?.bank,
+              recipientBankName: selectedBank?.bankName,
+              senderAccountNumber: userData?.accountNumber,
+              senderAccountName: "${userData?.username}",
+              narration: _transactionRemark!,
+            );
+            _showBottomSheet(context, transactionModel);
+          } else {
+            CustomPopup.show(
+              type: PopupType.error,
+              context: context,
+              title: 'Incomplete Details',
+              message: "Please ensure all fields are filled correctly",
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildUserInfo(UserServiceProvider userp) {
+    return Container(
+      padding: EdgeInsets.all(20.sp),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colorScheme.primary,
+            colorScheme.primary.withOpacity(0.8),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(12.sp),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.account_circle,
+              color: Colors.white,
+              size: 32.sp,
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText.subtitle(
+                  "${userp.userdata?.firstname} ${userp.userdata?.lastname}",
+                  color: Colors.white,
+                ),
+                SizedBox(height: 4.h),
+                AppText.body(
+                  "Account: ${userp.userdata?.accountNumber}",
+                  color: Colors.white.withOpacity(0.8),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBankSelectionPopup() {
+    return SizedBox(
+      width: 340.h,
+      height: 800.h,
+      child: Consumer<UserServiceProvider>(
+        builder: (context, userServiceProvider, child) {
+          return Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.all(16.sp),
+                child: CustomTextField(
+                  controller: _bankSelectorController,
+                  onChanged: (value) {
+                    setState(() {
+                      _filterItems();
+                      _accountNumberCheck();
+                    });
+                  },
+                  fieldName: "search",
+                  hintText: "Search bank",
+                  prefixIcon: Icon(Icons.search, color: colorScheme.primary),
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: filterSearch.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final item = filterSearch[index];
+                    Color itemColor = getRandomColor();
+                    return ListTile(
+                      onTap: () {
+                        setState(() {
+                          selectedBank = item;
+                        });
+                        _accountNumberCheck();
+                        Navigator.pop(context, selectedBank);
+                      },
+                      leading: Container(
+                        padding: EdgeInsets.all(8.sp),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: itemColor.withOpacity(0.1),
+                        ),
+                        child: Icon(
+                            Icons.account_balance,
+                            size: 20.sp,
+                            color: itemColor,
+
+                        ),
+                      ),
+                      title: AppText.body(
+                        item.bankName ?? "",
+                        color: Colors.black87,
+                      ),
+                      subtitle: AppText.caption(
+                        "Tap to select",
+                        color: Colors.grey.shade600,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  void _showBottomSheet(BuildContext context, TransactionModel transactionModel) {
+    UserServiceProvider userp = Provider.of<UserServiceProvider>(context, listen: false);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.1,
+        maxChildSize: 0.65,
+        expand: false,
+        builder: (_, controller) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: BottomTransactionConfirmSheetContent(
+              onTap: () async {
+                bool? correctPass = await showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return Dialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: MediaQuery.of(context).size.height * 0.6,
+                          maxWidth: MediaQuery.of(context).size.width * 0.9,
+                        ),
+                        child: const PasscodeInputScreen(),
+                      ),
+                    );
+                  },
+                );
+
+                if (correctPass != null) {
+                  if (correctPass) {
+                    ResponseResult? resp;
+                    if (!mounted) return;
+                    resp = await userp.makeBankTransfer(context, transactionModel);
+
+                    if (!mounted) return;
+
+                    if (resp?.status == ResponseStatus.failed) {
+                      CustomPopup.show(
+                        type: PopupType.error,
+                        context: context,
+                        title: resp?.status.toString() ?? "Error",
+                        message: "${resp?.message}",
+                      );
+                    } else if (resp?.status == ResponseStatus.success) {
+                      ReceiptData? receiptData = ReceiptData.fromJson(resp!.data!);
+                      resetFields();
+                      context.pushNamed(
+                        'top_up_success',
+                        extra: receiptData,
+                      );
+                    }
+                  } else {
+                    if (!mounted) return;
+                    CustomPopup.show(
+                      type: PopupType.error,
+                      context: context,
+                      title: "Incorrect Passcode",
+                      message: "Please ensure you enter the correct passcode",
+                    );
+                  }
+                }
+              },
+              controller: controller,
+              transactionModel: transactionModel,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   void resetFields() {
     setState(() {
       _transactionAmount = null;
@@ -537,145 +648,4 @@ class _TransferScreenState extends State<TransferScreen> {
 
     _transactionFormKey.currentState?.reset();
   }
-
-
-  void _showBottomSheet(BuildContext context, TransactionModel transactionModel) {
-    UserServiceProvider userp = Provider.of<UserServiceProvider>(context, listen: false);
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.1,
-        maxChildSize: 0.65,
-        expand: false,
-        builder: (_, controller) {
-          return BottomTransactionConfirmSheetContent(
-            onTap: () async {
-              bool? correctPass = await showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return Dialog(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.6,
-                        maxWidth: MediaQuery.of(context).size.width * 0.9,
-                      ),
-                      child: const PasscodeInputScreen(),
-                    ),
-                  );
-                },
-              );
-              if (correctPass!=null) {
-                if (correctPass) {
-                ResponseResult? resp;
-                if (!mounted) return;
-                resp = await userp.makeBankTransfer(context, transactionModel);
-
-                if (!mounted) return;
-
-                if (resp?.status == ResponseStatus.failed) {
-                  CustomPopup.show(
-                    type: PopupType.error,
-                    context: context,
-                    title: resp?.status.toString() ?? "error",
-                    message: "${resp?.message}",
-                  );
-                } else if (resp?.status == ResponseStatus.success) {
-
-                  ReceiptData? receiptData = ReceiptData.fromJson(resp!.data!);
-                 resetFields();
-                  context.pushNamed(
-                    'top_up_success',
-                    extra: receiptData,
-                  );
-                }
-
-              } else {
-                if (!mounted) return;
-                CustomPopup.show(
-                  type: PopupType.error,
-                  context: context,
-                  title: "Incorrect Passcode",
-                  message: "please ensure you put a correct passcode",
-                );
-              }
-              }
-            },
-            controller: controller,
-            transactionModel: transactionModel,
-          );
-        },
-      ),
-    );
-  }
-  }
-
-Widget _buildAccountDetails(int accountNumber, String accountName) {
-  return Container(
-    decoration: const BoxDecoration(
-      color: Colors.grey,
-    ),
-    child: Column(
-      children: [
-        Text(
-          accountNumber.toString(),
-          style: TextStyle(color: colorScheme.primary),
-        ),
-        Text(accountName),
-      ],
-    ),
-  );
-
 }
-
-Widget _buildUserInfo(UserServiceProvider userp) {
-  return Container(
-    padding: EdgeInsets.all(16.sp),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[
-            colorScheme.primary,
-            colorScheme.primary,
-           // const Color(0xB25C4DE5),
-
-          ]),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.1),
-          spreadRadius: 1,
-          blurRadius: 5,
-          offset: const Offset(0, 3),
-        ),
-      ],
-    ),
-    child: Row(
-      children: [
-        CircleAvatar(
-          radius: 24,
-          backgroundColor: Colors.grey.shade200,
-          child: const Icon(Icons.person, color: Colors.grey),
-        ),
-        SizedBox(width: 16.w),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppText.subtitle("${userp.userdata?.firstname} ${userp.userdata?.lastname}",color: colorScheme.onPrimary,),
-            SizedBox(height: 4.h),
-            AppText.body("${userp.userdata?.accountNumber}",color: Colors.grey.shade300,),
-          ],
-        ),
-      ],
-    ),
-  );
-}
-
-
-

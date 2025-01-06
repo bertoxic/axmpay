@@ -8,83 +8,45 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class UserProfileScreen extends StatefulWidget {
-
-   UserProfileScreen({Key? key}) : super(key: key);
+  UserProfileScreen({Key? key}) : super(key: key);
 
   @override
   State<UserProfileScreen> createState() => _UserProfileScreenState();
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
-  late UserServiceProvider userService ;
+  late UserServiceProvider userService;
+
   @override
   void initState() {
-    // TODO: implement initState
     WidgetsFlutterBinding.ensureInitialized();
     userService = Provider.of<UserServiceProvider>(context, listen: false);
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildHeader(context,userService.userdata),
-            _buildAccountInfo(context,userService.userdata),
-            _buildProfileOptions(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, UserData? userData) {
-    return Container(
-      height: 250.h,
-      decoration: BoxDecoration(
-        color: colorScheme.primary,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(28.sp),
-          bottomRight: Radius.circular(28.sp),
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(20.w),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        physics: AlwaysScrollableScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              CircleAvatar(
-                radius: 50.sp,
-                backgroundColor: Colors.grey.shade200,
-                child: Icon(Icons.person, size: 50.sp, color: colorScheme.primary),
-              ),
-              SizedBox(width: 20.w),
-              Expanded(
+              _buildHeader(context, userService.userdata),
+              Transform.translate(
+                offset: Offset(0, -20.h),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    AppText.title("${userData?.firstname} ${userData?.lastname}", color: colorScheme.onPrimary),
-                    SizedBox(height: 4.h),
-                    AppText.body("${userData?.email}", color: colorScheme.onPrimary),
-                    SizedBox(height: 4.h),
-                    AppText.body("${userData?.phone}", color: colorScheme.onPrimary),
-                    SizedBox(height: 8.h),
-                     Row(
-                      children: [
-                        AppText.body("${userData?.verificationStatus} upgrade", color: Colors.grey.shade300),
-                        SizedBox(width: 4.w),
-                        Icon(Icons.verified, color: Colors.green, size: 18.sp)
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        AppText.body("Tier: ${userService.userdata?.tier}", color: Colors.grey.shade300),
-                        SizedBox(width: 4.w),
-                        Icon(Icons.flag, color: Colors.white, size: 18.sp)
-                      ],
-                    ),
+                    _buildAccountInfo(context, userService.userdata),
+                    SizedBox(height: 20.h),
+                    _buildProfileOptions(context),
+                    SizedBox(height: 80.h), // Add bottom padding
                   ],
                 ),
               ),
@@ -95,84 +57,195 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
+  Widget _buildHeader(BuildContext context, UserData? userData) {
+    return Container(
+      height: 320.h,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colorScheme.primary,
+            colorScheme.primary.withOpacity(0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(40.sp),
+          bottomRight: Radius.circular(40.sp),
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(24.w),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  AppText.title("Profile", color: colorScheme.onPrimary),
+                  IconButton(
+                    icon: Icon(Icons.settings, color: colorScheme.onPrimary),
+                    onPressed: () {},
+                  ),
+                ],
+              ),
+              SizedBox(height: 20.h),
+              Container(
+                padding: EdgeInsets.all(4.w),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: CircleAvatar(
+                  radius: 45.sp,
+                  backgroundColor: Colors.white.withOpacity(0.9),
+                  child: Icon(Icons.person, size: 45.sp, color: colorScheme.primary),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              AppText.title("${userData?.firstname} ${userData?.lastname}",
+                style: TextStyle(fontWeight: FontWeight.w600,color: colorScheme.onPrimaryContainer),
+              ),
+              SizedBox(height: 8.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.verified, color: Colors.green, size: 18.sp),
+                  SizedBox(width: 8.w),
+                  AppText.body("${userData?.verificationStatus}", color: Colors.white),
+                  SizedBox(width: 16.w),
+                  Icon(Icons.flag, color: Colors.white, size: 18.sp),
+                  SizedBox(width: 8.w),
+                  AppText.body("Tier ${userService.userdata?.tier}", color: Colors.white),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildAccountInfo(BuildContext context, UserData? userData) {
     return Container(
-      margin: EdgeInsets.all(20.w),
-      padding: EdgeInsets.all(16.w),
+      margin: EdgeInsets.symmetric(horizontal: 24.w),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
             spreadRadius: 0,
             offset: const Offset(0, 4),
           )
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppText.body("Account Number: ${userData?.accountNumber}", style: TextStyle(fontWeight: FontWeight.bold)),
-          SizedBox(height: 8.h),
-          AppText.caption("BVN: ${userData?.bvn}"),
+          _buildInfoRow(Icons.credit_card, "Account Number", "${userData?.accountNumber}"),
+          SizedBox(height: 16.h),
+          _buildInfoRow(Icons.verified_user, "BVN", "${userData?.bvn}"),
+          SizedBox(height: 16.h),
+          _buildInfoRow(Icons.email, "Email", "${userData?.email}"),
+          SizedBox(height: 16.h),
+          _buildInfoRow(Icons.phone, "Phone", "${userData?.phone}"),
         ],
       ),
     );
   }
 
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.all(8.w),
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: colorScheme.primary, size: 20.sp),
+        ),
+        SizedBox(width: 16.w),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppText.caption(label, color: Colors.grey[600]),
+            AppText.body(value, style: TextStyle(fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _buildProfileOptions(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      margin: EdgeInsets.symmetric(horizontal: 24.w),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            spreadRadius: 0,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Column(
         children: [
-         // (userService.userdata?.verificationStatus.toLowerCase()=="pending"||userService.userdata?.verificationStatus.toLowerCase()=="verified")?SizedBox():_buildOptionTile(
-          (userService.userdata?.verificationStatus.toLowerCase()=="pending"||userService.userdata?.verificationStatus.toLowerCase()=="verified")?SizedBox():_buildOptionTile(
-            context,
-            icon: Icons.upgrade_rounded,
-            title: "Upgrade your account",
-            color: colorScheme.primary,
-            onTap: () => context.pushNamed("upgrade_account_page"),
-          ),
+          if (!(userService.userdata?.verificationStatus.toLowerCase() == "pending" ||
+              userService.userdata?.verificationStatus.toLowerCase() == "verified"))
+            _buildOptionTile(
+              context,
+              icon: Icons.upgrade_rounded,
+              title: "Upgrade your account",
+              subtitle: "Enhance your account capabilities",
+              color: colorScheme.primary,
+              onTap: () => context.pushNamed("upgrade_account_page"),
+            ),
           _buildOptionTile(
             context,
             icon: Icons.lock,
             title: "Change your password",
-            color: Colors.grey,
+            subtitle: "Update your security settings",
+            color: Colors.blue,
             onTap: () => context.pushNamed("forgot_password_input_mail"),
           ),
           _buildOptionTile(
             context,
             icon: Icons.file_copy,
             title: "Terms and conditions",
-            color: Colors.redAccent,
-            onTap: ()=> context.pushNamed("terms_and_conditions"),
+            subtitle: "Read our terms of service",
+            color: Colors.orange,
+            onTap: () => context.pushNamed("terms_and_conditions"),
           ),
           _buildOptionTile(
             context,
             icon: Icons.help_outline,
             title: "FAQ",
+            subtitle: "Get answers to common questions",
             color: Colors.green,
-            onTap: ()=>context.pushNamed("frequently_asked_questions"),
+            onTap: () => context.pushNamed("frequently_asked_questions"),
           ),
           _buildOptionTile(
             context,
             icon: Icons.mail,
             title: "Contact us",
-            color: Colors.orange,
-            onTap: ()=>context.pushNamed("contact_us")
+            subtitle: "Get in touch with our support team",
+            color: Colors.purple,
+            onTap: () => context.pushNamed("contact_us"),
           ),
           _buildOptionTile(
             context,
             icon: Icons.exit_to_app,
             title: "Log out",
-            color: Colors.purple,
-              onTap: () => context.goNamed("login")
+            subtitle: "Sign out of your account",
+            color: Colors.red,
+            onTap: () => context.goNamed("login"),
+            showBorder: false,
           ),
         ],
       ),
@@ -182,22 +255,42 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget _buildOptionTile(BuildContext context, {
     required IconData icon,
     required String title,
+    required String subtitle,
     required Color color,
     VoidCallback? onTap,
+    bool showBorder = true,
   }) {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
         decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: Colors.grey.shade300, width: 1)),
+          border: showBorder ? Border(
+            bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+          ) : null,
         ),
         child: Row(
           children: [
-            CircleAvatar(backgroundColor: color, child: Icon(icon, color: Colors.white)),
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24.sp),
+            ),
             SizedBox(width: 16.w),
-            Expanded(child: AppText.body(title)),
-            Icon(Icons.arrow_forward_ios, size: 16.sp, color: Colors.grey),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText.body(title, style: TextStyle(fontWeight: FontWeight.w600)),
+                  SizedBox(height: 4.h),
+                  AppText.caption(subtitle, color: Colors.grey[600]),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, size: 16.sp, color: Colors.grey[400]),
           ],
         ),
       ),
