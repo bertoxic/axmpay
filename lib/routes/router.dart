@@ -20,6 +20,7 @@ import 'package:go_router/go_router.dart';
 import '../models/transaction_model.dart';
 import '../ui/screens/passcode_screen/passcode_screen.dart';
 import '../ui/screens/passcode_screen/passcode_set_up.dart';
+import '../ui/screens/splash_screen/splash_screen.dart';
 import '../ui/screens/transaction_screen/detailed_transaction_page.dart';
 import '../ui/screens/forgot_password/change_password_screen.dart';
 import '../ui/screens/homeScreen/home_screen.dart';
@@ -38,7 +39,7 @@ final  _rootNavigatorTransfer= GlobalKey<NavigatorState>(debugLabel: 'shellTrans
 final  _rootNavigatorUserProfile= GlobalKey<NavigatorState>(debugLabel: 'shellUserProfile');
 final  _rootNavigatorTransactionHistory= GlobalKey<NavigatorState>(debugLabel: 'shellUserTransactionHistory');
 final GoRouter  _router = GoRouter(
-  initialLocation: '/login',
+  initialLocation: '/splash_screen',
   navigatorKey: _rootNavigatorKey,
   routes: <RouteBase>[
     GoRoute(
@@ -158,6 +159,14 @@ final GoRouter  _router = GoRouter(
         return   UpgradeAccountPage(
           key: state.pageKey,
         );
+
+      },
+    ),
+    GoRoute(
+      path: '/splash_screen',
+      name: 'splash_screen',
+      builder: (BuildContext context, GoRouterState state) {
+        return   FustPaySplashScreen();
 
       },
     ),

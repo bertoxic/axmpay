@@ -35,6 +35,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> with SingleTick
   late Animation<double> _animation;
   late Animation<double> _positionAnimation;
   late Animation<double> _scaleAnimation;
+  bool _isAnimating = false;
 
   @override
   void initState() {
@@ -53,12 +54,6 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> with SingleTick
       TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 0.5), weight: 1),
       TweenSequenceItem(tween: Tween<double>(begin: 0.5, end: 1.0), weight: 1),
     ]).animate(_animation);
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
   }
 
   void _onItemTapped(int index) {
@@ -143,7 +138,6 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> with SingleTick
       ),
     );
   }
-
   Widget _buildNavItem(int index) {
     final bool isSelected = index == _selectedIndex;
     final Color itemColor = isSelected ? widget.selectedItemColor : widget.unselectedItemColor;
@@ -151,7 +145,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> with SingleTick
     return Expanded(
       child: GestureDetector(
         onTap: () => _onItemTapped(index),
-        child: Container(
+        child: SizedBox(
           height: widget.height,
           child: Icon(
             widget.items[index].icon,

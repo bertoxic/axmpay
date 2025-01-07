@@ -422,7 +422,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           return;
         }
 
-        if (userServiceProvider.userdata?.userStatus.toString() != "Verified") {
+        if (userServiceProvider.userdata?.userStatus.toString().toLowerCase() == "confirmed") {
           const storage = FlutterSecureStorage();
           String? passCodeMapString = await storage.read(key: 'passcodeMap');
 
