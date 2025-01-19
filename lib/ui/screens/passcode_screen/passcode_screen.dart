@@ -36,53 +36,52 @@ class _PasscodeInputScreenState extends State<PasscodeInputScreen> {
     final size = MediaQuery.of(context).size;
     final isSmallScreen = size.height < 600;
 
-    return Scaffold(
-      backgroundColor: Colors.black54,
-      body: Center(
-        child: SingleChildScrollView(
-          child: Container(
-           // margin: EdgeInsets.symmetric(horizontal: size.width * 0.1),
-            constraints: BoxConstraints(
-              maxWidth: size.width,
-              maxHeight: isSmallScreen ? size.height * 0.9 : size.height * 0.7,
-            ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 20,
-                  spreadRadius: 5,
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Padding(
-                    padding: EdgeInsets.all(16.sp).copyWith(bottom: 4.sp, top: 4.sp),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        _buildHeader(),
-                        SizedBox(height: 20.h,),
-                        _buildPasscodeDots(),
-                        SizedBox(height: 20.h,),
-                        _buildKeypad(context),
-                        _buildContinueButton(context),
-                      ],
-                    ),
+    return Material(
+      color: Colors.transparent,
+      child: Center(
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: size.width * 0.9,
+            maxHeight: isSmallScreen ? size.height * 0.9 : size.height * 0.6,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 20,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible( // Allow dynamic height adjustment
+                child: SingleChildScrollView(
+                  physics: BouncingScrollPhysics(),
+                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildHeader(),
+                      SizedBox(height: 20),
+                      _buildPasscodeDots(),
+                      SizedBox(height: 20),
+                      _buildKeypad(context),
+                      _buildContinueButton(context),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
+
 
   Widget _buildHeader() {
     return Column(

@@ -1,4 +1,6 @@
 
+import 'dart:ui';
+
 import 'package:AXMPAY/main.dart';
 import 'package:AXMPAY/models/transaction_model.dart';
 import 'package:AXMPAY/models/user_model.dart';
@@ -250,108 +252,170 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     balance = double.tryParse(userProvider.userdata?.availableBalance?.toString() ?? '0');
 
     return Container(
-      margin: EdgeInsets.symmetric(vertical:16.h,horizontal: 12.w),
-     // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      //elevation: 4,
+      margin: EdgeInsets.symmetric(vertical: 16.h, horizontal: 12.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius:  BorderRadius.circular( 16.sp),
-          gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: <Color>[
-                colorScheme.primary,
-                colorScheme.primary,
-                //const Color(0xB25C4DE5),
-                //const Color(0xB20C93AB),
-                // Color(0xB643C036),
-                // const Color(0xFF5EE862),
-              ]),
-          boxShadow: [
-            BoxShadow(
-                blurRadius: 2,
-                color: Colors.black.withOpacity(0.4),
-                spreadRadius: 1.7,
-                offset: const Offset(1,3)
-            )
-          ]
+        borderRadius: BorderRadius.circular(20.sp),
+        color:colorScheme.primary ,
+        // gradient: LinearGradient(
+        //   begin: Alignment.topLeft,
+        //   end: Alignment.bottomRight,
+        //   colors: [
+        //     colorScheme.primary,
+        //     colorScheme.primary.withOpacity(0.8),
+        //     Color.lerp(colorScheme.primary, Colors.blue, 0.3) ?? colorScheme.primary,
+        //   ],
+        //   stops: const [0.0, 0.6, 1.0],
+        // ),
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 12,
+            color: colorScheme.primary.withOpacity(0.6),
+            spreadRadius: 2,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: EdgeInsets.all(12.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 16.sp,
-                  backgroundColor: colorScheme.onPrimary,
-                  child: Text(
-                    "${userProvider.userdata?.username?.substring(0, 1).toUpperCase()}",
-                    style: TextStyle(color: colorScheme.primary, fontSize: 20.sp),
-                  ),
-                ),
-                SizedBox(width: 16.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "${userProvider.userdata?.firstname} ${userProvider.userdata?.lastname}",
-                        style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold, color: colorScheme.onPrimary),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20.sp),
+        child: Padding(
+          padding: EdgeInsets.all(12.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Hero(
+                    tag: 'user_avatar',
+                    child: CircleAvatar(
+                      radius: 16.sp,
+                      backgroundColor: colorScheme.onPrimary,
+                      child: Text(
+                        "${userProvider.userdata?.username?.substring(0, 1).toUpperCase()}",
+                        style: TextStyle(
+                          color: colorScheme.primary,
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        "A/C: ${userProvider.userdata?.accountNumber}",
-                        style: TextStyle(fontSize: 9.sp, color: Colors.grey[300]),
+                    ),
+                  ),
+                  SizedBox(width: 16.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "${userProvider.userdata?.firstname} ${userProvider.userdata?.lastname}",
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onPrimary,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          "A/C: ${userProvider.userdata?.accountNumber}",
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: colorScheme.onPrimary.withOpacity(0.8),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.all(8.w),
+
+                    child: SvgIcon(
+                      "assets/images/axmpay_logo.svg",
+                      color: colorScheme.onPrimary.withOpacity(0.9),
+                      width: 32.w,
+                      height: 32.h,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8.h),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                decoration: BoxDecoration(
+                  color: colorScheme.onPrimary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12.sp),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Available Balance",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: colorScheme.onPrimary.withOpacity(0.7),
+                        letterSpacing: 0.5,
                       ),
-                    ],
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      formatter.format(balance),
+                      style: TextStyle(
+                        fontSize: 32.sp,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onPrimary,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height:8.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                    decoration: BoxDecoration(
+                      color: colorScheme.onPrimary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8.sp),
+                    ),
+                    child: Text(
+                      "Earnings: ₦${userProvider.userdata?.earn ?? "0"}",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: colorScheme.onPrimary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: SizedBox( width: 30.w, height: 30.w,
-                      child: SvgIcon("assets/images/axmpay_logo.svg", color: Colors.grey.shade200, width: 36.w, height: 40.h)),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              "Available Balance",
-              style: TextStyle(fontSize:12.sp, color: Colors.grey[300]),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              formatter.format(balance),
-              style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold, color: colorScheme.onPrimary,),
-            ),
-            SizedBox(height: 4.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                AppText.body(
-                  "Earnings: ₦${userProvider.userdata?.earn ?? "0"}",
-                  style: TextStyle(fontSize: 16.sp, color: Colors.grey[300]),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: userProvider.userdata!.accountNumber??""));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                       SnackBar(content: Text('Account number copied to clipboard'),backgroundColor: colorScheme.primary),
-                    );
-                  },
-                  icon: Icon(Icons.copy, size:10.sp),
-                  label: Text("Copy A/C", style: TextStyle(fontSize: 10.sp,color: colorScheme.primary)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colorScheme.onPrimary,
-                    foregroundColor: colorScheme.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  TextButton.icon(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: userProvider.userdata!.accountNumber ?? ""));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Account number copied to clipboard'),
+                          backgroundColor: colorScheme.primary,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      );
+                    },
+                    icon: Icon(Icons.copy_rounded, size: 16.sp),
+                    label: Text("Copy A/C", style: TextStyle(fontSize: 12.sp)),
+                    style: TextButton.styleFrom(
+                      backgroundColor: colorScheme.onPrimary,
+                      foregroundColor: colorScheme.primary,
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.sp),
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -820,11 +884,7 @@ class TransactionItemWidget extends StatelessWidget {
                           Row(
                             children: [
                               Container(
-                                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                                decoration: BoxDecoration(
-                                  color: (isReceive ? Colors.green[600] : Colors.red[600])?.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
+
                                 child: Text(
                                   isReceive ? 'Received' : 'Sent',
                                   style: theme.textTheme.bodySmall?.copyWith(

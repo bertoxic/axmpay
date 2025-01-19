@@ -483,71 +483,74 @@ class _TransferScreenState extends State<TransferScreen> {
   }
 
   Widget _buildBankSelectionPopup() {
-    return SizedBox(
-      width: 340.h,
-      height: 800.h,
-      child: Consumer<UserServiceProvider>(
-        builder: (context, userServiceProvider, child) {
-          return Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.all(16.sp),
-                child: CustomTextField(
-                  controller: _bankSelectorController,
-                  onChanged: (value) {
-                    setState(() {
-                      _filterItems();
-                      _accountNumberCheck();
-                    });
-                  },
-                  fieldName: "search",
-                  hintText: "Search bank",
-                  prefixIcon: Icon(Icons.search, color: colorScheme.primary),
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: filterSearch.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final item = filterSearch[index];
-                    Color itemColor = getRandomColor();
-                    return ListTile(
-                      onTap: () {
+    return StatefulBuilder(
+      builder: (BuildContext context, StateSetter setState) {
+        return SizedBox(
+          width: 340.h,
+          height: 800.h,
+          child: Consumer<UserServiceProvider>(
+            builder: (context, userServiceProvider, child) {
+              return Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(16.sp),
+                    child: CustomTextField(
+                      controller: _bankSelectorController,
+                      onChanged: (value) {
                         setState(() {
-                          selectedBank = item;
+                          filterSearch = totalItems.where((item) {
+                            return item.bankName!.toLowerCase().contains(value.toLowerCase());
+                          }).toList();
                         });
-                        _accountNumberCheck();
-                        Navigator.pop(context, selectedBank);
                       },
-                      leading: Container(
-                        padding: EdgeInsets.all(8.sp),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: itemColor.withOpacity(0.1),
-                        ),
-                        child: Icon(
-                            Icons.account_balance,
-                            size: 20.sp,
-                            color: itemColor,
-
-                        ),
-                      ),
-                      title: AppText.body(
-                        item.bankName ?? "",
-                        color: Colors.black87,
-                      ),
-                      subtitle: AppText.caption(
-                        "Tap to select",
-                        color: Colors.grey.shade600,
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          );
-        },
-      ),
+                      fieldName: "search",
+                      hintText: "Search bank",
+                      prefixIcon: Icon(Icons.search, color: colorScheme.primary),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: filterSearch.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final item = filterSearch[index];
+                        Color itemColor = getRandomColor();
+                        return ListTile(
+                          onTap: () {
+                            _bankSelectorController.text = item.bankName ?? "";
+                            selectedBank = item;
+                            _accountNumberCheck();
+                            Navigator.pop(context, item);
+                          },
+                          leading: Container(
+                            padding: EdgeInsets.all(8.sp),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: itemColor.withOpacity(0.1),
+                            ),
+                            child: Icon(
+                              Icons.account_balance,
+                              size: 20.sp,
+                              color: itemColor,
+                            ),
+                          ),
+                          title: AppText.body(
+                            item.bankName ?? "",
+                            color: Colors.black87,
+                          ),
+                          subtitle: AppText.caption(
+                            "Tap to select",
+                            color: Colors.grey.shade600,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 

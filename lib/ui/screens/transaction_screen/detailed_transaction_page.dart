@@ -16,11 +16,32 @@ class TransactionDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Transaction Details',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
         ),
         elevation: 0,
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const Icon(Icons.arrow_back, size: 20),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SafeArea(
         child: LayoutBuilder(
@@ -36,8 +57,8 @@ class TransactionDetailScreen extends StatelessWidget {
                     maxWidth: 600,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    // color: Colors.white,
+                    // borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.05),
@@ -50,6 +71,9 @@ class TransactionDetailScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _buildHeader(constraints),
+                      SizedBox(
+                        height: 16.h,
+                      ),
                       _buildDetailsList(constraints),
                       SizedBox(height: 16.h),
                     ],
@@ -64,93 +88,106 @@ class TransactionDetailScreen extends StatelessWidget {
   }
 
   Widget _buildHeader(BoxConstraints constraints) {
-    double? transactionAmount = double.tryParse(transaction.amount?.toString() ?? '0');
+    double? transactionAmount =
+    double.tryParse(transaction.amount?.toString() ?? '0');
     final formatter = NumberFormat.currency(locale: 'en_US', symbol: '₦');
     final isCredit = transaction.type.toLowerCase() == 'credit';
+    final baseColor =
+    isCredit ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F);
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(constraints.maxWidth * 0.05),
+      padding: EdgeInsets.all(constraints.maxWidth * 0.06),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: isCredit
-              ? [Colors.green.shade50, Colors.green.shade100]
-              : [Colors.red.shade50, Colors.red.shade100],
+          colors: [
+            baseColor.withOpacity(0.95),
+            baseColor,
+          ],
         ),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: baseColor.withOpacity(0.25),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Transaction Icon with Animated Background
           Container(
-            padding: EdgeInsets.all(12.w),
+            padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Colors.white.withOpacity(0.15),
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: (isCredit ? Colors.green : Colors.red).withOpacity(0.2),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              border:
+              Border.all(color: Colors.white.withOpacity(0.3), width: 2),
             ),
             child: Icon(
-              isCredit ? Icons.arrow_downward : Icons.arrow_upward,
-              color: isCredit ? Colors.green : Colors.red,
+              isCredit ? Icons.account_balance_wallet : Icons.payment,
+              color: Colors.white,
               size: constraints.maxWidth * 0.08,
             ),
           ),
-          SizedBox(height: 16.h),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              '${isCredit ? '+' : '-'} ${formatter.format(transactionAmount)}',
-              style: TextStyle(
-                fontSize: constraints.maxWidth * 0.08,
-                fontWeight: FontWeight.bold,
-                color: isCredit ? Colors.green.shade700 : Colors.red.shade700,
-              ),
+          SizedBox(height: 20.h),
+
+          // Amount Display
+          Text(
+            '${isCredit ? '+' : '-'} ${formatter.format(transactionAmount)}',
+            style: TextStyle(
+              fontSize: constraints.maxWidth * 0.08,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 0.5,
             ),
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 16.h),
+
+          // Transaction Type Pill
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(30),
+              border:
+              Border.all(color: Colors.white.withOpacity(0.3), width: 1),
             ),
             child: Text(
               transaction.action,
               style: TextStyle(
-                fontSize: constraints.maxWidth * 0.045,
+                fontSize: constraints.maxWidth * 0.04,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                color: Colors.white,
+                letterSpacing: 0.5,
               ),
-              textAlign: TextAlign.center,
             ),
           ),
-          SizedBox(height: 12.h),
-          Text(
-            DateFormat('MMMM d, yyyy HH:mm').format(transaction.timeCreated),
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: constraints.maxWidth * 0.035,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
+          SizedBox(height: 16.h),
+
+          // Date and Time with Icon
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.access_time,
+                color: Colors.white.withOpacity(0.9),
+                size: constraints.maxWidth * 0.04,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                DateFormat('MMMM d, yyyy • HH:mm')
+                    .format(transaction.timeCreated),
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.9),
+                  fontSize: constraints.maxWidth * 0.035,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -159,8 +196,10 @@ class TransactionDetailScreen extends StatelessWidget {
 
   Widget _buildDetailsList(BoxConstraints constraints) {
     double? balAfter = double.tryParse(transaction.balAfter?.toString() ?? '0');
-    double? transactionFee = double.tryParse(transaction.fee?.toString() ?? '0');
-    double? totalAmt = double.tryParse(transaction.totalAmount?.toString() ?? '0');
+    double? transactionFee =
+    double.tryParse(transaction.fee?.toString() ?? '0');
+    double? totalAmt =
+    double.tryParse(transaction.totalAmount?.toString() ?? '0');
     final formatter = NumberFormat.currency(locale: 'en_US', symbol: '₦');
 
     return Container(
@@ -169,6 +208,8 @@ class TransactionDetailScreen extends StatelessWidget {
         color: Colors.white,
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(16),
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
           bottomRight: Radius.circular(16),
         ),
       ),
@@ -187,19 +228,21 @@ class TransactionDetailScreen extends StatelessWidget {
             constraints,
           ),
           _buildDetailDivider(),
-          _buildDetailItem('Status:', transaction.status, constraints, isStatus: true),
+          _buildDetailItem('Status:', transaction.status, constraints,
+              isStatus: true),
           _buildDetailDivider(),
           _buildDetailItem('Type:', transaction.type, constraints),
-
           SizedBox(height: 24.h),
           _buildSectionTitle('Financial Details', constraints),
           SizedBox(height: 16.h),
-          _buildDetailItem('Fee:', formatter.format(transactionFee), constraints),
+          _buildDetailItem(
+              'Fee:', formatter.format(transactionFee), constraints),
           _buildDetailDivider(),
-          _buildDetailItem('Total Amount:', formatter.format(totalAmt), constraints),
+          _buildDetailItem(
+              'Total Amount:', formatter.format(totalAmt), constraints),
           _buildDetailDivider(),
-          _buildDetailItem('Balance After:', formatter.format(balAfter), constraints),
-
+          _buildDetailItem(
+              'Balance After:', formatter.format(balAfter), constraints),
           SizedBox(height: 24.h),
           _buildSectionTitle('Additional Information', constraints),
           SizedBox(height: 16.h),
@@ -230,7 +273,8 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailItem(String label, String value, BoxConstraints constraints,
+  Widget _buildDetailItem(
+      String label, String value, BoxConstraints constraints,
       {bool isStatus = false}) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 4.h),

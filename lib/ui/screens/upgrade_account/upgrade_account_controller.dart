@@ -91,25 +91,6 @@ void _initializeController() {
     return null;
   }
 
-  // void updateUserDetailsModel(){
-  //    userDetails = UserDetails(
-  //       lastName: account_number.text,
-  //       dateOfBirth: date_of_birth.text,
-  //       email: emailController.text,
-  //       firstName: first_name.text,
-  //       address: Address(street: streetNameController.text, city: cityController.text, state: stateController.text, zip:""),
-  //       bvn: bvn.text,
-  //       nin: placeOfBirthController.text,
-  //       phone: phone_number.text,
-  //       gender: gender.text,
-  //
-  //
-  //   );
-  //    print("userDetails");
-  //   final provider = Provider.of<UpgradeAccountProvider>(context, listen: false);
-  //   createUserWalletPayload();
-  //   print(userDetails?.toJSON());
-  // }
   void createUserWalletPayload(){
     upgradeWalletPayload = UpgradeWalletPayload(
         accountNumber: accountNumberController.text,
@@ -143,12 +124,7 @@ void _initializeController() {
     return responseResult;
   }
 
-  // Future<String?> walletPayloadToServer() async {
-  //   String? status;
-  //   final provider = Provider.of<UpgradeAccountProvider>(context, listen: false);
-  //   status = await provider.userProvider.createUserWallet(context,upgradeWalletPayload!);
-  //   return status;
-  // }
+
   void dispose() {
     // Dispose all controllers
     accountNumberController.dispose();

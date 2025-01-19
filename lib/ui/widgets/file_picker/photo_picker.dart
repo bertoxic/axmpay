@@ -30,30 +30,24 @@ class PhotoPicker extends StatefulWidget {
 
 class _PhotoPickerState extends State<PhotoPicker> with AutomaticKeepAliveClientMixin {
   late UploadPicture picker;
-  String _displayText = 'Select an image';
   late TextEditingController _displayController;
+  String? _currentFileName;
 
   @override
-  bool get wantKeepAlive => true;  // Add this to maintain state
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-    _displayController = TextEditingController(
-        text: widget.controller.text.isNotEmpty ? 'Image selected' : 'Select an image'
-    );
+    _displayController = TextEditingController(text: 'Select an image');
     picker = UploadPicture();
-
-    // Add listener to main controller
     widget.controller.addListener(_syncDisplayText);
   }
 
   void _syncDisplayText() {
     if (mounted) {
       setState(() {
-        _displayController.text = widget.controller.text.isNotEmpty
-            ? 'Image selected'
-            : 'Select an image';
+        _displayController.text = _currentFileName ?? 'Select an image';
       });
     }
   }
@@ -68,16 +62,16 @@ class _PhotoPickerState extends State<PhotoPicker> with AutomaticKeepAliveClient
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Keep this for backward compatibility
-    if (widget.controller.text.isNotEmpty && _displayController.text == 'Select an image') {
-      _displayController.text = 'Image selected';
+    if (widget.controller.text.isNotEmpty && _currentFileName == null) {
+      _displayController.text = _currentFileName ?? 'Select an image';
     }
   }
 
   void _updateController(Map<String, String?>? data) {
     if (data != null && mounted) {
       setState(() {
-        _displayController.text = data["imageName"] ?? 'Image selected';
+        _currentFileName = data["imageName"];
+        _displayController.text = _currentFileName ?? 'Select an image';
         widget.controller.text = data["base64Bytes"] ?? '';
       });
       widget.onChange(widget.controller.text);
@@ -280,7 +274,7 @@ class _PhotoPickerState extends State<PhotoPicker> with AutomaticKeepAliveClient
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);  // Add this line for AutomaticKeepAliveClientMixin
+    super.build(context);
     return CustomTextField(
       hintText: widget.hintText,
       labelText: widget.labelText,

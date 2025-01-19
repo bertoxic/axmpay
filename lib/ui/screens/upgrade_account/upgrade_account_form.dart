@@ -31,7 +31,7 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
   late UserServiceProvider userprovider;
   late UserData userData;
   bool _isLoading = false;
-
+  final _documentsFormKey = GlobalKey<FormState>();
   @override
   void initState() {
     super.initState();
@@ -121,79 +121,114 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
           ),
         ),
       ),
-      bottomNavigationBar: StatefulBuilder(
-        builder: (BuildContext context, StateSetter setState) {
-          return Container(
-            padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.primary,
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+        // Modified bottomNavigationBar section in the build method
+        // Modified bottomNavigationBar section in the build method
+        bottomNavigationBar: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
               ),
-              child: _isLoading
-                  ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-              )
-                  : Text(
-                'Submit',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              onPressed: _isLoading
-                  ? null
-                  : () async {
-                setState(() => _isLoading = true);
-                bool isFormValid = true;
-                for (int i = 0; i < _tabController.length; i++) {
-                  _tabController.animateTo(i);
-                  await Future.delayed(const Duration(milliseconds: 300));
-                  if (!_formKey.currentState!.validate()) {
-                    isFormValid = false;
-                    break;
-                  }
-                }
+                onPressed: _isLoading
+                    ? null
+                    : () async {
+                  setState(() => _isLoading = true);
 
-                if (isFormValid) {
-                  _controller.createUserWalletPayload();
-                  ResponseResult? responseResult =
-                  await _controller.upgradeUserWalletInServer();
-                  if (responseResult?.status != ResponseStatus.success) {
+                  // Force showing validation for all fields
+                  setState(() {
+                    _formKey.currentState?.validate();
+                    _documentsFormKey.currentState?.validate();
+                  });
+
+                  // Check which tabs have invalid fields
+                  bool identificationValid = _validateIdentificationTab();
+                  bool documentsValid = _validateDocumentsTab();
+
+                  if (!identificationValid || !documentsValid) {
+                    setState(() => _isLoading = false);
+
+                    // Navigate to the first invalid tab
+                    if (!identificationValid) {
+                      _tabController.animateTo(0);
+                      _showValidationError('Please complete all required fields in Identification tab');
+                    } else if (!documentsValid) {
+                      _tabController.animateTo(1);
+                      _showValidationError('Please complete all required fields in Documents tab');
+                    }
+                    return;
+                  }
+
+                  // If all validations pass, proceed with form submission
+                  try {
+                    _controller.createUserWalletPayload();
+                    ResponseResult? responseResult =
+                    await _controller.upgradeUserWalletInServer();
+
                     if (!mounted) return;
+
+                    if (responseResult?.status != ResponseStatus.success) {
+                      CustomPopup.show(
+                        type: PopupType.error,
+                        context: context,
+                        title: responseResult?.status.toString() ?? "",
+                        message: responseResult?.message ?? "",
+                      );
+                    } else {
+                      CustomPopup.show(
+                        type: PopupType.success,
+                        context: context,
+                        title: "Success",
+                        message: "Wallet upgrade submitted successfully",
+                      );
+                    }
+                  } catch (e) {
                     CustomPopup.show(
                       type: PopupType.error,
                       context: context,
-                      title: responseResult?.status.toString() ?? "",
-                      message: responseResult?.message ?? "",
+                      title: "Error",
+                      message: "An error occurred while processing your request",
                     );
                   }
-                }
-                setState(() => _isLoading = false);
-              },
-            ),
-          );
-        },
-      ),
+
+                  setState(() => _isLoading = false);
+                },
+                child: _isLoading
+                    ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+                    : Text(
+                  'Submit',
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            );
+          },
+        )
     );
   }
 
@@ -335,44 +370,47 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
               Divider(height: 1, color: Colors.grey.withOpacity(0.2)),
               Padding(
                 padding: EdgeInsets.all(16.w),
-                child: Column(
-                  children: [
-                    _buildDocumentUploader(
-                      controller: _controller.userPhotoController,
-                      label: "User Photo",
-                      icon: Icons.person_outline,
-                    ),
-                    SizedBox(height: 16.h),
-                    _buildDocumentUploader(
-                      controller: _controller.idCardFrontController,
-                      label: "ID Card Front",
-                      icon: Icons.credit_card_outlined,
-                    ),
-                    SizedBox(height: 16.h),
-                    _buildDocumentUploader(
-                      controller: _controller.idCardBackController,
-                      label: "ID Card Back",
-                      icon: Icons.credit_card_outlined,
-                    ),
-                    SizedBox(height: 16.h),
-                    _buildDocumentUploader(
-                      controller: _controller.customerSignatureController,
-                      label: "Customer Signature",
-                      icon: Icons.draw_outlined,
-                    ),
-                    SizedBox(height: 16.h),
-                    _buildDocumentUploader(
-                      controller: _controller.utilityBillController,
-                      label: "Utility Bill",
-                      icon: Icons.receipt_outlined,
-                    ),
-                    SizedBox(height: 16.h),
-                    _buildDocumentUploader(
-                      controller: _controller.proofOfAddressController,
-                      label: "Proof of Address",
-                      icon: Icons.home_outlined,
-                    ),
-                  ],
+                child: Form(
+                  key: _documentsFormKey, // Add this new form key
+                  child: Column(
+                    children: [
+                      _buildDocumentUploader(
+                        controller: _controller.userPhotoController,
+                        label: "User Photo",
+                        icon: Icons.person_outline,
+                      ),
+                      SizedBox(height: 16.h),
+                      _buildDocumentUploader(
+                        controller: _controller.idCardFrontController,
+                        label: "ID Card Front",
+                        icon: Icons.credit_card_outlined,
+                      ),
+                      SizedBox(height: 16.h),
+                      _buildDocumentUploader(
+                        controller: _controller.idCardBackController,
+                        label: "ID Card Back",
+                        icon: Icons.credit_card_outlined,
+                      ),
+                      SizedBox(height: 16.h),
+                      _buildDocumentUploader(
+                        controller: _controller.customerSignatureController,
+                        label: "Customer Signature",
+                        icon: Icons.draw_outlined,
+                      ),
+                      SizedBox(height: 16.h),
+                      _buildDocumentUploader(
+                        controller: _controller.utilityBillController,
+                        label: "Utility Bill",
+                        icon: Icons.receipt_outlined,
+                      ),
+                      SizedBox(height: 16.h),
+                      _buildDocumentUploader(
+                        controller: _controller.proofOfAddressController,
+                        label: "Proof of Address",
+                        icon: Icons.home_outlined,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -382,6 +420,7 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
     );
   }
 
+
   Widget _buildDropdownField({required TextEditingController controller, required List<String> options, required String labelText, required String hintText, required IconData icon,}) {
     return Container(
       decoration: BoxDecoration(
@@ -390,8 +429,11 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
       ),
       child: DropdownTextField(
         controller: controller,
-        validator: (value) =>
-            FormValidator.validate(value, ValidatorType.isEmpty, fieldName: labelText),
+        validator: (value) => FormValidator.validate(
+          value,
+          ValidatorType.isEmpty,
+          fieldName: labelText,
+        ),
         onChange: (value) {
           setState(() {
             controller.text = value ?? "";
@@ -401,13 +443,12 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
         labelText: labelText,
         hintText: hintText,
         prefixIcon: icon,
-        displayStringForOption: (option) => option, fieldName: '',
+        displayStringForOption: (option) => option,
+        fieldName: labelText,  // Pass the label as fieldName for validation messages
       ),
     );
   }
-
-  Widget _buildTextField({required TextEditingController controller, required String labelText, required IconData icon,}){
-    return Container(
+  Widget _buildTextField({required TextEditingController controller, required String labelText, required IconData icon,}) {return Container(
       decoration: BoxDecoration(
         color: Colors.grey.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
@@ -416,15 +457,19 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
         labelText: labelText,
         fieldController: controller,
         onChanged: (value) {},
-        fieldName: '',
+        fieldName: labelText,
         prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
+        validator: (value) => FormValidator.validate(
+          value,
+          ValidatorType.isEmpty,
+          fieldName: labelText,
+        ),
       ),
     );
   }
 
   Widget _buildDateField({required TextEditingController controller, required String labelText, required DateTime firstDate, required DateTime lastDate, required IconData icon,}) {
-    return Container(
-      decoration: BoxDecoration(
+    return Container(decoration: BoxDecoration(
         color: Colors.grey.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
@@ -435,13 +480,19 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
         firstDate: firstDate,
         lastDate: lastDate,
         onChange: (value) {},
-        validator: (value) =>
-            FormValidator.validate(value, ValidatorType.isEmpty, fieldName: labelText),
+        validator: (value) => FormValidator.validate(
+          value,
+          ValidatorType.isEmpty,
+          fieldName: labelText,
+        ),
       ),
     );
   }
-
-  Widget _buildDocumentUploader({required TextEditingController controller, required String label, required IconData icon,}) {
+  Widget _buildDocumentUploader({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey.withOpacity(0.1),
@@ -456,14 +507,16 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
         ),
         context: context,
         onChange: (value) {
-          print(value);
+          setState(() {
+            controller.text = value ?? "";
+          });
         },
         controller: controller,
         validator: (value) {
-          if (value != null && value is String) {
-            return _controller.fileSizeValidator(value);
+          if (value == null || value.toString().isEmpty) {
+            return '$label is required';
           }
-          return null;
+          return _controller.fileSizeValidator(value.toString());
         },
       ),
     );
@@ -675,6 +728,61 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
     );
   }
 
+  bool _validateIdentificationTab() {
+    // Validate identification fields
+    if (_controller.idTypeController.text.isEmpty ||
+        _controller.idNumberController.text.isEmpty ||
+        _controller.idIssueDateController.text.isEmpty ||
+        _controller.idExpiryDateController.text.isEmpty) {
+      return false;
+    }
+    return true;
+  }
+
+  bool _validateDocumentsTab() {
+    // Validate document uploads
+    if (_controller.userPhotoController.text.isEmpty ||
+        _controller.idCardFrontController.text.isEmpty ||
+        _controller.idCardBackController.text.isEmpty ||
+        _controller.customerSignatureController.text.isEmpty ||
+        _controller.utilityBillController.text.isEmpty ||
+        _controller.proofOfAddressController.text.isEmpty) {
+      return false;
+    }
+
+    // Additional file size validation
+    final List<TextEditingController> documentControllers = [
+      _controller.userPhotoController,
+      _controller.idCardFrontController,
+      _controller.idCardBackController,
+      _controller.customerSignatureController,
+      _controller.utilityBillController,
+      _controller.proofOfAddressController,
+    ];
+
+    for (var controller in documentControllers) {
+      final validationResult = _controller.fileSizeValidator(controller.text);
+      if (validationResult != null) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  void _showValidationError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
 
   }
 
