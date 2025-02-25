@@ -52,6 +52,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   late Future <UserData?> _userDetailsFuture;
   final formatter = NumberFormat.currency(locale: 'en_US', symbol: '\₦');
    double? balance;
+   double? earnings;
   @override
   void initState() {
     super.initState();
@@ -203,7 +204,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
   @override
   Widget build(BuildContext context) {
-    balance = double.tryParse(userProvider.userdata?.availableBalance?.toString() ?? '0');
+    balance = double.tryParse(userProvider.userdata?.availableBalance.toString() ?? '0');
+    earnings = double.tryParse(userProvider.userdata?.earn.toString() ?? '0');
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -379,7 +381,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       borderRadius: BorderRadius.circular(8.sp),
                     ),
                     child: Text(
-                      "Earnings: ₦${userProvider.userdata?.earn ?? "0"}",
+                      "Earnings: ${formatter.format(earnings)}",
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: colorScheme.onPrimary,

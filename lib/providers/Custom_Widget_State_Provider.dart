@@ -3,11 +3,11 @@
 import 'package:flutter/cupertino.dart';
 
 class CustomWidgetStateProvider<T> extends ChangeNotifier {
- T? _dropdownValue;
+ bool _dropdownValue=false;
 
- T? get dropdownValue => _dropdownValue;
+ bool get dropdownValue => _dropdownValue;
 
- void setDropdownValue(T? newValue) {
+ void setDropdownValue(bool newValue) {
   _dropdownValue = newValue;
   notifyListeners();
  }

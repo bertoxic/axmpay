@@ -65,8 +65,6 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
     elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-
-
       // No primary or onPrimary colors specified
     ),
     ), colorScheme: colorScheme,

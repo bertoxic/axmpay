@@ -54,7 +54,7 @@ final GoRouter  _router = GoRouter(
           return MainWrapperPage(navigationShell: navigationShell,);
         },
 
-        branches:  <StatefulShellBranch>[
+          branches:  <StatefulShellBranch>[
       StatefulShellBranch(
           navigatorKey: _rootNavigatorHome,
           initialLocation: "/home",

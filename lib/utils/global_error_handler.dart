@@ -1,107 +1,114 @@
+import 'package:AXMPAY/providers/Custom_Widget_State_Provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../main.dart';
 
-bool _isPopupShowing = false;
+CustomWidgetStateProvider widgetStateProvider = CustomWidgetStateProvider();
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void handleGlobalError(BuildContext context, dynamic error) {
-  if (!_isPopupShowing) {
-    _isPopupShowing = true;
+  if (!widgetStateProvider.dropdownValue) {
     Map<String, dynamic> errorMap = getErrorMessage(error);
 
     if (error is TokenExpiredException) {
-      print('Showing relogin dialog');
       showReloginDialog(context);
     } else if (error is DioException) {
       showErrorDialog(context, errorMap);
     } else {
       showGeneralErrorDialog(context, error);
     }
-
-    Future.delayed(Duration(seconds: 1), () {
-      _isPopupShowing = false;
-    });
   }
 }
 
 class TokenExpiredException implements Exception {
   final String? message;
-
   TokenExpiredException({this.message});
-
   @override
   String toString() => message ?? 'Token expired';
 }
 
 class BadRequestException implements Exception {
   final String message;
-
   BadRequestException(this.message);
-
   @override
   String toString() => message;
 }
 
 void showErrorDialog(BuildContext context, Map<String, dynamic> errorMap) {
-  _showPopup(
-    context,
-    CustomAlertDialog(
-      title: errorMap["title"],
-      message: errorMap["message"],
-      icon: Icons.error_outline,
-    ),
-  );
+  if (!widgetStateProvider.dropdownValue) {
+    _showPopup(
+      context,
+      CustomAlertDialog(
+        title: errorMap["title"],
+        message: errorMap["message"],
+        icon: Icons.error_outline,
+      ),
+    );
+  }
 }
 
 void showGeneralErrorDialog(BuildContext context, dynamic error) {
-  _showPopup(
-    context,
-    CustomAlertDialog(
-      title: 'Error',
-      message: error.toString(),
-      icon: Icons.warning_amber_rounded,
-    ),
-  );
+  if (!widgetStateProvider.dropdownValue) {
+    _showPopup(
+      context,
+      CustomAlertDialog(
+        title: 'Error',
+        message: error.toString(),
+        icon: Icons.warning_amber_rounded,
+      ),
+    );
+  }
 }
 
 void showReloginDialog(BuildContext context) {
-  _showPopup(
-    context,
-    CustomAlertDialog(
-      title: 'Session Expired',
-      message: 'Your session has expired. Please log in again.',
-      icon: Icons.login,
-      actions: [
-        TextButton(
-          child: Text('Relogin', style: TextStyle(color: colorScheme.primary)),
-          onPressed: () {
-            Navigator.of(context,rootNavigator: true).pop();
-            context.goNamed("login");
-          },
-        ),
-        TextButton(
-          child: Text('Cancel', style: TextStyle(color: colorScheme.secondary)),
-          onPressed: () {
-            Navigator.of(context, rootNavigator: true).pop();
-          },
-        ),
-      ],
-    ),
-  );
+  if (!widgetStateProvider.dropdownValue) {
+    _showPopup(
+      context,
+      CustomAlertDialog(
+        title: 'Session Expired',
+        message: 'Your session has expired. Please log in again.',
+        icon: Icons.login,
+        actions: [
+          TextButton(
+            child: Text('Relogin', style: TextStyle(color: colorScheme.primary)),
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pop();
+              context.goNamed("login");
+            },
+          ),
+          TextButton(
+            child: Text('Cancel', style: TextStyle(color: colorScheme.secondary)),
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 void _showPopup(BuildContext context, Widget dialog) {
-  showDialog(
-    context: context,
-    barrierDismissible: true,
-    builder: (BuildContext dialogContext) => dialog,
-  ).then((_) {
-    print("Dialog dismissed, setting isPopupShowing to false");
-    _isPopupShowing = false;
-  });
+  if (!widgetStateProvider.dropdownValue) {
+    widgetStateProvider.setDropdownValue(true);
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext dialogContext) => WillPopScope(
+        onWillPop: () async {
+          widgetStateProvider.setDropdownValue(false);
+          return true;
+        },
+        child: dialog,
+      ),
+    ).whenComplete(() {
+      // Ensure dropdown value is reset when dialog is dismissed
+      // This handles ALL dismissal cases
+      widgetStateProvider.setDropdownValue(false);
+    });
+  }
 }
 
 Map<String, String> getErrorMessage(dynamic error) {
@@ -190,7 +197,9 @@ class CustomAlertDialog extends StatelessWidget {
           [
             TextButton(
               child: Text('OK', style: TextStyle(color: colorScheme.primary)),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
             ),
           ],
       backgroundColor: colorScheme.surface,

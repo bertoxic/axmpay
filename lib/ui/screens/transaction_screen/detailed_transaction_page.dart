@@ -93,7 +93,8 @@ class TransactionDetailScreen extends StatelessWidget {
     final formatter = NumberFormat.currency(locale: 'en_US', symbol: '₦');
     final isCredit = transaction.type.toLowerCase() == 'credit';
     final baseColor =
-    isCredit ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F);
+    isCredit ? const Color(0xFF2E7D32) :
+    const Color(0xFFD32F2F);
 
     return Container(
       width: double.infinity,

@@ -24,7 +24,7 @@ class AuthenticationProvider extends ChangeNotifier {
   bool get isAuthenticated => _isAuthenticated;
   String? get errMessage => _errMessage;
 
-  //setter function ---------------------------------------------------------------------------->
+  //setter function ------------------------------------------>  ---------------->  ------------------>
   void setToken(String? token) {
     _token = token;
     notifyListeners();

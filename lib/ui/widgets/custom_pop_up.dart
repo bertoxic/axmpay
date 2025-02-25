@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:AXMPAY/providers/Custom_Widget_State_Provider.dart';
 
 class ScrollablePopup extends StatelessWidget {
   final Widget child;
@@ -7,10 +7,12 @@ class ScrollablePopup extends StatelessWidget {
   final double maxWidth;
   final double maxHeight;
   final double borderRadius;
+  final CustomWidgetStateProvider widgetStateProvider;
 
   const ScrollablePopup({
     super.key,
     required this.child,
+    required this.widgetStateProvider,
     this.isDismissible = true,
     this.maxWidth = 0.8,
     this.maxHeight = 0.8,
@@ -19,55 +21,61 @@ class ScrollablePopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: EdgeInsets.zero,
-      child:  Stack(
+    return WillPopScope(
+      onWillPop: () async {
+        widgetStateProvider.setDropdownValue(false);
+        return true;
+      },
+      child: Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
           children: [
-          // This GestureDetector covers the full screen and dismisses the popup when tapped
-          if (isDismissible)
-        Positioned.fill(
-    child: GestureDetector(
-    onTap: () => Navigator.of(context).pop(),
-    child: Container(color: Colors.transparent),
-    ),
-    ),
-    Center(
-        child: GestureDetector(
-          onTap: () {
-           Navigator.pop(context); //dismiss when tapped
-          }, // Prevents taps inside from dismissing
-          child: Container(
-            // width: 300,
-            // height: 300,
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * maxWidth,
-              maxHeight: MediaQuery.of(context).size.height * maxHeight,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).dialogBackgroundColor,
-              borderRadius: BorderRadius.circular(borderRadius),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildDragHandle(),
-                Flexible(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    scrollDirection: Axis.vertical,
-                    child: child,
+            if (isDismissible)
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () {
+                    widgetStateProvider.setDropdownValue(false);
+                    Navigator.of(context).pop();
+                  },
+                  child: Container(color: Colors.transparent),
+                ),
+              ),
+            Center(
+              child: GestureDetector(
+                onTap: () {}, // Prevent tap from propagating to background
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * maxWidth,
+                    maxHeight: MediaQuery.of(context).size.height * maxHeight,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).dialogBackgroundColor,
+                    borderRadius: BorderRadius.circular(borderRadius),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      buildDragHandle(),
+                      Flexible(
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          scrollDirection: Axis.vertical,
+                          child: child,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
-      ),])
+      ),
     );
   }
 
-  Widget _buildDragHandle() {
+  Widget buildDragHandle() {
     return Container(
       width: 40,
       height: 5,
@@ -82,28 +90,39 @@ class ScrollablePopup extends StatelessWidget {
   static Future<T?> show<T>({
     required BuildContext context,
     required Widget child,
+    required CustomWidgetStateProvider widgetStateProvider,
     bool isDismissible = true,
     double maxWidth = 0.8,
     double maxHeight = 0.8,
     double borderRadius = 12.0,
   }) {
-    return showDialog<T>(
+    // Only show if no popup is currently displayed
+    if (!widgetStateProvider.dropdownValue) {
+      widgetStateProvider.setDropdownValue(true);
 
-      context: context,
-      barrierDismissible: isDismissible,
-      builder: (BuildContext context) {
-        return ScrollablePopup(
-          isDismissible: isDismissible,
-          maxWidth: maxWidth,
-          maxHeight: maxHeight,
-          borderRadius: borderRadius,
-          child: child,
-        );
-      },
-    );
+      return showDialog<T>(
+        context: context,
+        barrierDismissible: isDismissible,
+        builder: (BuildContext context) {
+          return ScrollablePopup(
+            isDismissible: isDismissible,
+            maxWidth: maxWidth,
+            maxHeight: maxHeight,
+            borderRadius: borderRadius,
+            widgetStateProvider: widgetStateProvider,
+            child: child,
+          );
+        },
+      ).whenComplete(() {
+        // Ensure dropdown value is reset when dialog is dismissed
+        // This handles ALL dismissal cases including:
+        // - Back button
+        // - Outside tap
+        // - Navigator.pop()
+        // - Any other dismissal method
+        widgetStateProvider.setDropdownValue(false);
+      });
+    }
+    return Future.value(null);
   }
 }
-
-
-  // Method to get a random color from the list
-

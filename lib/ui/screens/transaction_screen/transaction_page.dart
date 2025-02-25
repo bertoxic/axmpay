@@ -18,6 +18,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../models/transaction_model.dart';
 import '../../../models/user_model.dart';
+import '../../../providers/Custom_Widget_State_Provider.dart';
 import '../../../utils/color_generator.dart';
 import '../../widgets/custom_dialog.dart';
 import '../../widgets/transaction_butttom_sheet.dart';
@@ -59,7 +60,7 @@ class _TransferScreenState extends State<TransferScreen> {
       totalItems = userProvider.bankListResponse!.bankList;
     }
     filterSearch = totalItems;
-    selectedBank = totalItems[21];
+    selectedBank = totalItems[2];
   }
 
   @override
@@ -189,7 +190,7 @@ class _TransferScreenState extends State<TransferScreen> {
                     builder: (BuildContext context, StateSetter setState) {
                       return _buildBankSelectionPopup();
                     },
-                  ),
+                  ), widgetStateProvider: Provider.of<CustomWidgetStateProvider>(context,listen: false)
                 );
                 if (result != null) {
                   setState(() {

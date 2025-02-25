@@ -140,7 +140,7 @@ class _FAQsState extends State<FAQs> with SingleTickerProviderStateMixin {
   Widget _buildHeader() {
     return SliverToBoxAdapter(
       child: Transform.translate(
-        offset: Offset(0, -30.h),
+        offset: Offset(0, 10.h),
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20.w),
           padding: EdgeInsets.all(20.sp),
@@ -202,7 +202,7 @@ class _FAQsState extends State<FAQs> with SingleTickerProviderStateMixin {
   Widget _buildFAQContent() {
     return SliverToBoxAdapter(
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 20.w),
+        margin: EdgeInsets.symmetric(horizontal: 20.w).copyWith(top: 30.h),
         child: FutureBuilder<AxmpayFaqList?>(
           future: _faqsFuture,
           builder: (context, snapshot) {

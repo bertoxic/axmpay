@@ -102,7 +102,7 @@ class _BottomTransactionConfirmSheetContentState extends State<BottomTransaction
               ],
             ),
           ),
-          SizedBox(height: 24.h),
+          SizedBox(height: 12.h),
           Container(
             padding: EdgeInsets.all(16.sp),
             decoration: BoxDecoration(
@@ -119,6 +119,29 @@ class _BottomTransactionConfirmSheetContentState extends State<BottomTransaction
                 Divider(height: 16.h),
                 _buildTransactionDetail("Amount", "₦${widget.transactionModel?.amount}"),
               ],
+            ),
+          ),
+
+          SizedBox(height: 20.h),
+          CustomButton(
+            text: "CONFIRM PAYMENT",
+            size: ButtonSize.large,
+            width: double.infinity,
+            onPressed: _isLoading ? null : _handleTap,
+            customChild: _isLoading
+                ? SizedBox(
+              width: 24.w,
+              height: 24.h,
+              child: const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            )
+                : Text(
+              "CONFIRM PAYMENT",
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           SizedBox(height: 24.h),
@@ -147,28 +170,6 @@ class _BottomTransactionConfirmSheetContentState extends State<BottomTransaction
                 AppText.body("${widget.transactionModel?.senderAccountNumber}",
                     style: TextStyle(fontSize: 14.sp, color: Colors.grey[600])),
               ],
-            ),
-          ),
-          SizedBox(height: 32.h),
-          CustomButton(
-            text: "CONFIRM PAYMENT",
-            size: ButtonSize.large,
-            width: double.infinity,
-            onPressed: _isLoading ? null : _handleTap,
-            customChild: _isLoading
-                ? SizedBox(
-              width: 24.w,
-              height: 24.h,
-              child: const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            )
-                : Text(
-              "CONFIRM PAYMENT",
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-              ),
             ),
           ),
           SizedBox(height: 80.h),

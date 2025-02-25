@@ -1154,8 +1154,6 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
           ),
         ),
         SizedBox(height: 24.h),
-        _buildAccountInfo(widget.userp),
-        SizedBox(height: 32.h),
         CustomButton(
           onPressed: _isLoading ? null : _handleTopUp,
           customChild: _isLoading
@@ -1191,6 +1189,9 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
           size: ButtonSize.large,
           width: double.infinity,
         ),
+        SizedBox(height: 32.h),
+        _buildAccountInfo(widget.userp),
+
         SizedBox(height: 16.h),
       ],
     );
