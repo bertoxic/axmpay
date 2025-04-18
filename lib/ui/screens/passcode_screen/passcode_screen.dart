@@ -97,7 +97,7 @@ class _PasscodeInputScreenState extends State<PasscodeInputScreen> {
         ),
         SizedBox(height: 8),
         Text(
-          'Please enter your 4-digit security code',
+          'Enter your 4-digit security code',
           style: TextStyle(
             fontSize: 14.sp,
             color: Colors.grey[600],
@@ -132,10 +132,10 @@ class _PasscodeInputScreenState extends State<PasscodeInputScreen> {
   Widget _buildKeypad(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final buttonSize = (constraints.maxWidth - (keypadSpacing * 4)) / 3;
+        final buttonSize = (constraints.maxWidth - (keypadSpacing * 4)) / 3.2;
 
         return Container(
-          constraints: BoxConstraints(maxWidth: 300),
+          constraints: BoxConstraints(maxWidth: 300.w),
           child: Column(
             children: List.generate(4, (row) {
               return Row(
@@ -184,7 +184,7 @@ class _PasscodeInputScreenState extends State<PasscodeInputScreen> {
     }
 
     return Padding(
-      padding: EdgeInsets.all(keypadSpacing / 2),
+      padding: EdgeInsets.all(keypadSpacing / 2.3),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -206,13 +206,13 @@ class _PasscodeInputScreenState extends State<PasscodeInputScreen> {
 
   Widget _buildContinueButton(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 16.sp),
+      padding: EdgeInsets.symmetric(horizontal: 8.sp, vertical: 14.sp),
       child: AnimatedOpacity(
-        opacity: _passcode.length == 4 ? 1.0 : 0.0,
+        opacity: _passcode.length == 4 ? 1.0 : 0.4  ,
         duration: Duration(milliseconds: 300),
-        child: Container(
+        child: SizedBox(
           width: double.infinity,
-          height: 40.h,
+          height: 50.h,
           child: ElevatedButton(
             onPressed: _passcode.length == 4
                 ? () async {

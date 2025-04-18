@@ -83,31 +83,56 @@ void _initializeController() {
      print("userDetails");
     final provider = Provider.of<RegistrationProvider>(context, listen: false);
   }
-  void createUserWalletPayload(){
-    var address = Address(street: streetAddress.text, city: city.text, state: state.text, houseNumber: houseNumber.text);
-    walletPayload = WalletPayload(
-        lastName: last_name.text,
-        dateOfBirth: date_of_birth.text,
-        firstName: first_name.text,
-        address: address,
-        BVN: bvn.text,
-        placeOfBirth: placeOfBirthController.text,
-        phone: phone_number.text,
-        refby: refby.text,
-        country: country.text,
-        userName: "${first_name.text}${last_name.text}",
-        gender: gender.text,
-        nearestLandmark: nearestLandMark.text,
-        houseNumber: houseNumber.text,
+  void createUserWalletPayload() {
+    var address = Address(
+        street: streetAddress.text,
         city: city.text,
         state: state.text,
-        localGovernment: localGovArea.text,
-        streetName: streetAddress.text,
-        pep: PEP.text,
-
+        houseNumber: houseNumber.text
     );
-    final provider = Provider.of<RegistrationProvider>(context, listen: false);
 
+    // Parse and convert date from yyyy-mm-dd to dd/mm/yyyy
+    String formattedDate = "";
+    if (date_of_birth.text.isNotEmpty) {
+      try {
+        // Split the date string by hyphens
+        List<String> dateParts = date_of_birth.text.split('-');
+        if (dateParts.length == 3) {
+          // Rearrange from yyyy-mm-dd to dd/mm/yyyy
+          formattedDate = "${dateParts[2]}/${dateParts[1]}/${dateParts[0]}";
+          print("0000000000000000 $formattedDate");
+        } else {
+          // Keep original if format doesn't match expected pattern
+          formattedDate = date_of_birth.text;
+        }
+      } catch (e) {
+        // Fallback to original if parsing fails
+        formattedDate = date_of_birth.text;
+      }
+    }
+
+    walletPayload = WalletPayload(
+      lastName: last_name.text,
+      dateOfBirth: formattedDate, // Use the converted date format
+      firstName: first_name.text,
+      address: address,
+      BVN: bvn.text,
+      placeOfBirth: placeOfBirthController.text,
+      phone: phone_number.text,
+      refby: refby.text,
+      country: country.text,
+      userName: "${first_name.text}${last_name.text}",
+      gender: gender.text,
+      nearestLandmark: nearestLandMark.text,
+      houseNumber: houseNumber.text,
+      city: city.text,
+      state: state.text,
+      localGovernment: localGovArea.text,
+      streetName: streetAddress.text,
+      pep: PEP.text,
+    );
+
+   // final provider = Provider.of(context, listen: false);
     print(walletPayload?.toJSON());
   }
   void updateUserDetailsToServer(){
@@ -123,7 +148,6 @@ void _initializeController() {
     responseResult = await provider.userProvider.createUserWallet(context,walletPayload!);
     return responseResult;
   }
-
   void dispose() {
     // Dispose of all the TextEditingController instances
     userNameController.dispose();

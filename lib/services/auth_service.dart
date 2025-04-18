@@ -5,7 +5,6 @@ import 'package:AXMPAY/providers/user_service_provider.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../models/user_model.dart';
-import '../utils/sharedPrefernce.dart';
 import 'api_service.dart';
 
 class AuthService {
@@ -62,8 +61,7 @@ class AuthService {
             throw Exception('Token not found in successful response');
           }
         } else if (data['status'] == 'Failed') {
-          // print("Login failed: ${data['message']}");
-          // print("Login failedzzzzzzzzzzzzzzz: ${response.data}");
+
           return response;
           throw Exception('Login failed: ${data['message']}');
         } else {

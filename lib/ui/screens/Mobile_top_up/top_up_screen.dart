@@ -8,6 +8,7 @@ import 'package:AXMPAY/ui/widgets/custom_dialog.dart';
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:AXMPAY/ui/widgets/svg_maker/svg_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../../../main.dart';
@@ -452,7 +453,8 @@ class _MobileTopUpState extends State<MobileTopUp> {
               filled: true,
               hintText: "Enter amount",
               hintStyle: TextStyle(color: Colors.grey[400]),
-              prefixIcon: Icon(Icons.currency_exchange, color: colorScheme.primary),
+              //prefixIcon: Icon(Icons.account_balance_wallet, color: colorScheme.primary),
+              prefixIcon: Icon(FontAwesomeIcons.nairaSign, color: colorScheme.primary),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -796,7 +798,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
                     type: PopupType.error,
                     context: context,
                     title: "Top-up Failed",
-                    message: resp?.message?.toString() ?? "An error occurred",
+                    message: resp?.message?.toString() ?? "An error occurred ",
                   );
                 } else {
                   Navigator.pop(context); // Close bottom sheet
@@ -823,7 +825,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
               CustomPopup.show(
                 type: PopupType.error,
                 context: context,
-                message: "An error occurred during top-up: ${e.toString()}",
+                message: "An error occurred during top-up}",
                 title: "Error",
               );
             }
@@ -1189,8 +1191,8 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
           size: ButtonSize.large,
           width: double.infinity,
         ),
-        SizedBox(height: 32.h),
-        _buildAccountInfo(widget.userp),
+        // SizedBox(height: 32.h),
+        // _buildAccountInfo(widget.userp),
 
         SizedBox(height: 16.h),
       ],

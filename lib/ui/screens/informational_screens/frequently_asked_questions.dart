@@ -216,10 +216,13 @@ class _FAQsState extends State<FAQs> with SingleTickerProviderStateMixin {
               if (_isExpanded.isEmpty) {
                 _isExpanded = List.generate(snapshot.data!.faqs!.length, (_) => false);
               }
-              return Column(
-                children: List.generate(
-                  snapshot.data!.faqs!.length,
-                      (index) => _buildFAQItem(snapshot.data!.faqs![index], index),
+              return Container(
+                margin: EdgeInsets.only(bottom: 40.h),
+                child: Column(
+                  children: List.generate(
+                    snapshot.data!.faqs!.length,
+                        (index) => _buildFAQItem(snapshot.data!.faqs![index], index),
+                  ),
                 ),
               );
             } else {

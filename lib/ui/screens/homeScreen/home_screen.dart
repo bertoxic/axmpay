@@ -637,25 +637,25 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         SizedBox(height: 16.h),
                         Text(
                           "account name",
-                          style: TextStyle(fontSize: 9.sp, color: Colors.grey[600]),
+                          style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
                         ),
                         Text(
                           "${userProvider.userdata?.fullName?.toUpperCase()??"" .toUpperCase()}",
-                          style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 8.h),
                         Text(
                           "9 Payment service bank",
-                          style: TextStyle(fontSize:14.sp, color: Colors.grey[600],fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize:18.sp, color: Colors.grey[600],fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 8.h),
                         Text(
                           "account number",
-                          style: TextStyle(fontSize: 9.sp, color: Colors.grey[600]),
+                          style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
                         ),
                         Text(
                           "${userProvider.userdata?.accountNumber}",
-                          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 16.h),
                         ElevatedButton(
@@ -673,7 +673,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         ),
                         Text(
                           "Transfer to this account number",
-                          style: TextStyle(fontSize: 9.sp, color: Colors.grey[600]),
+                          style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
                         ),
 
 

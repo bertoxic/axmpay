@@ -103,7 +103,7 @@ void _showPopup(BuildContext context, Widget dialog) {
         },
         child: dialog,
       ),
-    ).whenComplete(() {
+    ).then((_) {
       // Ensure dropdown value is reset when dialog is dismissed
       // This handles ALL dismissal cases
       widgetStateProvider.setDropdownValue(false);

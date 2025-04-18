@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import '../utils/sharedPrefernce.dart';
 
 
+
 class ApiService {
   late Dio _dio;
   String? sessionCookie;
@@ -51,13 +52,14 @@ class ApiService {
   }
 
   String _getBaseUrl() {
-    if (kIsWeb) return 'https://www.axmpay.com/api/v1/';
+    if (kIsWeb) return 'https://www.fustpay.net/app/api/v1/';
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
+        return 'https://www.fustpay.net/app/api/v1/';
       case TargetPlatform.iOS:
-        return 'https://www.axmpay.com/app/api/v1/';
+        return 'https://www.fustpay.net/app/api/v1/';
       default:
-        return 'https://www.axmpay.com/app/api/v1/';
+        return 'https://www.fustpay.net/app/api/v1/';
     }
   }
 
@@ -109,6 +111,8 @@ class ApiService {
           }else if (e.type == DioExceptionType.badResponse) {
             handleGlobalError(context, e);
             //rethrow;
+          }else if(e.type == DioExceptionType.unknown){
+            handleGlobalError(context, e);
           }else{
           handleGlobalError(context, e);}
          // rethrow;
@@ -128,14 +132,18 @@ class ApiService {
       );
 
       await _handleSessionCookie(response);
-       handleResponse(response);
+      handleResponse(response);
       return response;
     } on DioException catch (e) {
-      if (!context.mounted) rethrow;
+      if (!context.mounted) {
+        rethrow;
+      }
       _handleDioException(context, e);
       rethrow;
     } catch (e) {
-      if (!context.mounted) rethrow;
+      if (!context.mounted) {
+        rethrow;
+      }
       handleGlobalError(context, e);
       rethrow;
     }
@@ -196,17 +204,23 @@ class ApiService {
   }
 
   void handleResponse(Response response) {
+    if (response.statusCode == 200) {
+    }
     if (response.statusCode != 200) {
       if (response.statusCode == 400) {
+
         throw BadRequestException('Bad request: ${response.data}');
       } else if (response.statusCode == 401) {
+
         SharedPreferencesUtil.getInstance().then((prefs) {
-          prefs.remove("authToken");
+          prefs.remove("auth_token");
           prefs.remove("sessionCookie");
         });
         throw TokenExpiredException();
+      }else if(response.statusCode == "200"){
       }
     }
+
   }
 }
 
@@ -217,7 +231,7 @@ class ApiService {
     } else if (e.type == DioExceptionType.badResponse) {
       return HttpException('Server responded with ${e.response?.statusCode}');
     } else {
-      return Exception('An error occurred: ${e.message}');
+      return Exception('An error occurred: ${e.type}');
     }
   }
 

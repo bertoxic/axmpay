@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:AXMPAY/main.dart';
 import 'package:AXMPAY/providers/user_service_provider.dart';
+import 'package:AXMPAY/ui/widgets/custom_dialog.dart';
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:AXMPAY/utils/global_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -321,10 +323,21 @@ class _RegisterPageState extends State<RegisterPage> {
   // Keeping the existing validation and registration handling methods
   void _handleRegistration() async {
     if (_formKey.currentState!.validate()) {
+      if (!_agreedToTerms) {
+        widgetStateProvider.setDropdownValue(false);
+        CustomPopup.show(
+            context: context,
+            type: PopupType.info,
+            title: "Terms and Conditions",
+            message: "Please accept the terms and conditions to proceed"
+        );
+        return;
+      }
       setState(() => isLoading = true);
       registerDetails.password = _confirmPasswordController.text;
 
       try {
+
         String status = await userServiceProvider.createAccount(context, registerDetails);
         print(status);
 

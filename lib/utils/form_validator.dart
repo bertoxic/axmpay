@@ -62,7 +62,7 @@ class FormValidator {
     if (!RegExp(r'^\d+$').hasMatch(value)) {
       return 'Please enter only digits';
     }
-    if (value.length > 10) {
+    if (value.length > 11) {
       return 'Input must not exceed 10 digits';
     }
     return null;

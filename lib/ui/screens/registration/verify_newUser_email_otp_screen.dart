@@ -29,6 +29,7 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   String? otp;
+  String? email;
   bool _isLoading = false;
   int? _resendSeconds = 30;
 
@@ -234,6 +235,7 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
                                 setState(() => _resendSeconds = 30);
                                 _startResendTimer();
                                 // TODO: Implement resend OTP functionality
+                                  _resendOTP();
                               }
                                   : null,
                               child: Text(
@@ -269,8 +271,7 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
 
     try {
       final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
-      ResponseResult resp = await userProvider.emailVerification(context, otp!);
-      print("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz ${resp.status}");
+      ResponseResult resp = await userProvider.emailVerification(context, widget.preRegisterDetails.email, otp!);
       if (!mounted) return;
 
       if (resp.status == ResponseStatus.failed) {
@@ -282,9 +283,67 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
           context: context,
         );
       } else {
-        context.pushNamed(
-          "login",
-          pathParameters: {"email": widget.preRegisterDetails.email, "otp": otp!},
+        if (!mounted) return;
+        await CustomPopup.show(
+          backgroundColor: colorScheme.onPrimary,
+          type: PopupType.success,
+          title: "Verification Successful",
+          message: "${resp.message}.",
+          context: context,
+        );
+
+        if (!mounted) return;
+
+        // The loading indicator might confuse users since the verification is already done
+
+        Future.delayed(const Duration(seconds: 3), () {
+          // Check if widget is still mounted before navigating
+          if (mounted) {
+            context.goNamed(
+              "login",
+              // queryParameters: {"email": widget.preRegisterDetails.email},
+            );
+          }
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      await CustomPopup.show(
+        backgroundColor: colorScheme.onPrimary,
+        type: PopupType.error,
+        title: "Error",
+        message: "An unexpected error occurred. Please try again later. $e",
+        context: context,
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _resendOTP() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final userProvider = Provider.of<UserServiceProvider>(context, listen: false);
+      ResponseResult resp = await userProvider.resendOtp(context, widget.preRegisterDetails.email);
+
+      if (!mounted) return;
+
+      if (resp.status == ResponseStatus.failed) {
+        await CustomPopup.show(
+          backgroundColor: colorScheme.onPrimary,
+          type: PopupType.error,
+          title: "Resend Failed",
+          message: "${resp.message}.",
+          context: context,
+        );
+      } else {
+        await CustomPopup.show(
+          backgroundColor: colorScheme.onPrimary,
+          type: PopupType.success,
+          title: "OTP Sent",
+          message: "A new OTP has been sent to your email.",
+          context: context,
         );
       }
     } catch (e) {
@@ -299,4 +358,5 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
 }

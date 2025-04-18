@@ -1,191 +1,294 @@
-import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-
 import '../../../models/transaction_model.dart';
+import '../../../utils/pdf_and_image_generator/dowload_receipt.dart';
 
 class TransactionDetailScreen extends StatelessWidget {
+  final GlobalKey receiptKey = GlobalKey();
   final SpecificTransactionData transaction;
-
-  const TransactionDetailScreen({super.key, required this.transaction});
+   TransactionDetailScreen({super.key, required this.transaction});
 
   @override
   Widget build(BuildContext context) {
+    final isCredit = transaction.type.toLowerCase() == 'credit';
+    final themeColor = isCredit
+        ? const Color(0xFF0A8754)  // Rich green for credit
+        : const Color(0xFFE63946); // Modern red for debit
+
+    // Set status bar color to match theme
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ));
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.grey[50],
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(
-          'Transaction Details',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-          ),
-        ),
         elevation: 0,
-        centerTitle: true,
         backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.arrow_back, size: 20, color: Colors.black87),
             ),
-            child: const Icon(Icons.arrow_back, size: 20),
+            onPressed: () => Navigator.pop(context),
           ),
-          onPressed: () => Navigator.pop(context),
         ),
-      ),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: constraints.maxWidth * 0.04,
-                  vertical: 16.h,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                child: Container(
-                  constraints: BoxConstraints(
-                    maxWidth: 600,
-                  ),
-                  decoration: BoxDecoration(
-                    // color: Colors.white,
-                    // borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildHeader(constraints),
-                      SizedBox(
-                        height: 16.h,
-                      ),
-                      _buildDetailsList(constraints),
-                      SizedBox(height: 16.h),
-                    ],
-                  ),
+                child: const Icon(Icons.share_outlined, size: 20, color: Colors.black87),
+              ),
+              onPressed: () {
+                // Share transaction details
+              },
+            ),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: RepaintBoundary(
+          key: receiptKey,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              child: Container(
+                color: Colors.white,
+                child: Column(
+                  children: [
+                    _buildTransactionStatus(themeColor, isCredit),
+                    const SizedBox(height: 16),
+                    _buildAmountDisplay(themeColor, isCredit),
+                    const SizedBox(height: 32),
+                    _buildInfoCards(context, themeColor),
+                    const SizedBox(height: 24),
+                    _buildActionButtons(context, themeColor),
+                  ],
                 ),
               ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     );
   }
-
-  Widget _buildHeader(BoxConstraints constraints) {
-    double? transactionAmount =
-    double.tryParse(transaction.amount?.toString() ?? '0');
-    final formatter = NumberFormat.currency(locale: 'en_US', symbol: '₦');
-    final isCredit = transaction.type.toLowerCase() == 'credit';
-    final baseColor =
-    isCredit ? const Color(0xFF2E7D32) :
-    const Color(0xFFD32F2F);
-
+  Widget _buildTransactionStatus(Color themeColor, bool isCredit) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(constraints.maxWidth * 0.06),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            baseColor.withOpacity(0.95),
-            baseColor,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(28),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: baseColor.withOpacity(0.25),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 15,
+            spreadRadius: 1,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Transaction status icon
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isCredit
+                  ? Colors.green.withOpacity(0.8)
+                  : Colors.red.withOpacity(0.8),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isCredit ? Icons.arrow_downward : Icons.arrow_upward,
+              color: isCredit ? Colors.white.withOpacity(0.9) : Colors.white.withOpacity(0.9),
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // Transaction details
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                isCredit ? 'Funds Received' : 'Payment Sent',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                  letterSpacing: 0.3,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+    DateFormat('d MMM yyy,  HH:mma').format(transaction.timeCreated) ?? 'Just now',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey[500],
+                ),
+              ),
+            ],
+          ),
+
+          const Spacer(),
+
+          // Status indicator
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: isCredit
+                  ? Colors.green.withOpacity(0.1)
+                  : Colors.orange.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              isCredit ? 'Completed' : 'Sent',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: isCredit ? Colors.green[700] : Colors.orange[700],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  Widget _buildTransactionStatusx(Color themeColor, bool isCredit) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
             blurRadius: 20,
+            spreadRadius: 2,
             offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Column(
         children: [
-          // Transaction Icon with Animated Background
+          //Status icon with animated gradient background
           Container(
-            padding: EdgeInsets.all(16.w),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
+              gradient: LinearGradient(
+                colors: [
+                  themeColor.withOpacity(0.8),
+                  themeColor.withOpacity(0.6),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               shape: BoxShape.circle,
-              border:
-              Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: themeColor.withOpacity(0.3),
+                  blurRadius: 12,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Icon(
-              isCredit ? Icons.account_balance_wallet : Icons.payment,
+              isCredit ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
               color: Colors.white,
-              size: constraints.maxWidth * 0.08,
+              size: 32,
             ),
           ),
-          SizedBox(height: 20.h),
+          const SizedBox(height: 20),
 
-          // Amount Display
-          Text(
-            '${isCredit ? '+' : '-'} ${formatter.format(transactionAmount)}',
-            style: TextStyle(
-              fontSize: constraints.maxWidth * 0.08,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 0.5,
-            ),
-          ),
-          SizedBox(height: 16.h),
-
-          // Transaction Type Pill
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(30),
-              border:
-              Border.all(color: Colors.white.withOpacity(0.3), width: 1),
-            ),
-            child: Text(
-              transaction.action,
-              style: TextStyle(
-                fontSize: constraints.maxWidth * 0.04,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-          SizedBox(height: 16.h),
-
-          // Date and Time with Icon
+         // Transaction status with visual indicator
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.access_time,
-                color: Colors.white.withOpacity(0.9),
-                size: constraints.maxWidth * 0.04,
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _getStatusColor(transaction.status),
+                ),
               ),
-              SizedBox(width: 8.w),
+              const SizedBox(width: 8),
               Text(
-                DateFormat('MMMM d, yyyy • HH:mm')
-                    .format(transaction.timeCreated),
+                transaction.status,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: constraints.maxWidth * 0.035,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: _getStatusColor(transaction.status),
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Transaction type with subtle divider
+          Column(
+            children: [
+              Divider(
+                color: Colors.grey.withOpacity(0.2),
+                thickness: 1,
+                indent: 60,
+                endIndent: 60,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                isCredit ? 'Funds Received' : 'Payment Sent',
+                style: TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.w500,
+                  color: Colors.grey[700],
+                  letterSpacing: 0.3,
+                ),
+              ),
+
+              // Optional: Add timestamp
+              const SizedBox(height: 6),
+              Text(
+                transaction.timeCreated.toString() ?? 'Just now',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[500],
                 ),
               ),
             ],
@@ -195,164 +298,213 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailsList(BoxConstraints constraints) {
-    double? balAfter = double.tryParse(transaction.balAfter?.toString() ?? '0');
-    double? transactionFee =
-    double.tryParse(transaction.fee?.toString() ?? '0');
-    double? totalAmt =
-    double.tryParse(transaction.totalAmount?.toString() ?? '0');
+  Widget _buildAmountDisplay(Color themeColor, bool isCredit) {
+    double? transactionAmount = double.tryParse(transaction.amount?.toString() ?? '0');
     final formatter = NumberFormat.currency(locale: 'en_US', symbol: '₦');
 
     return Container(
-      padding: EdgeInsets.all(constraints.maxWidth * 0.05),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(16),
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-          bottomRight: Radius.circular(16),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionTitle('Transaction Information', constraints),
-          SizedBox(height: 16.h),
-          _buildDetailItem('Transaction ID:', transaction.trxID, constraints),
-          _buildDetailDivider(),
-          _buildDetailItem(
-            (transaction.action == "Data" || transaction.action == "Airtime")
-                ? "Description:"
-                : "Account:",
-            transaction.accountName,
-            constraints,
-          ),
-          _buildDetailDivider(),
-          _buildDetailItem('Status:', transaction.status, constraints,
-              isStatus: true),
-          _buildDetailDivider(),
-          _buildDetailItem('Type:', transaction.type, constraints),
-          SizedBox(height: 24.h),
-          _buildSectionTitle('Financial Details', constraints),
-          SizedBox(height: 16.h),
-          _buildDetailItem(
-              'Fee:', formatter.format(transactionFee), constraints),
-          _buildDetailDivider(),
-          _buildDetailItem(
-              'Total Amount:', formatter.format(totalAmt), constraints),
-          _buildDetailDivider(),
-          _buildDetailItem(
-              'Balance After:', formatter.format(balAfter), constraints),
-          SizedBox(height: 24.h),
-          _buildSectionTitle('Additional Information', constraints),
-          SizedBox(height: 16.h),
-          _buildDetailItem('Narration:', transaction.narration, constraints),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title, BoxConstraints constraints) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: constraints.maxWidth * 0.045,
-        fontWeight: FontWeight.bold,
-        color: Colors.black87,
-      ),
-    );
-  }
-
-  Widget _buildDetailDivider() {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.h),
-      child: Divider(
-        color: Colors.grey[200],
-        thickness: 1,
-      ),
-    );
-  }
-
-  Widget _buildDetailItem(
-      String label, String value, BoxConstraints constraints,
-      {bool isStatus = false}) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              label,
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: constraints.maxWidth * 0.035,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: isStatus
-                ? buildStatusChip(value, constraints)
-                : Text(
-              value,
-              style: TextStyle(
-                fontSize: constraints.maxWidth * 0.04,
-                color: Colors.black87,
-                fontWeight: FontWeight.w500,
-              ),
-              softWrap: true,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildStatusChip(String status, BoxConstraints constraints) {
-    final statusConfig = _getStatusConfig(status);
-
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: constraints.maxWidth * 0.03,
-        vertical: 6,
-      ),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            statusConfig.color.withOpacity(0.8),
-            statusConfig.color,
+            themeColor.withOpacity(0.95),
+            themeColor,
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: statusConfig.color.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: themeColor.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Column(
         children: [
-          Icon(
-            statusConfig.icon,
-            color: Colors.white,
-            size: constraints.maxWidth * 0.035,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: Text(
+              transaction.action,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
-          SizedBox(width: 4.w),
+          const SizedBox(height: 20),
           Text(
-            status,
-            style: TextStyle(
+            '${isCredit ? '+' : '-'} ${formatter.format(transactionAmount)}',
+            style: const TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
               color: Colors.white,
-              fontSize: constraints.maxWidth * 0.035,
-              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.calendar_today_outlined,
+                color: Colors.white,
+                size: 14,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                DateFormat('MMMM d, yyyy • HH:mm').format(transaction.timeCreated),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCards(BuildContext context, Color themeColor) {
+    double? balAfter = double.tryParse(transaction.balAfter?.toString() ?? '0');
+    double? transactionFee = double.tryParse(transaction.fee?.toString() ?? '0');
+    double? totalAmt = double.tryParse(transaction.totalAmount?.toString() ?? '0');
+    final formatter = NumberFormat.currency(locale: 'en_US', symbol: '₦');
+
+    return Column(
+      children: [
+        _buildInfoCard(
+          'Transaction Details',
+          [
+            _buildInfoRow('Transaction ID', transaction.trxID),
+            _buildInfoRow('Type', transaction.type),
+            _buildInfoRow(
+                (transaction.action == "Data" || transaction.action == "Airtime")
+                    ? "Description"
+                    : "Account",
+                transaction.accountName),
+          ],
+          leading: Icons.receipt_long_rounded,
+          themeColor: themeColor,
+        ),
+        const SizedBox(height: 16),
+        _buildInfoCard(
+          'Financial Details',
+          [
+            _buildInfoRow('Fee', formatter.format(transactionFee)),
+            _buildInfoRow('Total Amount', formatter.format(totalAmt)),
+            _buildInfoRow('Balance After', formatter.format(balAfter)),
+          ],
+          leading: Icons.account_balance_wallet_outlined,
+          themeColor: themeColor,
+        ),
+        const SizedBox(height: 16),
+        _buildInfoCard(
+          'Additional Information',
+          [
+            _buildInfoRow('Narration', transaction.narration),
+          ],
+          leading: Icons.info_outline_rounded,
+          themeColor: themeColor,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoCard(
+      String title,
+      List<Widget> details, {
+        required IconData leading,
+        required Color themeColor,
+      }) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: themeColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    leading,
+                    color: themeColor,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(children: details),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              '$label:',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
             ),
           ),
         ],
@@ -360,23 +512,87 @@ class TransactionDetailScreen extends StatelessWidget {
     );
   }
 
-  StatusConfig _getStatusConfig(String status) {
+  Widget _buildActionButtons(BuildContext context, Color themeColor) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            onPressed: () async{
+              await downloadTransactionReceipt(
+              transaction: transaction,
+              context: context,
+              receiptKey: receiptKey,
+              format: 'image', // or 'image'
+              );
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: themeColor,
+              side: BorderSide(color: themeColor),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.image, size: 18, color: themeColor),
+                const SizedBox(width: 8),
+                const Text(
+                  'Download Image',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () async{
+              await downloadTransactionReceipt(
+                transaction: transaction,
+                context: context,
+                receiptKey: receiptKey,
+                format: 'pdf', // or 'image'
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: themeColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.picture_as_pdf_rounded, size: 18),
+                const SizedBox(width: 8),
+                const Text(
+                  'Download pdf',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'success':
-        return StatusConfig(Colors.green, Icons.check_circle);
+        return const Color(0xFF0A8754);
       case 'pending':
-        return StatusConfig(Colors.orange, Icons.access_time);
+        return const Color(0xFFF9A826);
       case 'failed':
-        return StatusConfig(Colors.red, Icons.error);
+        return const Color(0xFFE63946);
       default:
-        return StatusConfig(Colors.grey, Icons.info);
+        return Colors.grey;
     }
   }
-}
-
-class StatusConfig {
-  final Color color;
-  final IconData icon;
-
-  StatusConfig(this.color, this.icon);
 }

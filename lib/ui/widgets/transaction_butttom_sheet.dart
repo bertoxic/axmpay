@@ -144,35 +144,35 @@ class _BottomTransactionConfirmSheetContentState extends State<BottomTransaction
               ),
             ),
           ),
-          SizedBox(height: 24.h),
-          Container(
-            padding: EdgeInsets.all(16.sp),
-            decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: colorScheme.primary.withOpacity(0.2)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.account_balance_wallet, color: colorScheme.primary, size: 20.sp),
-                    SizedBox(width: 8.w),
-                    AppText.body("Source Account",
-                        style: TextStyle(fontSize: 14.sp, color: Colors.grey[600])),
-                  ],
-                ),
-                SizedBox(height: 12.h),
-                AppText.body("${widget.transactionModel?.senderAccountName}",
-                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
-                SizedBox(height: 4.h),
-                AppText.body("${widget.transactionModel?.senderAccountNumber}",
-                    style: TextStyle(fontSize: 14.sp, color: Colors.grey[600])),
-              ],
-            ),
-          ),
-          SizedBox(height: 80.h),
+          SizedBox(height: 32.h),
+          // Container(
+          //   padding: EdgeInsets.all(16.sp),
+          //   decoration: BoxDecoration(
+          //     color: Colors.blue.withOpacity(0.1),
+          //     borderRadius: BorderRadius.circular(16),
+          //     border: Border.all(color: colorScheme.primary.withOpacity(0.2)),
+          //   ),
+          //   child: Column(
+          //     crossAxisAlignment: CrossAxisAlignment.start,
+          //     children: [
+          //       Row(
+          //         children: [
+          //           Icon(Icons.account_balance_wallet, color: colorScheme.primary, size: 20.sp),
+          //           SizedBox(width: 8.w),
+          //           AppText.body("Source Account",
+          //               style: TextStyle(fontSize: 14.sp, color: Colors.grey[600])),
+          //         ],
+          //       ),
+          //       SizedBox(height: 12.h),
+          //       AppText.body("${widget.transactionModel?.senderAccountName}",
+          //           style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+          //       SizedBox(height: 4.h),
+          //       AppText.body("${widget.transactionModel?.senderAccountNumber}",
+          //           style: TextStyle(fontSize: 14.sp, color: Colors.grey[600])),
+          //     ],
+          //   ),
+          // ),
+          // SizedBox(height: 80.h),
         ],
       ),
     );

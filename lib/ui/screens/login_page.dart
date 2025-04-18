@@ -1,22 +1,14 @@
 import 'dart:convert';
-
-import 'package:AXMPAY/main.dart';
-import 'package:AXMPAY/models/ResponseModel.dart';
-import 'package:AXMPAY/providers/user_service_provider.dart';
-import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
-import 'package:dio/dio.dart';
+import 'package:AXMPAY/utils/global_error_handler.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:AXMPAY/constants/text_constants.dart';
-import 'package:AXMPAY/ui/widgets/custom_buttons.dart';
-import 'package:AXMPAY/ui/widgets/custom_container.dart';
-import 'package:AXMPAY/ui/widgets/custom_textfield.dart';
 
+import '../../models/ResponseModel.dart';
 import '../../models/user_model.dart';
 import '../../providers/authentication_provider.dart';
+import '../../providers/user_service_provider.dart';
 import '../widgets/custom_dialog.dart';
 import '../widgets/svg_maker/svg_icon.dart';
 
@@ -27,8 +19,7 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage>
-    with SingleTickerProviderStateMixin {
+class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -63,280 +54,281 @@ class _LoginPageState extends State<LoginPage>
     final keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
-      body: Stack(children: [
-        // Custom Background with Curved Division
-        CustomPaint(
-          size: Size(size.width, size.height),
-          painter: BackgroundPainter(
-            primaryColor: Theme.of(context).colorScheme.primary,
+      body: Stack(
+        children: [
+          // Custom Background with Curved Division
+          CustomPaint(
+            size: Size(size.width, size.height),
+            painter: BackgroundPainter(
+              primaryColor: Theme.of(context).colorScheme.primary,
+            ),
           ),
-        ),
-        // Main Content
-        SafeArea(
-          child: Column(
-            children: [
-              SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    left: 24.w,
-                    right: 24.w,
-                    bottom: MediaQuery.of(context).viewInsets.bottom,
-                  ),
-                  child: Container(
-                    constraints: BoxConstraints(
-                      minHeight:
-                      size.height - MediaQuery.of(context).padding.top,
+          // Main Content
+          SafeArea(
+            child: Column(
+              children: [
+                SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: 24,
+                      right: 24,
+                      bottom: MediaQuery.of(context).viewInsets.bottom,
                     ),
-                    child: Form(
-                      key: _formKey,
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          // Calculate available height
-                          final availableHeight = constraints.maxHeight;
-                          final isSmallScreen = availableHeight < 600;
+                    child: Container(
+                      constraints: BoxConstraints(
+                        minHeight: size.height - MediaQuery.of(context).padding.top,
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            // Calculate available height
+                            final availableHeight = constraints.maxHeight;
+                            final isSmallScreen = availableHeight < 600;
 
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Logo section with adaptive sizing
-                              SizedBox(height: isSmallScreen ? 20.h : 40.h),
-                              if (!keyboardVisible)
-                                Center(
-                                  child: TweenAnimationBuilder(
-                                    tween: Tween<double>(begin: 0, end: 1),
-                                    duration: const Duration(milliseconds: 1200),
-                                    builder: (context, double value, child) {
-                                      return Transform.scale(
-                                        scale: value,
-                                        child: Container(
-                                          width: isSmallScreen ? 90.w : 120.w,
-                                          height: isSmallScreen ? 90.h : 120.h,
-                                          padding: EdgeInsets.all(isSmallScreen ? 8.w : 12.w),
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(30),
-                                          ),
-                                          child: SvgIcon(
-                                            "assets/images/axmpay_logo.svg",
-                                            color: Colors.grey.shade200,
-                                            width: 24.w,
-                                            height: 40.h,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-
-                              // Welcome text with adaptive spacing
-                              SizedBox(height: isSmallScreen ? 12.h : 32.h),
-                              if (!keyboardVisible && !isSmallScreen)
-                                FadeTransition(
-                                  opacity: _fadeAnimation,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Welcome back!',
-                                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                          fontSize: isSmallScreen ? 24.sp : 32.sp,
-                                          shadows: [
-                                            Shadow(
-                                              color: Colors.black.withOpacity(0.1),
-                                              offset: const Offset(2, 2),
-                                              blurRadius: 4,
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Logo section with adaptive sizing
+                                SizedBox(height: isSmallScreen ? 20 : 40),
+                                if (!keyboardVisible)
+                                  Center(
+                                    child: TweenAnimationBuilder(
+                                      tween: Tween<double>(begin: 0, end: 1),
+                                      duration: const Duration(milliseconds: 1200),
+                                      builder: (context, double value, child) {
+                                        return Transform.scale(
+                                          scale: value,
+                                          child: Container(
+                                            width: isSmallScreen ? 90 : 120,
+                                            height: isSmallScreen ? 90 : 120,
+                                            padding: EdgeInsets.all(isSmallScreen ? 8 : 12),
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(30),
                                             ),
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(height: 8.h),
-                                      Text(
-                                        'Please sign in to continue.',
-                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                          color: Colors.white.withOpacity(0.9),
-                                          fontSize: isSmallScreen ? 14.sp : 16.sp,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                              // Form fields section with adaptive spacing
-                              SizedBox(height: isSmallScreen ? 16.h : 40.h),
-
-                              // Email field
-                              buildTextField(
-                                controller: _emailController,
-                                labelText: 'Email',
-                                hintText: 'Enter your email address',
-                                prefixIcon: Icons.email_outlined,
-                                keyboardType: TextInputType.emailAddress,
-                                validator: validateEmail,
-                              ),
-
-                              SizedBox(height: isSmallScreen ? 16.h : 20.h),
-
-                              // Password field
-                              buildTextField(
-                                controller: _passwordController,
-                                labelText: 'Password',
-                                hintText: 'Enter your password',
-                                prefixIcon: Icons.lock_outline,
-                                obscureText: _obscurePassword,
-                                validator: validatePassword,
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                                    color: Colors.white.withOpacity(0.7),
-                                  ),
-                                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                                ),
-                              ),
-
-                              SizedBox(height: 8.h),
-
-                              // Forgot password with improved visibility
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  color: Colors.black.withOpacity(0.15),
-                                ),
-                                margin: EdgeInsets.only(left: size.width * 0.5),
-                                child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton.icon(
-                                    icon: Icon(
-                                      Icons.lock_reset,
-                                      size: 16.sp,
-                                      color: Colors.white.withOpacity(0.9),
-                                    ),
-                                    onPressed: () => context.pushNamed("forgot_password_input_mail"),
-                                    label: Text(
-                                      'Forgot password?',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                        shadows: [
-                                          Shadow(
-                                            color: Colors.black.withOpacity(0.3),
-                                            offset: const Offset(1, 1),
-                                            blurRadius: 2,
+                                            child: SvgIcon(
+                                              "assets/images/axmpay_logo.svg",
+                                              color: Colors.grey.shade200,
+                                              width: 24,
+                                              height: 40,
+                                            ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 8.w),
+                                        );
+                                      },
                                     ),
                                   ),
-                                ),
-                              ),
 
-                              // Login button with adaptive spacing
-                              SizedBox(height: isSmallScreen ? 40.h : 80.h),
-
-                              // Login button implementation
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      Colors.white,
-                                      Colors.white.withOpacity(0.9),
-                                    ],
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 10,
-                                      spreadRadius: 0,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          elevation: 0,
-                                          backgroundColor: colorScheme.primary,
-                                          foregroundColor: Theme.of(context).colorScheme.primary,
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: isSmallScreen ? 12.h : 16.h,
-                                              horizontal: 16.w
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(16),
-                                          ),
-                                        ),
-                                        onPressed: _isLoading ? null : () => _handleLogin(authProvider),
-                                        child: _isLoading
-                                            ? const CircularProgressIndicator(
-                                          color: Colors.deepPurple,
-                                          strokeWidth: 2,
-                                        )
-                                            : Text(
-                                          'Sign In',
-                                          style: TextStyle(
-                                            fontSize: isSmallScreen ? 16.sp : 18.sp,
-                                            fontWeight: FontWeight.w600,
-                                            color: Theme.of(context).colorScheme.onPrimary,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              // Sign up link with adaptive spacing
-                              SizedBox(height: isSmallScreen ? 16.h : 32.h),
-
-                              // Sign up implementation
-                              Center(
-                                child: TextButton(
-                                  onPressed: () => context.pushNamed("register"),
-                                  child: RichText(
-                                    text: TextSpan(
-                                      text: "Don't have an account? ",
-                                      style: TextStyle(
-                                        color: colorScheme.primary.withOpacity(0.9),
-                                        fontSize: 14.sp,
-                                      ),
+                                // Welcome text with adaptive spacing
+                                SizedBox(height: isSmallScreen ? 12 : 32),
+                                if (!keyboardVisible && !isSmallScreen)
+                                  FadeTransition(
+                                    opacity: _fadeAnimation,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        TextSpan(
-                                          text: "Sign up",
-                                          style: TextStyle(
-                                            color: colorScheme.primary,
+                                        Text(
+                                          'Welcome back!',
+                                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 14.sp,
+                                            color: Colors.white,
+                                            fontSize: isSmallScreen ? 24 : 32,
+                                            shadows: [
+                                              Shadow(
+                                                color: Colors.black.withOpacity(0.1),
+                                                offset: const Offset(2, 2),
+                                                blurRadius: 4,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(height: 8),
+                                        Text(
+                                          'Please sign in to continue.',
+                                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                            color: Colors.white.withOpacity(0.9),
+                                            fontSize: isSmallScreen ? 14 : 16,
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                ),
-                              ),
 
-                              SizedBox(height: 16.h),
-                            ],
-                          );
-                        },
+                                // Form fields section with adaptive spacing
+                                SizedBox(height: isSmallScreen ? 16 : 40),
+
+                                // Email field
+                                buildTextField(
+                                  controller: _emailController,
+                                  labelText: 'Email',
+                                  hintText: 'Enter your email address',
+                                  prefixIcon: Icons.email_outlined,
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: validateEmail,
+                                ),
+
+                                SizedBox(height: isSmallScreen ? 16 : 20),
+
+                                // Password field
+                                buildTextField(
+                                  controller: _passwordController,
+                                  labelText: 'Password',
+                                  hintText: 'Enter your password',
+                                  prefixIcon: Icons.lock_outline,
+                                  obscureText: _obscurePassword,
+                                  validator: validatePassword,
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                      color: Colors.white.withOpacity(0.7),
+                                    ),
+                                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                  ),
+                                ),
+
+                                SizedBox(height: 8),
+
+                                // Forgot password with improved visibility
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    color: Colors.black.withOpacity(0.15),
+                                  ),
+                                  margin: EdgeInsets.only(left: size.width * 0.5),
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton.icon(
+                                      icon: Icon(
+                                        Icons.lock_reset,
+                                        size: 16,
+                                        color: Colors.white.withOpacity(0.9),
+                                      ),
+                                      onPressed: () => context.pushNamed("forgot_password_input_mail"),
+                                      label: Text(
+                                        'Forgot password?',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                          shadows: [
+                                            Shadow(
+                                              color: Colors.black.withOpacity(0.3),
+                                              offset: const Offset(1, 1),
+                                              blurRadius: 2,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      style: TextButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                // Login button with adaptive spacing
+                                SizedBox(height: isSmallScreen ? 40 : 80),
+
+                                // Login button implementation
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Colors.white,
+                                        Colors.white.withOpacity(0.9),
+                                      ],
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 10,
+                                        spreadRadius: 0,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            elevation: 0,
+                                            backgroundColor: Theme.of(context).colorScheme.primary,
+                                            foregroundColor: Theme.of(context).colorScheme.primary,
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: isSmallScreen ? 12 : 16,
+                                              horizontal: 16,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(16),
+                                            ),
+                                          ),
+                                          onPressed: _isLoading ? null : () => _handleLogin(authProvider),
+                                          child: _isLoading
+                                              ? const CircularProgressIndicator(
+                                            color: Colors.deepPurple,
+                                            strokeWidth: 2,
+                                          )
+                                              : Text(
+                                            'Sign In',
+                                            style: TextStyle(
+                                              fontSize: isSmallScreen ? 16 : 18,
+                                              fontWeight: FontWeight.w600,
+                                              color: Theme.of(context).colorScheme.onPrimary,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                // Sign up link with adaptive spacing
+                                SizedBox(height: isSmallScreen ? 16 : 32),
+
+                                // Sign up implementation
+                                Center(
+                                  child: TextButton(
+                                    onPressed: () => context.pushNamed("register"),
+                                    child: RichText(
+                                      text: TextSpan(
+                                        text: "Don't have an account? ",
+                                        style: TextStyle(
+                                          color: Theme.of(context).colorScheme.primary.withOpacity(0.9),
+                                          fontSize: 14,
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: "Sign up",
+                                            style: TextStyle(
+                                              color: Theme.of(context).colorScheme.primary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                SizedBox(height: 16),
+                              ],
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ]),
+        ],
+      ),
     );
   }
 
@@ -373,7 +365,7 @@ class _LoginPageState extends State<LoginPage>
         keyboardType: keyboardType,
         validator: validator,
         style: TextStyle(
-          fontSize: 16.sp,
+          fontSize: 16,
           color: Colors.white,
         ),
         decoration: InputDecoration(
@@ -421,15 +413,14 @@ class _LoginPageState extends State<LoginPage>
           ),
           filled: true,
           fillColor: Colors.white.withOpacity(0.1),
-          contentPadding:
-          EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
       ),
     );
   }
 
-  // Validation methods and login handler remain the same
   String? validateEmail(String? value) {
+    value = value?.trim();
     if (value == null || value.isEmpty) {
       return 'Email is required';
     }
@@ -440,6 +431,7 @@ class _LoginPageState extends State<LoginPage>
   }
 
   String? validatePassword(String? value) {
+    value = value?.trim();
     if (value == null || value.isEmpty) {
       return 'Password is required';
     }
@@ -449,74 +441,100 @@ class _LoginPageState extends State<LoginPage>
     return null;
   }
 
-  void _handleLogin(AuthenticationProvider authProvider) async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+  Future<void> _handleLogin(AuthenticationProvider authProvider) async {
+    if (!_formKey.currentState!.validate()) return;
 
-      LoginDetails userDetails = LoginDetails(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
+    setState(() => _isLoading = true);
 
-      try {
-        var resp = await authProvider.login(context, userDetails);
-        if (!mounted) return;
+    final userDetails = LoginDetails(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
 
-        UserServiceProvider userServiceProvider =
-        Provider.of<UserServiceProvider>(context, listen: false);
+    try {
+      final resp = await authProvider.login(context, userDetails);
 
-        if (resp == null) {
-          throw Exception('Login response is null');
-        }
+      if (!mounted) return;
 
-        if (resp.status == ResponseStatus.failed) {
-          CustomPopup.show(
-            type: PopupType.error,
-            context: context,
-            message: resp.message,
-            title: "Login Failed",
-          );
-          return;
-        }
+      final userServiceProvider = Provider.of<UserServiceProvider>(context, listen: false);
 
-        if (userServiceProvider.userdata?.userStatus.toString().toLowerCase() ==
-            "confirmed") {
-          const storage = FlutterSecureStorage();
-          String? passCodeMapString = await storage.read(key: 'passcodeMap');
+      if (resp == null) {
+        throw Exception('Login response is null');
+      }
 
-          if (passCodeMapString == null) {
-            context.pushNamed(
-              'passcode_setup_screen',
-              pathParameters: {'email': userDetails.email ?? ""},
-            );
-          } else {
-            var passCodeMap = jsonDecode(passCodeMapString);
-            if (passCodeMap["email"] == userDetails.email) {
-              context.goNamed("/home");
-            } else {
-              context.pushNamed(
-                'passcode_setup_screen',
-                pathParameters: {'email': userDetails.email ?? ""},
-              );
-            }
-          }
-        } else {
-          context.goNamed("user_details_page");
-        }
-      } catch (e) {
-        if (!mounted) return;
-        CustomPopup.show(
-          type: PopupType.error,
-          context: context,
-          message: 'Login failed: ${e.toString()}',
-          title: "Error",
-        );
-      } finally {
-        if (mounted) {
-          setState(() => _isLoading = false);
-        }
+      if (resp.status == ResponseStatus.failed) {
+
+        //if (widgetStateProvider.dropdownValue){
+        await _showLoginFailedPopup(resp.message);
+
+        //  return;
+       // }
+       return;
+      }
+
+      await _handleUserNavigation(userServiceProvider, userDetails);
+
+    } catch (e) {
+      if (!mounted) return;
+
+      await _showErrorPopup(e);
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
+  }
+
+  Future<void> _showLoginFailedPopup(String message) async {
+
+    await CustomPopup.show(
+      type: PopupType.error,
+      context: context,
+      message: message,
+      title: "Login Failed",
+    );
+    print("ddddddddddddddddddddddddddddddddd");
+
+  }
+
+  Future<void> _showErrorPopup(Object e) async {
+    await CustomPopup.show(
+      type: PopupType.error,
+      context: context,
+      message: 'Login failed: ${e.runtimeType}',
+      title: "Error",
+    );
+  }
+
+  Future<void> _handleUserNavigation(
+      UserServiceProvider userServiceProvider,
+      LoginDetails userDetails
+      ) async {
+    if (userServiceProvider.userdata?.userStatus.toString().toLowerCase() == "confirmed") {
+      final storage = FlutterSecureStorage();
+      final passCodeMapString = await storage.read(key: 'passcodeMap');
+
+      if (passCodeMapString == null) {
+        _navigateToPasscodeSetup(userDetails.email);
+      } else {
+        final passCodeMap = jsonDecode(passCodeMapString);
+
+        if (passCodeMap["email"] == userDetails.email) {
+          context.goNamed("/home");
+        } else {
+          _navigateToPasscodeSetup(userDetails.email);
+        }
+      }
+    } else {
+      context.pushNamed("user_details_page");
+    }
+  }
+
+  void _navigateToPasscodeSetup(String? email) {
+    context.pushNamed(
+      'passcode_setup_screen',
+      pathParameters: {'email': email ?? ""},
+    );
   }
 }
 
@@ -576,7 +594,6 @@ class BackgroundPainter extends CustomPainter {
         colors: [
           primaryColor.withOpacity(0.3),
           primaryColor.withOpacity(0.1),
-          //Colors.white.withOpacity(0.9),
         ],
       ).createShader(
         Rect.fromLTWH(0, curveHeight - 20, size.width, 40),
@@ -602,7 +619,7 @@ class BackgroundPainter extends CustomPainter {
           Colors.white,
         ],
       ).createShader(
-          Rect.fromLTWH(0, curveHeight, size.width, size.height - curveHeight)
+        Rect.fromLTWH(0, curveHeight, size.width, size.height - curveHeight),
       );
 
     final bottomPath = Path()

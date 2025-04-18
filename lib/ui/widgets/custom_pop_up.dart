@@ -96,6 +96,7 @@ class ScrollablePopup extends StatelessWidget {
     double maxHeight = 0.8,
     double borderRadius = 12.0,
   }) {
+
     // Only show if no popup is currently displayed
     if (!widgetStateProvider.dropdownValue) {
       widgetStateProvider.setDropdownValue(true);

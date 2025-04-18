@@ -1,7 +1,9 @@
 import 'package:AXMPAY/main.dart';
+import 'package:AXMPAY/routes/router.dart';
 import 'package:AXMPAY/ui/screens/passcode_screen/passcode_provider.dart';
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class PasscodeSetupScreen extends StatelessWidget {
@@ -230,11 +232,14 @@ class _PasscodeSetupScreenContent extends StatelessWidget {
         onPressed: model.passcode.length == 4 && model.confirmedPasscode.length == 4 && model.passcode == model.confirmedPasscode
             ? () async {
           await model.savePasscode(email);
+          if (!context.mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('PIN set successfully!')),
           );
           model.resetAndClearPassCodeField();
-          Navigator.of(context).pop();
+          if (!context.mounted) return;
+          //Navigator.of(context).pop();
+          context.goNamed("/home");
         }
             : null,
         style: ElevatedButton.styleFrom(

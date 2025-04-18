@@ -1,14 +1,13 @@
 buildscript {
-    ext.kotlin_version = '2.1.0'
+    ext.kotlin_version = '1.9.10' // a valid Kotlin version
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.10"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version" // Use the variable
         classpath 'com.android.tools.build:gradle:8.1.0'
-
     }
 }
 
@@ -30,3 +29,17 @@ subprojects {
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
+
+//allprojects {
+//    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+//        kotlinOptions {
+//            jvmTarget = "17"
+//        }
+//    }
+//}
+
+//subprojects {
+//    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+//        kotlinOptions.jvmTarget = "17"
+//    }
+//}

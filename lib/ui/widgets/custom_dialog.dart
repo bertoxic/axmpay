@@ -1,10 +1,16 @@
-import 'package:AXMPAY/main.dart';
 import 'package:flutter/material.dart';
-import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
-import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/Custom_Widget_State_Provider.dart';
 
 enum PopupType { info, success, warning, error }
+class PopupAction {
+  final String text;
+  final VoidCallback onPressed;
+  final Color? color;
 
+  PopupAction({required this.text, required this.onPressed, this.color});
+}
 class CustomPopup extends StatelessWidget {
   final String title;
   final String message;
@@ -46,9 +52,9 @@ class CustomPopup extends StatelessWidget {
       clipBehavior: Clip.none,
       children: <Widget>[
         Container(
-          width: 550.sp,
-          padding: EdgeInsets.fromLTRB(24.w, 40.h, 24.w, 24.h),
-          margin: EdgeInsets.only(top: 45.h),
+          width: 550,
+          padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+          margin: const EdgeInsets.only(top: 45),
           decoration: BoxDecoration(
             color: backgroundColor ?? Theme.of(context).cardColor,
             shape: BoxShape.rectangle,
@@ -57,7 +63,7 @@ class CustomPopup extends StatelessWidget {
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
                 blurRadius: 15,
-                offset: Offset(0, 10),
+                offset: const Offset(0, 10),
               ),
             ],
           ),
@@ -66,29 +72,30 @@ class CustomPopup extends StatelessWidget {
             children: <Widget>[
               Text(
                 title,
-                style: titleStyle ?? Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: _getIconColor(),
-                ),
+                style: titleStyle ??
+                    Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: _getIconColor(),
+                    ),
               ),
-              SizedBox(height: 16.h),
-              AppText.body(
+              const SizedBox(height: 16),
+              Text(
                 message,
                 textAlign: TextAlign.center,
                 style: messageStyle ?? Theme.of(context).textTheme.bodyMedium,
               ),
-              SizedBox(height: 24.h),
+              const SizedBox(height: 24),
               _buildActionButtons(context),
             ],
           ),
         ),
         Positioned(
-          top: 50.h,
+          top: 50,
           left: 0,
-          right: 260.w,
+          right: 260,
           child: CircleAvatar(
             backgroundColor: _getIconBackgroundColor(),
-            radius: 12.sp,
+            radius: 12,
             child: customIcon ?? _getDefaultIcon(),
           ),
         ),
@@ -98,29 +105,32 @@ class CustomPopup extends StatelessWidget {
 
   Widget _buildActionButtons(BuildContext context) {
     if (actions == null || actions!.isEmpty) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
     return Wrap(
       alignment: WrapAlignment.center,
-      spacing: 8.w,
-      runSpacing: 8.h,
+      spacing: 8,
+      runSpacing: 8,
       children: actions!.map((action) {
         return ElevatedButton(
           onPressed: () {
+            // Reset the state when popup is dismissed via button
+            Provider.of<CustomWidgetStateProvider>(context, listen: false)
+                .setDropdownValue(false);
             Navigator.of(context).pop();
             action.onPressed();
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: action.color ?? _getIconColor(),
+            backgroundColor: action?.color ?? _getIconColor(),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           ),
           child: Text(
             action.text,
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         );
       }).toList(),
@@ -143,7 +153,7 @@ class CustomPopup extends StatelessWidget {
   Color _getIconColor() {
     switch (type) {
       case PopupType.info:
-        return colorScheme.primary;
+        return Colors.blue;
       case PopupType.success:
         return Colors.green;
       case PopupType.warning:
@@ -169,7 +179,7 @@ class CustomPopup extends StatelessWidget {
         iconData = Icons.error_outline;
         break;
     }
-    return Icon(iconData, size: 45.sp, color: _getIconColor());
+    return Icon(iconData, size: 45, color: _getIconColor());
   }
 
   static Future<T?> show<T>({
@@ -185,45 +195,47 @@ class CustomPopup extends StatelessWidget {
     TextStyle? messageStyle,
     Color? backgroundColor,
   }) {
-    return showGeneralDialog<T>(
+    // Get the state provider
+    final stateProvider = Provider.of<CustomWidgetStateProvider>(context, listen: false);
+
+    // Check if a popup is already showing
+    if (stateProvider.dropdownValue) {
+      return Future.value(null); // Return null if a popup is already visible
+    }
+
+    // Set the state to show popup
+    stateProvider.setDropdownValue(true);
+
+    return showDialog<T>(
       context: context,
       barrierDismissible: dismissible,
-      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      barrierColor: Colors.black38,
-      transitionDuration: animationDuration,
-      pageBuilder: (BuildContext buildContext, Animation<double> animation, Animation<double> secondaryAnimation) {
-        return CustomPopup(
-          title: title,
-          message: message,
-          type: type,
-          actions: actions,
-          dismissible: dismissible,
-          animationDuration: animationDuration,
-          customIcon: customIcon,
-          titleStyle: titleStyle,
-          messageStyle: messageStyle,
-          backgroundColor: backgroundColor,
-        );
-      },
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        return ScaleTransition(
-          scale: Tween<double>(begin: 0.0, end: 1.0).animate(
-            CurvedAnimation(
-              parent: animation,
-              curve: Curves.fastOutSlowIn,
-            ),
+      builder: (BuildContext context) {
+        return PopScope(  // Use PopScope to handle dismissal
+          canPop: dismissible,
+          onPopInvoked: (didPop) {
+            if (didPop) {
+              // Reset the state when popup is dismissed
+              stateProvider.setDropdownValue(false);
+            }
+          },
+          child: CustomPopup(
+            title: title,
+            message: message,
+            type: type,
+            actions: actions,
+            dismissible: dismissible,
+            animationDuration: animationDuration,
+            customIcon: customIcon,
+            titleStyle: titleStyle,
+            messageStyle: messageStyle,
+            backgroundColor: backgroundColor,
           ),
-          child: child,
         );
       },
-    );
+    ).then((value) {
+      // Ensure state is reset even if dismissed through other means
+      stateProvider.setDropdownValue(false);
+      return value;
+    });
   }
-}
-
-class PopupAction {
-  final String text;
-  final VoidCallback onPressed;
-  final Color? color;
-
-  PopupAction({required this.text, required this.onPressed, this.color});
-}
+  }

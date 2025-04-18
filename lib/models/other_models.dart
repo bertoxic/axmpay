@@ -63,9 +63,10 @@ class AxmpayFaqList {
 
   AxmpayFaqList({required this.faqs});
 
-  factory AxmpayFaqList.fromJson(List<dynamic> jsonList) {
+  factory AxmpayFaqList.fromJson(Map<String, dynamic> json) {
+    List<dynamic> faqsList = json['faqs'] ?? [];
     return AxmpayFaqList(
-      faqs: jsonList.map((json) => AxmpayFaq.fromJson(json)).toList(),
+      faqs: faqsList.map((item) => AxmpayFaq.fromJson(item)).toList(),
     );
   }
 }

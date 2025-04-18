@@ -9,6 +9,7 @@ import 'package:AXMPAY/ui/screens/upgrade_account/upgrade_account_provider.dart'
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:AXMPAY/utils/globalErrorHandler.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:AXMPAY/providers/authentication_provider.dart';
 import 'package:AXMPAY/providers/config_provider.dart';
@@ -31,7 +32,7 @@ final ColorScheme colorScheme = ColorScheme(
 );
 void main() async{WidgetsFlutterBinding.ensureInitialized();
 // void main() =>runApp(MyApp() as Function({dynamic child, dynamic providers}));
-
+await dotenv.load(fileName: ".env");
 final configProvider = ConfigProvider();
 await configProvider.loadConfig();
   runApp(MultiProvider(

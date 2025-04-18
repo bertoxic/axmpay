@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:AXMPAY/models/user_model.dart';
 import 'package:AXMPAY/services/api_service.dart';
-import 'package:AXMPAY/utils/sharedPrefernce.dart';
+import '../utils/sharedPrefernce.dart';
 
 
 class AuthenticationProvider extends ChangeNotifier {
@@ -31,63 +31,137 @@ class AuthenticationProvider extends ChangeNotifier {
   }
 
 
-  Future<ResponseResult?> login(BuildContext context ,LoginDetails userdetails) async {
-    UserServiceProvider userServiceProvider = Provider.of(context,listen: false);
+  Future<ResponseResult?> login(BuildContext context, LoginDetails userdetails) async {
+    UserServiceProvider userServiceProvider = Provider.of(context, listen: false);
     try {
-          final response = await authService.login(context,userdetails);
-          Map<String, dynamic> jsonData;
-          if (response.data is String) {
-            jsonData = jsonDecode(response.data);
+      final response = await authService.login(context, userdetails);
+      Map<String, dynamic> jsonData;
 
-          } else {
+      // More robust handling of response data
+      if (response.data == null) {
+        return ResponseResult(
+          status: ResponseStatus.failed,
+          message: "Empty response received",
+        );
+      }
 
-            jsonData = response.data;
-          }
-
-          if (jsonData["status"].toString() == "Failed") {
-
-            return ResponseResult(
-               status: ResponseStatus.failed,
-               message: jsonData["message"] ?? "Verification failed",
-             );
-
-          }else{
-
-            String? token = jsonData["token"];
-
-            await SharedPreferencesUtil.saveString('auth_token', token??"");
-             await SharedPreferencesUtil.saveString(
-                 "isAuthenticated", _isAuthenticated.toString());
-             setToken(token);
-             await _saveTokenTOPref();
-
-            var user= await userServiceProvider.getUserDetails(context);
-
-             notifyListeners();
-           return ResponseResult(
-             status: ResponseStatus.success,
-             message: jsonData["message"] ?? "Verification successful",
-           );
-           }
-        }catch(e){
-
-          print("error occurred in authenticationprovidder$e");
+      // Check the actual type and handle accordingly
+      if (response.data is String) {
+        try {
+          jsonData = jsonDecode(response.data);
+        } catch (e) {
+          return ResponseResult(
+            status: ResponseStatus.failed,
+            message: "Invalid JSON format",
+          );
         }
+      } else if (response.data is Map) {
+        // Properly cast Map to Map<String, dynamic>
+        try {
+          jsonData = Map<String, dynamic>.from(response.data as Map);
+        } catch (e) {
+          return ResponseResult(
+            status: ResponseStatus.failed,
+            message: "Failed to process map data",
+          );
+        }
+      } else {
+        // Convert to string and then parse if it's another type
+        try {
+          String stringData = response.data.toString();
+          jsonData = jsonDecode(stringData);
+        } catch (e) {
+          return ResponseResult(
+            status: ResponseStatus.failed,
+            message: "Could not process response",
+          );
+        }
+      }
 
+      // Debug print to check what we're dealing with
+      print("Parsed data: $jsonData");
+
+      // Safely access status field, handling potential type issues
+      final status = jsonData["status"];
+      if (status != null && status.toString().toLowerCase() == "failed") {
+        return ResponseResult(
+          status: ResponseStatus.failed,
+          message: jsonData["message"]?.toString() ?? "Verification failed",
+        );
+      } else {
+        // Safely handle token - ensure it's a string
+        String? token = jsonData["token"]?.toString();
+        await SharedPreferencesUtil.saveString('auth_token', token ?? "");
+        await SharedPreferencesUtil.saveString("isAuthenticated", "true");
+
+        setToken(token);
+        await _saveTokenTOPref();
+
+        var user = await userServiceProvider.getUserDetails(context);
+        notifyListeners();
+
+        return ResponseResult(
+          status: ResponseStatus.success,
+          message: jsonData["message"]?.toString() ?? "Verification successful",
+        );
+      }
+    } catch (e) {
+      print("error occurred in authenticationprovider: $e");
+      return ResponseResult(
+        status: ResponseStatus.failed,
+        message: "An error occurred",
+      );
+    }
   }
 
+  Future<void> register(BuildContext context, PreRegisterDetails userDetails) async {
+    try {
+      Map<String, dynamic> details = userDetails.toJSON();
+      final res = await apiService.post(context, "/signup", details, "");
 
-  Future<void> register(BuildContext context,PreRegisterDetails userDetails) async {
-    Map<String, dynamic> details = userDetails.toJSON();
-    final res = await apiService.post( context,"/signup", details, "");
-    if (res.statusCode == 200 || res.statusCode == 201) {
-      _isAuthenticated = true;
-      User.fromJSON(res.data);
-      await SharedPreferencesUtil.saveString("auth_token", _token ?? "");
-      await SharedPreferencesUtil.saveString(
-          "isAuthenticated", _isAuthenticated.toString());
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        Map<String, dynamic> responseData;
+
+        // Handle different response data types
+        if (res.data == null) {
+          throw Exception("Empty response received");
+        } else if (res.data is String) {
+          try {
+            responseData = jsonDecode(res.data);
+          } catch (e) {
+            throw Exception("Invalid JSON format: $e");
+          }
+        } else if (res.data is Map) {
+          try {
+            responseData = Map<String, dynamic>.from(res.data as Map);
+          } catch (e) {
+            throw Exception("Failed to process map data: $e");
+          }
+        } else {
+          try {
+            String stringData = res.data.toString();
+            responseData = jsonDecode(stringData);
+          } catch (e) {
+            throw Exception("Could not process response: $e");
+          }
+        }
+
+        _isAuthenticated = true;
+
+        // Update user from response data
+        User.fromJSON(responseData);
+
+        // Save authentication info
+        await SharedPreferencesUtil.saveString("auth_token", token ?? "");
+        await SharedPreferencesUtil.saveString(
+            "isAuthenticated", isAuthenticated.toString());
+      }
+      notifyListeners();
+    } catch (e) {
+      print("Error occurred in register: $e");
+      // You might want to handle the error or rethrow it
+      // throw e;
     }
-    notifyListeners();
   }
 
   Future<void> logout() async {

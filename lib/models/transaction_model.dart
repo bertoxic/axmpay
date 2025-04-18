@@ -202,24 +202,31 @@ class DataBundleList {
     return DataBundleList(dataBundles: bundles);
   }
 }
+
 class Address {
   String street;
   String houseNumber;
   String city;
   String state;
+  String? latitude;
+  String? longitude;
 
   Address({
     required this.street,
     required this.city,
     required this.state,
     required this.houseNumber,
+    this.latitude,
+    this.longitude,
   });
 
   Address.fromJSON(Map<String, dynamic> json)
-      : street = json["street"] as String? ?? '',
-        city = json["city"] as String? ?? '',
-        state = json["state"] as String? ?? '',
-        houseNumber = json["houseNumber"] as String? ?? '';
+      : street = json["street"] ?? '',
+        city = json["city"] ?? '',
+        state = json["state"] ?? '',
+        houseNumber = json["houseNumber"] ?? '',
+        latitude = json["latitude"],
+        longitude = json["longitude"];
 
   Map<String, dynamic> toJSON() {
     return {
@@ -227,12 +234,17 @@ class Address {
       "city": city,
       "state": state,
       "houseNumber": houseNumber,
+      "latitude": latitude,
+      "longitude": longitude,
     };
   }
 
+  // Override toString method for a readable representation of the object
   @override
   String toString() {
-    return '$houseNumber $street, $city, $state';
+    return '$houseNumber $street, $city, $state'
+        '${latitude != null ? ', Latitude: $latitude' : ''}'
+        '${longitude != null ? ', Longitude: $longitude' : ''}';
   }
 }
 
@@ -317,7 +329,7 @@ class WalletPayload {
       'nearestLandmark': nearestLandmark,
       'houseNumber': houseNumber,
       'pep': pep,
-      'address': Address(city: city,state: state,street: streetName, houseNumber: houseNumber,).toJSON(),
+      'address': Address(city: city,state: state,street: streetName, houseNumber: houseNumber,).toString(),
     };
   }
 

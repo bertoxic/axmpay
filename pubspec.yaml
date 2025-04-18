@@ -8,7 +8,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # A version number is three numbers separated by dots, like 1.2.43
 # followed by an optional build number separated by a +.
 # Both the version and the builder number may be overridden in flutter
-# build by specifying --build-name and --build-number, respectively.
+# build by specifying --build-name and --build-number, respectivelusey.
 # In Android, build-name is used as versionName while build-number used as versionCode.
 # Read more about Android versioning at https://developer.android.com/studio/publish/versioning
 # In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
@@ -33,7 +33,7 @@ dependencies:
   go_router:
   provider:
   dio:
-  shared_preferences:
+  shared_preferences: ^2.5.3
   flutter_dotenv: ^5.1.0
   intl: ^0.20.1
   image_picker: ^1.0.8
@@ -48,7 +48,11 @@ dependencies:
   shimmer: ^3.0.0
   url_launcher: ^6.2.4
   animated_text_kit:
-#  flutter_plugin_android_lifecycle: ^2.0.23
+  permission_handler: ^11.1.0
+  share_plus: ^7.2.1
+#  geolocator: ^10.0.0
+  flutter_dojah_kyc:
+  #  flutter_plugin_android_lifecycle: ^2.0.23
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -75,7 +79,9 @@ flutter:
     - .env
     - assets/
     - assets/images/
+    - assets/fonts/
     - assets/images/airtel_logo.svg
+    - assets/fonts/Roboto-Regular.ttf
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

@@ -378,7 +378,7 @@ class _TransferScreenState extends State<TransferScreen> {
                 SizedBox(width: 8.w),
                 Expanded(
                   child: AppText.body(
-                    'Account verified: ${snapshot.data?.account?.name}',
+                    'Name:  ${snapshot.data?.account?.name}',
                     color: colorScheme.primary,
                   ),
                 ),
@@ -584,7 +584,7 @@ class _TransferScreenState extends State<TransferScreen> {
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
                           maxHeight: MediaQuery.of(context).size.height * 0.6,
-                          maxWidth: MediaQuery.of(context).size.width * 0.9,
+                          maxWidth: MediaQuery.of(context).size.width * 0.96,
                         ),
                         child: const PasscodeInputScreen(),
                       ),
