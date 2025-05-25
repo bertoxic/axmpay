@@ -12,13 +12,26 @@ class PasscodeSetupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  _PasscodeSetupScreenContent( email);
+    return _PasscodeSetupScreenContent(email);
   }
 }
 
-class _PasscodeSetupScreenContent extends StatelessWidget {
+class _PasscodeSetupScreenContent extends StatefulWidget {
   final String email;
-   _PasscodeSetupScreenContent( this.email);
+  const _PasscodeSetupScreenContent(this.email);
+
+  @override
+  State<_PasscodeSetupScreenContent> createState() => _PasscodeSetupScreenContentState();
+}
+
+class _PasscodeSetupScreenContentState extends State<_PasscodeSetupScreenContent> {
+  bool _isDisposed = false;
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,39 +51,39 @@ class _PasscodeSetupScreenContent extends StatelessWidget {
         behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false, overscroll: false),
         child: SingleChildScrollView(
           child: Padding(
-            padding:  EdgeInsets.symmetric(horizontal: 24.0.w, vertical: 16.h).copyWith(top: 8.h),
-            child: Column (
+            padding: EdgeInsets.symmetric(horizontal: 24.0.w, vertical: 16.h).copyWith(top: 8.h),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Setting up', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
-                 SizedBox(height: 8.h),
-                 Text('Your PIN code', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.primary)),
+                SizedBox(height: 8.h),
+                Text('Your PIN code', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.primary)),
                 Text(
                   'To set up your PIN create 4 digit code\nthen confirm it below',
                   style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                 ),
-                 SizedBox(height: 8.h),
+                SizedBox(height: 8.h),
                 Text(
                   'PIN CODE',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[600]),
                 ),
-                 SizedBox(height: 12.h),
+                SizedBox(height: 12.h),
                 _buildPinCodeRow(model, isConfirmation: false),
-                 SizedBox(height: 24.h),
+                SizedBox(height: 24.h),
                 if (model.isConfirming) ...[
                   Text(
                     'CONFIRM YOUR PIN CODE',
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[600]),
                   ),
-                   SizedBox(height: 8.h),
+                  SizedBox(height: 8.h),
                   _buildPinCodeRow(model, isConfirmation: true),
                 ],
                 if (model.passcode.length == 4 && model.confirmedPasscode.length == 4)
                   _buildValidationMessage(model),
                 SizedBox(height: 24.h),
                 _buildNumberPad(model),
-                 SizedBox(height: 16.h),
-                _buildContinueButton(model, context, email),
+                SizedBox(height: 16.h),
+                _buildContinueButton(model, context, widget.email),
               ],
             ),
           ),
@@ -105,7 +118,7 @@ class _PasscodeSetupScreenContent extends StatelessWidget {
           width: 48.w,
           height: 48.h,
           decoration: BoxDecoration(
-            border: Border.all(color: model.isConfirming? colorScheme.primary:Colors.grey[300]!),
+            border: Border.all(color: model.isConfirming ? colorScheme.primary : Colors.grey[300]!),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
@@ -145,14 +158,14 @@ class _PasscodeSetupScreenContent extends StatelessWidget {
       opacity: model.passcode.length == 4 && model.confirmedPasscode.length == 4 ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 300),
       child: Padding(
-        padding:  EdgeInsets.only(top: 16.h),
+        padding: EdgeInsets.only(top: 16.h),
         child: Row(
           children: [
             Icon(
               isValid ? Icons.check : Icons.close,
               color: isValid ? Colors.green : Colors.red,
             ),
-             SizedBox(width: 8.w),
+            SizedBox(width: 8.w),
             Text(
               isValid ? 'Your PIN codes are the same' : 'Your PIN codes do not match',
               style: TextStyle(
@@ -196,7 +209,7 @@ class _PasscodeSetupScreenContent extends StatelessWidget {
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color:  colorScheme.primary.withOpacity(0.15),
+          color: colorScheme.primary.withOpacity(0.15),
         ),
         child: Center(
           child: Text(
@@ -229,23 +242,41 @@ class _PasscodeSetupScreenContent extends StatelessWidget {
       opacity: model.passcode.length == 4 && model.confirmedPasscode.length == 4 ? 1.0 : 0.0,
       duration: const Duration(milliseconds: 300),
       child: ElevatedButton(
-        onPressed: model.passcode.length == 4 && model.confirmedPasscode.length == 4 && model.passcode == model.confirmedPasscode
+        onPressed: model.passcode.length == 4 &&
+            model.confirmedPasscode.length == 4 &&
+            model.passcode == model.confirmedPasscode
             ? () async {
-          await model.savePasscode(email);
-          if (!context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('PIN set successfully!')),
-          );
-          model.resetAndClearPassCodeField();
-          if (!context.mounted) return;
-          //Navigator.of(context).pop();
-          context.goNamed("/home");
+          try {
+            await model.savePasscode(email);
+
+            // Check if widget is still mounted before using context
+            if (!_isDisposed && mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('PIN set successfully!')),
+              );
+              model.resetAndClearPassCodeField();
+
+              // Use a slight delay to ensure the widget tree is stable
+              Future.microtask(() {
+                if (!_isDisposed && mounted) {
+                  context.goNamed("home");
+                }
+              });
+            }
+          } catch (e) {
+            // Handle any errors that might occur during savePasscode
+            if (!_isDisposed && mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: ${e.toString()}')),
+              );
+            }
+          }
         }
             : null,
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,
           backgroundColor: colorScheme.primary,
-          minimumSize:  Size(double.infinity, 50.h),
+          minimumSize: Size(double.infinity, 50.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),

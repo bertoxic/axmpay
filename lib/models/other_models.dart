@@ -34,7 +34,35 @@ class TermSection {
     );
   }
 }
+class PrivacyPolicy {
+  final String? title;
+  final String? content;
+  final String? lastUpdated;
 
+  PrivacyPolicy({this.title, this.content, this.lastUpdated});
+
+  factory PrivacyPolicy.fromJson(Map<String, dynamic> json) {
+    return PrivacyPolicy(
+      title: json['title'] as String?,
+      content: json['content'] as String?,
+      lastUpdated: json['lastUpdated'] as String?,
+    );
+  }
+}
+
+
+
+
+
+class PrivacyPolicyList {
+  final List? data;
+  PrivacyPolicyList({required this.data});
+  factory PrivacyPolicyList.fromJson(Map<String, dynamic> json){
+    return PrivacyPolicyList(
+        data: (json['data'] as List).map((item) => PrivacyPolicy.fromJson(item)).toList(),
+    );
+  }
+}
 class AxmpayFaq {
   final int id;
   final String question;

@@ -1,3 +1,4 @@
+import 'dart:async'; // Add this import for Timer
 import 'package:AXMPAY/main.dart';
 import 'package:AXMPAY/models/ResponseModel.dart';
 import 'package:AXMPAY/models/user_model.dart';
@@ -31,7 +32,8 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
   String? otp;
   String? email;
   bool _isLoading = false;
-  int? _resendSeconds = 30;
+  int _resendSeconds = 120;
+  Timer? _resendTimer;
 
   @override
   void initState() {
@@ -48,10 +50,12 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
   }
 
   void _startResendTimer() {
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted && _resendSeconds! > 0) {
-        setState(() => _resendSeconds = _resendSeconds! - 1);
-        _startResendTimer();
+    _resendTimer?.cancel(); // Cancel any existing timer
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted && _resendSeconds > 0) {
+        setState(() => _resendSeconds--);
+      } else {
+        timer.cancel();
       }
     });
   }
@@ -59,6 +63,7 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
   @override
   void dispose() {
     _animationController.dispose();
+    _resendTimer?.cancel(); // Cancel timer on dispose
     for (var controller in _controllers) {
       controller.dispose();
     }
@@ -80,6 +85,13 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
     } else if (_controllers[index].text.isEmpty && index > 0) {
       _focusNodes[index - 1].requestFocus();
     }
+  }
+
+  // Helper method to format timer display
+  String _formatTimer(int seconds) {
+    int minutes = seconds ~/ 60;
+    int remainingSeconds = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -226,22 +238,20 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
                                 size: ButtonSize.large,
                                 text: "Verify OTP",
                                 onPressed: _verifyOTP,
-
                               ),
                             SizedBox(height: 24.h),
                             TextButton(
                               onPressed: _resendSeconds == 0
                                   ? () {
-                                setState(() => _resendSeconds = 30);
+                                setState(() => _resendSeconds = 120); // Reset to 2 minutes
                                 _startResendTimer();
-                                // TODO: Implement resend OTP functionality
-                                  _resendOTP();
+                                _resendOTP();
                               }
                                   : null,
                               child: Text(
                                 _resendSeconds == 0
                                     ? "Resend Code"
-                                    : "Resend Code in $_resendSeconds seconds",
+                                    : "Resend Code in ${_formatTimer(_resendSeconds)}", // Show MM:SS format
                                 style: TextStyle(
                                   color: _resendSeconds == 0
                                       ? colorScheme.primary
@@ -274,6 +284,7 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
       ResponseResult resp = await userProvider.emailVerification(context, widget.preRegisterDetails.email, otp!);
       if (!mounted) return;
 
+      // Replace the success handling section with:
       if (resp.status == ResponseStatus.failed) {
         await CustomPopup.show(
           backgroundColor: colorScheme.onPrimary,
@@ -284,7 +295,9 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
         );
       } else {
         if (!mounted) return;
-        await CustomPopup.show(
+
+        // Show success popup without waiting
+        CustomPopup.show(
           backgroundColor: colorScheme.onPrimary,
           type: PopupType.success,
           title: "Verification Successful",
@@ -292,17 +305,10 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
           context: context,
         );
 
-        if (!mounted) return;
-
-        // The loading indicator might confuse users since the verification is already done
-
-        Future.delayed(const Duration(seconds: 3), () {
-          // Check if widget is still mounted before navigating
+        // Navigate after a short delay to let popup show
+        Future.delayed(const Duration(milliseconds: 800), () {
           if (mounted) {
-            context.goNamed(
-              "login",
-              // queryParameters: {"email": widget.preRegisterDetails.email},
-            );
+            context.goNamed("login");
           }
         });
       }
@@ -358,5 +364,4 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
       if (mounted) setState(() => _isLoading = false);
     }
   }
-
 }

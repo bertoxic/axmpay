@@ -22,6 +22,7 @@ class UserServiceProvider extends ChangeNotifier {
   List<TransactionHistoryModel>? transactHistoryList;
   AxmpayFaqList? axmpayFaqList = AxmpayFaqList(faqs: null);
   AxmpayTermsList? axmpayTermsList = AxmpayTermsList(data: null);
+  PrivacyPolicyList? privacyPolicyList = PrivacyPolicyList(data: null);
   TermSection? termSection;
   ApiService apiService = ApiService();
   UserRepository userRepo = UserRepository();
@@ -335,6 +336,38 @@ class UserServiceProvider extends ChangeNotifier {
       // Fixed: Use jsonData instead of response.data for creating the object
       AxmpayTermsList data = AxmpayTermsList.fromJson(jsonData);
       axmpayTermsList = data;
+      notifyListeners();
+      return data;
+    } catch (e) {
+      handleGlobalError(context, e);
+      rethrow;
+    }
+  }
+
+
+  Future<PrivacyPolicyList?> getPrivacyPolicy(BuildContext context) async {
+    try {
+      String? token = await SharedPreferencesUtil.getString("auth_token");
+      final response = await apiService.get(
+          context, "privacy_policy.php", token);
+      // Handle response data whether it's a string or already a map
+      dynamic responseData = response.data;
+      Map<String, dynamic> jsonData;
+
+      if (responseData is String) {
+        jsonData = jsonDecode(responseData);
+      } else if (responseData is Map) {
+        jsonData = responseData as Map<String, dynamic>;
+      } else {
+        throw Exception("Invalid response format in privacy_policy");
+      }
+
+      if (jsonData["status"] == "failed") {
+        return null;
+      }
+
+      PrivacyPolicyList data = PrivacyPolicyList.fromJson(jsonData);
+      privacyPolicyList = data;
       notifyListeners();
       return data;
     } catch (e) {
@@ -757,50 +790,87 @@ class UserServiceProvider extends ChangeNotifier {
       rethrow;
     }
   }
+  Future<ResponseResult> createUserWallet(BuildContext context, WalletPayload walletPayload) async {
+    String msg = "Wallet creation failed"; // Default message
 
-  Future<ResponseResult> createUserWallet(BuildContext context,
-      WalletPayload walletPayload) async {
     try {
       Map<String, dynamic> data = walletPayload.toJSON();
       print(data);
       String? token = await SharedPreferencesUtil.getString("auth_token");
-      final response = await apiService.post(
-          context, "createWallet.php", data, token);
-      print("rexponzxxxxxxxxxxxxxxxxxzzz iz: ${response.toString()}");
 
-      // Handle both String and Map response types
-      Map<String, dynamic> jsonData;
-      if (response.data is String) {
-        jsonData = jsonDecode(response.data);
-      } else if (response.data is Map<String, dynamic>) {
-        jsonData = response.data;
-      } else {
-        throw Exception("Unexpected response format");
-      }
+      final response = await apiService.post(context, "createWallet.php", data, token);
+      print("response is: ${response.toString()}");
+
+      // Parse response data
+      Map<String, dynamic> jsonData = _parseResponse(response.data);
+      msg = jsonData["message"] ?? "No message provided";
+
+      bool isSuccess = jsonData["status"] != "failed";
 
       return ResponseResult(
-        status: jsonData["status"] == "failed"
-            ? ResponseStatus.failed
-            : ResponseStatus.success,
-        message: jsonData["message"] ?? (jsonData["status"] == "failed"
-            ? "Wallet creation failed"
-            : "Wallet creation successful"),
+        status: isSuccess ? ResponseStatus.success : ResponseStatus.failed,
+        message: msg,
         data: jsonData["data"] as Map<String, dynamic>?,
       );
-    } catch (e) {
-      if (!context.mounted) {
-        return ResponseResult(
-          status: ResponseStatus.failed,
-          message: "Error: ${e.toString()}",
-          data: null,
-        );
+
+    } on DioException catch (dioError) {
+      // Handle Dio-specific errors (like 500 status codes)
+      print("Dio Error: ${dioError.message}");
+      print("Error Response: ${dioError.response?.data}");
+
+      // Try to extract backend error message from error response
+      if (dioError.response?.data != null) {
+        try {
+          Map<String, dynamic> errorData = _parseResponse(dioError.response!.data);
+          msg = errorData["message"] ?? "Server error occurred";
+        } catch (parseError) {
+          msg = "Server error: ${dioError.response?.statusCode ?? 'Unknown'}";
+        }
+      } else {
+        msg = "Network error: ${dioError.message}";
       }
-      handleExceptionGlobally(context, e);
+
+      // Only show global error handling if context is still mounted
+      if (context.mounted) {
+        handleExceptionGlobally(context, dioError);
+      }
+
       return ResponseResult(
         status: ResponseStatus.failed,
-        message: "Error creating wallet",
+        message: msg,
         data: null,
       );
+
+    } catch (e) {
+      print("General Error: ${e.toString()}");
+
+      // Use backend message if we got one, otherwise use exception message
+      String errorMessage = msg;
+      if (msg == "Wallet creation failed") {
+        errorMessage = "Error creating wallet: ${e.toString()}";
+      }
+
+      // Only show global error handling if context is still mounted
+      if (context.mounted) {
+        handleExceptionGlobally(context, e);
+      }
+
+      return ResponseResult(
+        status: ResponseStatus.failed,
+        message: errorMessage,
+        data: null,
+      );
+    }
+  }
+
+// Helper method to parse response
+  Map<String, dynamic> _parseResponse(dynamic responseData) {
+    if (responseData is String) {
+      return jsonDecode(responseData);
+    } else if (responseData is Map<String, dynamic>) {
+      return responseData;
+    } else {
+      throw Exception("Unexpected response format");
     }
   }
 

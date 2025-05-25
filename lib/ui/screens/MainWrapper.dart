@@ -195,7 +195,7 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
         case 0:
           await userProvider.getUserDetails(context);
           if (!mounted) return;
-          context.goNamed("/home");
+          context.goNamed("home");
           break;
         case 3:
           await userProvider.fetchTransactionHistory(context);

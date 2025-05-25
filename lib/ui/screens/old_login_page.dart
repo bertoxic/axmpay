@@ -96,7 +96,7 @@
 //                          var data = await authProvider.login(context, userdetails);
 //                          if(data!=null){
 //                           if( data.data?["status"] == "Verified"){
-//                             context.goNamed("/home");
+//                             context.goNamed("home");
 //                           }else{
 //                             context.goNamed("user_details_page");
 //                           }

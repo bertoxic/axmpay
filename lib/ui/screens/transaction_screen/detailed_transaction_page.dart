@@ -1,3 +1,4 @@
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -102,6 +103,19 @@ class TransactionDetailScreen extends StatelessWidget {
       ),
     );
   }
+
+  String _getStatusText(String status) {
+    switch (status.toLowerCase()) {
+      case 'success':
+        return 'Completed Successfully';
+      case 'pending':
+        return 'Processing';
+      case 'failed':
+        return 'Transaction Failed';
+      default:
+        return status;
+    }
+  }
   Widget _buildTransactionStatus(Color themeColor, bool isCredit) {
     return Container(
       width: double.infinity,
@@ -187,116 +201,6 @@ class TransactionDetailScreen extends StatelessWidget {
       ),
     );
   }
-  Widget _buildTransactionStatusx(Color themeColor, bool isCredit) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            spreadRadius: 2,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          //Status icon with animated gradient background
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  themeColor.withOpacity(0.8),
-                  themeColor.withOpacity(0.6),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: themeColor.withOpacity(0.3),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Icon(
-              isCredit ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
-              color: Colors.white,
-              size: 32,
-            ),
-          ),
-          const SizedBox(height: 20),
-
-         // Transaction status with visual indicator
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _getStatusColor(transaction.status),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                transaction.status,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: _getStatusColor(transaction.status),
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          // Transaction type with subtle divider
-          Column(
-            children: [
-              Divider(
-                color: Colors.grey.withOpacity(0.2),
-                thickness: 1,
-                indent: 60,
-                endIndent: 60,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                isCredit ? 'Funds Received' : 'Payment Sent',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[700],
-                  letterSpacing: 0.3,
-                ),
-              ),
-
-              // Optional: Add timestamp
-              const SizedBox(height: 6),
-              Text(
-                transaction.timeCreated.toString() ?? 'Just now',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[500],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildAmountDisplay(Color themeColor, bool isCredit) {
     double? transactionAmount = double.tryParse(transaction.amount?.toString() ?? '0');
@@ -304,7 +208,7 @@ class TransactionDetailScreen extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -326,6 +230,50 @@ class TransactionDetailScreen extends StatelessWidget {
       child: Column(
         children: [
           Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _getStatusText(transaction.status),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '${isCredit ? '+' : '-'} ${formatter.format(transactionAmount)}',
+            style: const TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 0.5,
+            ),
+          ),
+           SizedBox(height: 16.h),
+          Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
@@ -340,17 +288,7 @@ class TransactionDetailScreen extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 20),
-          Text(
-            '${isCredit ? '+' : '-'} ${formatter.format(transactionAmount)}',
-            style: const TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 16),
+           SizedBox(height: 10.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

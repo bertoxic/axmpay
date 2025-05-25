@@ -5,6 +5,7 @@ import 'package:AXMPAY/ui/screens/MainWrapper.dart';
 import 'package:AXMPAY/ui/screens/Mobile_top_up/top_up_screen.dart';
 import 'package:AXMPAY/ui/screens/contact_us_page.dart';
 import 'package:AXMPAY/ui/screens/informational_screens/frequently_asked_questions.dart';
+import 'package:AXMPAY/ui/screens/informational_screens/privacy_policy_screen.dart';
 import 'package:AXMPAY/ui/screens/informational_screens/terms_and_conditions.dart';
 import 'package:AXMPAY/ui/screens/registration/verify_newUser_email_otp_screen.dart';
 import 'package:AXMPAY/ui/screens/registration/update_user_details_page.dart';
@@ -61,7 +62,7 @@ final GoRouter  _router = GoRouter(
           routes: [
             GoRoute(
               path: '/home',
-              name: '/home',
+              name: 'home',
               builder: (BuildContext context, GoRouterState state) {
                 return   HomePage(
                   key: state.pageKey,
@@ -137,7 +138,7 @@ final GoRouter  _router = GoRouter(
     ]),
     // GoRoute(
     //   path: '/home',
-    //   name: '/home',
+    //   name: 'home',
     //   builder: (BuildContext context, GoRouterState state) {
     //     return   HomePage();
     //   },
@@ -278,6 +279,13 @@ final GoRouter  _router = GoRouter(
       name: 'terms_and_conditions',
       builder: (BuildContext context, GoRouterState state) {
         return  TermsAndConditions();
+      },
+    ),
+    GoRoute(
+      path: '/privacy_policy',
+      name: 'privacy_policy',
+      builder: (BuildContext context, GoRouterState state) {
+        return  PrivacyPolicyScreen();
       },
     ),
 

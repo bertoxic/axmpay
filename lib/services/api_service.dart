@@ -160,7 +160,6 @@ class ApiService {
     if (sessionCookie != null && sessionCookie.isNotEmpty) {
       headers['Cookie'] = sessionCookie;
     }
-
     return Options(
       followRedirects: false,
       method: method,

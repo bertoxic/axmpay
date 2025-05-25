@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:AXMPAY/constants/lists.dart';
 import 'package:AXMPAY/models/ResponseModel.dart';
 import 'package:AXMPAY/ui/screens/registration/registration_controller.dart';
@@ -16,6 +18,7 @@ import '../../../main.dart';
 import '../../../models/user_model.dart';
 import '../../../utils/datepicker.dart';
 import '../../../utils/form_validator.dart';
+import '../../../utils/sharedPrefernce.dart';
 import '../../widgets/custom_textfield.dart';
 import 'dart:math';
 
@@ -27,14 +30,18 @@ class UpdateUserDetailsPage extends StatefulWidget {
 }
 
 class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
+  // Form and Controllers
   final _formKey = GlobalKey<FormState>();
   late RegistrationController _controller;
   final _scrollController = ScrollController();
+
+  // State Variables
   bool _isScrolled = false;
   bool _isLoading = false;
   bool _isKYCLoading = false;
   bool _isBvnVerified = false;
   late UserDetails userDetails;
+  String? _authToken;
 
   @override
   void initState() {
@@ -42,10 +49,19 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
     _controller = RegistrationController(context);
     _scrollController.addListener(_onScroll);
     _initializeUserData();
+    _loadAuthToken();
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  // ==================== INITIALIZATION METHODS ====================
+
   void _initializeUserData() {
-    // Initialize with user data from a proper source
     setState(() {
       userDetails = UserDetails(
         firstName: "",
@@ -57,15 +73,25 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
 
     Future.delayed(Duration.zero, () async {
       try {
-        // Example: Get user data from storage or API
+        // TODO: Load user data from API or storage
         // final userData = await getUserDataFromApi();
-        // _controller.first_name.text = userData.firstName;
-        // _controller.last_name.text = userData.lastName;
-        // ...etc
+        // _populateUserData(userData);
       } catch (e) {
         _showSnackBar('Failed to load user data: ${e.toString()}');
       }
     });
+  }
+
+  Future<void> _loadAuthToken() async {
+    try {
+      _authToken = await SharedPreferencesUtil.getString('auth_token');
+      if (_authToken == null || _authToken!.isEmpty) {
+        _showSnackBar('Authentication token not found. Please login again.');
+        // TODO: Navigate to login screen
+      }
+    } catch (e) {
+      _showSnackBar('Failed to load authentication token: ${e.toString()}');
+    }
   }
 
   void _onScroll() {
@@ -76,127 +102,400 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
     }
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    _scrollController.dispose();
-    super.dispose();
-  }
+  // ==================== VALIDATION METHODS ====================
 
   bool _validatePersonalDetails() {
-    if (_controller.first_name.text.isEmpty ||
-        _controller.last_name.text.isEmpty ||
-        _controller.date_of_birth.text.isEmpty ||
-        _controller.gender.text.isEmpty) {
+    if (_controller.first_name.text.isEmpty || _controller.last_name.text.isEmpty) {
       _showSnackBar('Please fill all details in personal section before BVN verification');
       return false;
     }
     return true;
   }
 
+  bool _validateAuthToken() {
+    if (_authToken == null || _authToken!.isEmpty) {
+      _showSnackBar('Authentication required. Please login again.');
+      return false;
+    }
+    return true;
+  }
+
+  // ==================== BVN VERIFICATION METHODS ====================
+
+// ==================== BVN VERIFICATION METHODS ====================
+
   Future<void> _verifyBVN() async {
+    if (!_validateAuthToken()) return;
+
     if (_controller.bvn.text.isEmpty) {
       _showSnackBar('Please enter your BVN first');
       return;
     }
 
-    // Validate that personal details are filled first
-    if (!_validatePersonalDetails()) {
-      return;
-    }
+    if (!_validatePersonalDetails()) return;
 
     setState(() => _isKYCLoading = true);
 
     try {
-      // Use actual user data for verification without setting state here
-      // The state will be set in the callback functions
-      ShowWidgetID(
-        context,
-        _isBvnVerified,
-        _controller.first_name.text,
-        _controller.last_name.text,
-        _controller.emailController.text,
-        _controller.date_of_birth.text,
-        _controller.gender.text,
-        _controller.bvn.text,
+      await _showDojahKYC(
         onSuccess: () {
-          setState(() {
-            _isBvnVerified = true;
-            _isKYCLoading = false;
+          // Add a slight delay to ensure the widget has fully closed
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              setState(() {
+                _isBvnVerified = true;
+                _isKYCLoading = false;
+              });
+              _showSnackBar('BVN verified successfully', isSuccess: true);
+            }
           });
-          _showSnackBar('BVN verified successfully');
         },
         onError: (String errorMessage) {
-          setState(() {
-            _isBvnVerified = false;
-            _isKYCLoading = false;
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              setState(() {
+                _isBvnVerified = false;
+                _isKYCLoading = false;
+              });
+              _showSnackBar('BVN verification failed: $errorMessage', isError: true);
+            }
           });
-          _showSnackBar('BVN verification failed: $errorMessage');
         },
         onClose: () {
-          setState(() {
-            _isKYCLoading = false;
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              setState(() {
+                _isKYCLoading = false;
+              });
+              // Don't show canceled message if verification was successful
+              if (!_isBvnVerified) {
+                _showSnackBar('BVN verification canceled');
+              }
+            }
           });
-          _showSnackBar('BVN verification canceled');
         },
       );
     } catch (e) {
-      setState(() => _isKYCLoading = false);
-      _showSnackBar('Failed to verify BVN: ${e.toString()}');
+      if (mounted) {
+        setState(() => _isKYCLoading = false);
+        _showSnackBar('Failed to verify BVN: ${e.toString()}', isError: true);
+      }
     }
   }
 
-  void _showDojahKYC() {
+  Future<void> _showDojahKYC({
+    Function? onSuccess,
+    Function(String)? onError,
+    Function? onClose,
+  }) async {
+    if (!_validateAuthToken()) return;
+
     if (_controller.bvn.text.isEmpty) {
       _showSnackBar('Please enter your BVN first');
       return;
     }
 
-    // Validates that personal details are filled first
-    if (!_validatePersonalDetails()) {
+    if (!_validatePersonalDetails()) return;
+
+    final metaData = {
+      "first_name": _controller.first_name.text,
+      "last_name": _controller.last_name.text,
+      "email": _controller.emailController.text,
+      "dob": _controller.date_of_birth.text,
+      "gender": _controller.gender.text.toLowerCase(),
+      "auth_token": _authToken,
+    };
+
+    final govData = {
+      "bvn": _controller.bvn.text,
+      "dl": "",
+      "mobile": _controller.phone_number.text,
+      "auth_token": _authToken,
+    };
+
+    final config = {
+      'widget_id': dotenv.env['WIDGET_ID'],
+      // Add these configuration options to handle redirection properly
+      'redirect_url': 'app://close', // Custom URL scheme for your app
+      'auto_close': true, // Automatically close after successful verification
+      'close_on_success': true, // Close the widget on successful verification
+    };
+
+    try {
+      final dojahKYC = DojahKYC(
+        appId: dotenv.env['APP_ID']!,
+        publicKey: dotenv.env['PUBLIC_KEY']!,
+        type: "custom",
+        userData: metaData,
+        govData: govData,
+        config: config,
+      );
+
+      print('MetaData: $metaData');
+      print('GovData: $govData');
+      print('Config: $config');
+
+      dojahKYC.open(
+        context,
+        onSuccess: (result) {
+          print('KYC Success: $result');
+          // Force close any open web views or modals
+          Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+
+          if (onSuccess != null) {
+            onSuccess();
+          }
+        },
+        onClose: (close) {
+          print('KYC Widget Closed: $close');
+          // Ensure we're back to the main screen
+          Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+
+          if (onClose != null) {
+            onClose();
+          }
+        },
+        onError: (error) {
+          print('KYC Error: $error');
+          // Force close on error as well
+          Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+
+          if (onError != null) {
+            onError(error.toString());
+          }
+        },
+      );
+    } catch (e) {
+      print('DojahKYC Exception: $e');
+      if (onError != null) {
+        onError(e.toString());
+      }
+    }
+  }
+
+// Alternative method using Timer to handle stuck webview
+  Future<void> _showDojahKYCWithTimeout({
+    Function? onSuccess,
+    Function(String)? onError,
+    Function? onClose,
+  }) async {if (!_validateAuthToken()) return;
+
+    if (_controller.bvn.text.isEmpty) {
+      _showSnackBar('Please enter your BVN first');
       return;
     }
 
-    // user data for verification
-    ShowWidgetID(
-      context,
-      _isBvnVerified,
-      _controller.first_name.text,
-      _controller.last_name.text,
-      _controller.emailController.text,
-      _controller.date_of_birth.text,
-      _controller.gender.text,
-      _controller.bvn.text,
-      onSuccess: () {
-        setState(() {
-          _isBvnVerified = true;
-          _isKYCLoading= false;
-        });
-      },
-      onError: (String errorMessage) {
-        setState(() {
-          _isBvnVerified = false;
-          _isKYCLoading = false;
-        });
-      },
-      onClose: () {
-        setState(() {
-          _isBvnVerified = false;
-          _isKYCLoading = false;
-        });
+    if (!_validatePersonalDetails()) return;
 
-      },
-    );
+    // Set a timeout to handle cases where the widget gets stuck
+    Timer? timeoutTimer;
+    bool hasCompleted = false;
+
+    void completeVerification() {
+      if (!hasCompleted) {
+        hasCompleted = true;
+        timeoutTimer?.cancel();
+      }
+    }
+
+    // Set a 5-minute timeout
+    timeoutTimer = Timer(const Duration(minutes: 5), () {
+      if (!hasCompleted) {
+        print('KYC Timeout - forcing close');
+        Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+        if (mounted) {
+          _showSnackBar('Verification timed out. Please try again.', isError: true);
+          setState(() => _isKYCLoading = false);
+        }
+      }
+    });
+
+    final metaData = {
+      "first_name": _controller.first_name.text,
+      "last_name": _controller.last_name.text,
+      "email": _controller.emailController.text,
+      "dob": _controller.date_of_birth.text,
+      "gender": _controller.gender.text.toLowerCase(),
+      "auth_token": _authToken,
+    };
+
+    final govData = {
+      "bvn": _controller.bvn.text,
+      "dl": "",
+      "mobile": _controller.phone_number.text,
+      "auth_token": _authToken,
+    };
+
+    final config = {
+      'widget_id': dotenv.env['WIDGET_ID'],
+      'redirect_url': 'app://close',
+      'auto_close': true,
+      'close_on_success': true,
+    };
+
+    try {
+      final dojahKYC = DojahKYC(
+        appId: dotenv.env['APP_ID']!,
+        publicKey: dotenv.env['PUBLIC_KEY']!,
+        type: "custom",
+        userData: metaData,
+        govData: govData,
+        config: config,
+      );
+
+      dojahKYC.open(
+        context,
+        onSuccess: (result) {
+          completeVerification();
+          print('KYC Success: $result');
+
+          // Force navigation back to your app
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+          });
+
+          if (onSuccess != null) {
+            onSuccess();
+          }
+        },
+        onClose: (close) {
+          completeVerification();
+          print('KYC Widget Closed: $close');
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+          });
+
+          if (onClose != null) {
+            onClose();
+          }
+        },
+        onError: (error) {
+          completeVerification();
+          print('KYC Error: $error');
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+          });
+
+          if (onError != null) {
+            onError(error.toString());
+          }
+        },
+      );
+    } catch (e) {
+      completeVerification();
+      print('DojahKYC Exception: $e');
+      if (onError != null) {
+        onError(e.toString());
+      }
+    }
   }
 
-  void _showSnackBar(String message) {
+// Enhanced BVN Section with better UX
+
+  // ==================== FORM SUBMISSION ====================
+
+  Future<void> _handleFormSubmission() async {
+    if (!_validateAuthToken()) return;
+
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Include auth token in the request
+      ResponseResult? resp = await _controller.createNewUserWallet();
+
+      if (!mounted) return;
+
+      setState(() => _isLoading = false);
+
+      if (resp?.status == ResponseStatus.failed) {
+        _showErrorPopup(resp?.message ?? "An error occurred");
+      } else if (resp?.status == ResponseStatus.success) {
+        await _handleSuccessfulSubmission(resp?.message ?? "Operation successful");
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        print("Error occurred: ${e.toString()}");
+        _showErrorPopup("An unexpected error occurred: ${e.toString()}");
+      }
+    }
+  }
+
+  Future<void> _handleSuccessfulSubmission(String message) async {
+    _showSuccessPopup(message);
+
+    await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+
+    try {
+      final storage = const FlutterSecureStorage();
+      String? storedPasscode = await storage.read(key: 'passcode');
+      bool hasPasscode = storedPasscode != null;
+
+      String userEmail = _getUserEmail();
+
+      if (!hasPasscode) {
+        context.pushReplacementNamed(
+            "passcode_setup_screen",
+            pathParameters: {"email": userEmail}
+        );
+      } else {
+        context.goNamed("home");
+      }
+    } catch (navError) {
+      print("Navigation error: ${navError.toString()}");
+      if (mounted) {
+        _showSnackBar("Navigation error: Please restart the app", isError: true);
+      }
+    }
+  }
+
+  String _getUserEmail() {
+    return _controller.emailController.text.isNotEmpty
+        ? _controller.emailController.text
+        : userDetails.email.isNotEmpty
+        ? userDetails.email
+        : "user@example.com";
+  }
+
+  // ==================== UI HELPER METHODS ====================
+
+  void _showSnackBar(String message, {bool isSuccess = false, bool isError = false}) {
+    if (!mounted) return;
+
+    Color backgroundColor = colorScheme.primary;
+    if (isSuccess) backgroundColor = Colors.green;
+    if (isError) backgroundColor = Colors.red;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: _isBvnVerified ? Colors.green : colorScheme.primary,
+        backgroundColor: backgroundColor,
         duration: const Duration(seconds: 3),
       ),
+    );
+  }
+
+  void _showErrorPopup(String message) {
+    CustomPopup.show(
+      type: PopupType.error,
+      context: context,
+      title: "Error",
+      message: message,
+    );
+  }
+
+  void _showSuccessPopup(String message) {
+    CustomPopup.show(
+      type: PopupType.success,
+      context: context,
+      title: "Success",
+      message: message,
     );
   }
 
@@ -221,33 +520,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: EdgeInsets.all(18.h),
-            child: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(10.h),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: colorScheme.primary,
-                    size: 24.w,
-                  ),
-                ),
-                SizedBox(width: 16.w),
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _buildSectionHeader(title, icon),
           Divider(
             color: colorScheme.onSurface.withOpacity(0.1),
             thickness: 1,
@@ -260,6 +533,127 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
       ),
     );
   }
+
+  Widget _buildSectionHeader(String title, IconData icon) {
+    return Padding(
+      padding: EdgeInsets.all(18.h),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(10.h),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: colorScheme.primary,
+              size: 24.w,
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader() {
+    return Center(
+      child: Stack(
+        children: [
+          Container(
+            padding: EdgeInsets.all(4.w),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: colorScheme.primary,
+                width: 2,
+              ),
+            ),
+            child: CircleAvatar(
+              radius: 60.w,
+              backgroundColor: colorScheme.primary.withOpacity(0.1),
+              child: Icon(
+                Icons.person_outline,
+                size: 60.w,
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Container(
+              padding: EdgeInsets.all(10.w),
+              decoration: BoxDecoration(
+                color: colorScheme.primary,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.camera_alt,
+                size: 20.w,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingOverlay() {
+    return Container(
+      color: Colors.black.withOpacity(0.3),
+      child: Center(
+        child: Container(
+          padding: EdgeInsets.all(24.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                "Processing...",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ==================== BUILD METHOD ====================
 
   @override
   Widget build(BuildContext context) {
@@ -287,577 +681,260 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                 child: Column(
                   children: [
                     SizedBox(height: 20.h),
-
-                    // Profile Header
-                    Center(
-                      child: Stack(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(4.w),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: colorScheme.primary,
-                                width: 2,
-                              ),
-                            ),
-                            child: CircleAvatar(
-                              radius: 60.w,
-                              backgroundColor: colorScheme.primary.withOpacity(0.1),
-                              child: Icon(
-                                Icons.person_outline,
-                                size: 60.w,
-                                color: colorScheme.primary,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              padding: EdgeInsets.all(10.w),
-                              decoration: BoxDecoration(
-                                color: colorScheme.primary,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                Icons.camera_alt,
-                                size: 20.w,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
+                    _buildProfileHeader(),
                     SizedBox(height: 28.h),
-
-                    // Basic Information Section
-                    _buildSectionCard(
-                      title: 'Basic Information',
-                      icon: Icons.person,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: CustomTextField(
-                                labelText: 'First Name',
-                                hintText: 'Enter your First Name',
-                                controller: _controller.first_name,
-                                prefixIcon: const Icon(Icons.person_outline),
-                                validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "firstName"),
-                                fieldName: Fields.name,
-                                readOnly: true,
-                                onChanged: (value) => userDetails.firstName = value,
-                              ),
-                            ),
-                            SizedBox(width: 12.w),
-                            Expanded(
-                              child: CustomTextField(
-                                labelText: 'Last Name',
-                                hintText: 'Enter your Last Name',
-                                controller: _controller.last_name,
-                                readOnly: true,
-                                validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "lastName"),
-                                prefixIcon: const Icon(Icons.person),
-                                fieldName: Fields.name,
-                                onChanged: (value) {
-                                  userDetails.lastName = value;
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 18.h),
-                        CustomTextField(
-                          labelText: 'Email',
-                          hintText: 'Enter your email',
-                          readOnly: true,
-                          prefixIcon: const Icon(Icons.email_outlined),
-                          onChanged: (value) {
-                            userDetails.email = value;
-                          },
-                          keyboardType: TextInputType.emailAddress,
-                          fieldName: Fields.email,
-                          controller: _controller.emailController,
-                          validator: (value) => FormValidator.validate(value, ValidatorType.email, fieldName: Fields.email),
-                        ),
-                        SizedBox(height: 18.h),
-                        CustomTextField(
-                          border: InputBorder.none,
-                          labelText: 'Phone',
-                          hintText: 'Enter phone number',
-                          prefixIcon: const Icon(Icons.phone),
-                          fieldName: 'phone',
-                          onChanged: (value) {
-                            userDetails.phone = value;
-                            _controller.phone_number.text = value;
-                          },
-                          controller: _controller.phone_number,
-                          validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "Phone number"),
-                        ),
-                      ],
-                    ),
-
-                    // Address Section
-                    _buildSectionCard(
-                      title: 'Address',
-                      icon: Icons.location_on,
-                      children: [
-                        DropdownTextField(
-                          labelText: 'Country',
-                          hintText: 'Select your country',
-                          prefixIcon: Icons.public,
-                          controller: _controller.country,
-                          onChange: (value) {},
-                          fieldName: "country",
-                          validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "country"),
-                          options: Countries,
-                          displayStringForOption: (options) => options,
-                        ),
-                        SizedBox(height: 18.h),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: CustomTextField(
-                                labelText: 'State',
-                                hintText: 'Name of state',
-                                controller: _controller.state,
-                                validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "state"),
-                                prefixIcon: const Icon(Icons.location_history),
-                                fieldName: Fields.name,
-                                onChanged: (value) {
-                                  userDetails.address?.state = value;
-                                },
-                              ),
-                            ),
-                            SizedBox(width: 12.w),
-                            Expanded(
-                              child: CustomTextField(
-                                labelText: 'City',
-                                hintText: 'Enter city name',
-                                controller: _controller.city,
-                                validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "city"),
-                                prefixIcon: const Icon(Icons.location_city),
-                                fieldName: Fields.name,
-                                onChanged: (value) {
-                                  userDetails.address?.city = value;
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 18.h),
-                        CustomTextField(
-                          labelText: 'Street Name',
-                          hintText: 'Enter street name',
-                          controller: _controller.streetAddress,
-                          prefixIcon: const Icon(Icons.add_road_outlined),
-                          onChanged: (value) {
-                            userDetails.address?.street = value;
-                          },
-                          keyboardType: TextInputType.text,
-                          fieldName: Fields.email,
-                          validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "street address"),
-                        ),
-                        SizedBox(height: 18.h),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: CustomTextField(
-                                labelText: 'L.G.A',
-                                hintText: 'Local Government Area',
-                                prefixIcon: const Icon(Icons.location_searching),
-                                controller: _controller.localGovArea,
-                                onChanged: (value) {},
-                                keyboardType: TextInputType.text,
-                                fieldName: "Local Government Area",
-                                validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "L.G.A"),
-                              ),
-                            ),
-                            SizedBox(width: 12.w),
-                            Expanded(
-                              child: CustomTextField(
-                                labelText: 'House Number',
-                                hintText: 'Your House Number',
-                                prefixIcon: const Icon(Icons.home),
-                                controller: _controller.houseNumber,
-                                onChanged: (value) {},
-                                keyboardType: TextInputType.text,
-                                fieldName: "House Number",
-                                validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "House Number"),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 18.h),
-                        CustomTextField(
-                          labelText: 'Nearest Landmark',
-                          hintText: 'Nearest Landmark',
-                          prefixIcon: const Icon(Icons.add_location_alt),
-                          controller: _controller.nearestLandMark,
-                          onChanged: (value) {},
-                          keyboardType: TextInputType.text,
-                          fieldName: "Nearest Landmark",
-                          validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "Nearest Landmark"),
-                        ),
-                      ],
-                    ),
-
-                    // Personal Information Section
-                    _buildSectionCard(
-                      title: 'Personal Information',
-                      icon: Icons.assignment_ind,
-                      children: [
-                        DatePickerTextField(
-                          context: context,
-                          dateFormat: DateFormat("yyy-MM-dd"),
-                          onChange: (value) {
-                            userDetails.dateOfBirth = value ?? "";
-                            setState(() {
-                              _controller.date_of_birth.text = value??"";
-
-                            });
-                          },
-                          dateController: _controller.date_of_birth,
-                          validator: (value) => FormValidator.validate(
-                              value, ValidatorType.isEmpty,
-                              fieldName: "date of birth"
-                          ),
-                        ),
-                        SizedBox(height: 18.h),
-                        DropdownTextField(
-                          controller: _controller.gender,
-                          validator: (value) => FormValidator.validate(
-                              value, ValidatorType.isEmpty,
-                              fieldName: "gender"
-                          ),
-                          onChange: (value) {
-                            setState(() {
-                              _controller.gender.text = value ?? "";
-                            });
-                          },
-                          options: ["Male", "Female", "Other"],
-                          labelText: 'Gender',
-                          hintText: 'Please select a gender',
-                          prefixIcon: Icons.person_pin,
-                          fieldName: 'gender',
-                          displayStringForOption: (options) => options,
-                        ),
-                        SizedBox(height: 18.h),
-                        Row(
-                          children: [
-                            Expanded(
-                              flex: 7,
-                              child: CustomTextField(
-                                labelText: 'BVN',
-                                hintText: 'Input your valid BVN',
-                                validator: (value) => FormValidator.validate(
-                                    value, ValidatorType.digits,
-                                    fieldName: "BVN"
-                                ),
-                                prefixIcon: const Icon(Icons.perm_identity),
-                                fieldName: Fields.name,
-                                onChanged: (value) {
-                                  _controller.bvn.text = value??"";
-                                },
-                                controller: _controller.bvn,
-                                suffixIcon: _isBvnVerified
-                                    ? Icon(Icons.check_circle, color: Colors.green)
-                                    : null,
-                              ),
-                            ),
-                            SizedBox(width: 10.w),
-                            Expanded(
-                              flex: 3,
-                              child: ElevatedButton(
-                                onPressed: _verifyBVN,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: colorScheme.primary,
-                                  foregroundColor: Colors.white,
-                                  padding: EdgeInsets.symmetric(vertical: 15.h),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: Text('Verify'),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 10.h),
-                        if (!_isBvnVerified)
-                          Center(
-                            child: TextButton.icon(
-                              onPressed: _showDojahKYC,
-                              icon: Icon(Icons.verified_user, color: colorScheme.primary),
-                              label: Text(
-                                ' KYC for Verification',
-                                style: TextStyle(color: colorScheme.primary),
-                              ),
-                            ),
-                          ),
-                        SizedBox(height: 18.h),
-                        CustomTextField(
-                          labelText: 'Place of Birth',
-                          hintText: 'Your place of birth',
-                          validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "Place of Birth"),
-                          prefixIcon: const Icon(Icons.location_on),
-                          fieldName: Fields.name,
-                          onChanged: (value) {
-                            userDetails.dateOfBirth = value;
-                          },
-                          controller: _controller.placeOfBirthController,
-                        ),
-                        SizedBox(height: 18.h),
-                        DropdownTextField(
-                          controller: _controller.PEP,
-                          validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "Politically Exposed Person"),
-                          onChange: (value) {
-                            setState(() {
-                              _controller.PEP.text = value ?? "";
-                            });
-                          },
-                          options: const ["Yes", "No"],
-                          labelText: 'P.E.P',
-                          hintText: 'Politically Exposed Person?',
-                          prefixIcon: Icons.gavel,
-                          fieldName: 'P.E.P',
-                          displayStringForOption: (options) => options,
-                        ),
-                        SizedBox(height: 18.h),
-                        CustomTextField(
-                          labelText: 'Referrer ID',
-                          hintText: 'This field is optional',
-                          prefixIcon: const Icon(Icons.people),
-                          fieldName: Fields.name,
-                          onChanged: (value) {
-                            _controller.refby.text = value;                          },
-                          controller: _controller.refby,
-                        ),
-                      ],
-                    ),
-
+                    _buildBasicInformationSection(),
+                    _buildPersonalInformationSection(),
                     SizedBox(height: 28.h),
-
-                    // Submit Button
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 32.w),
-                      child: CustomButton(
-                        text: "Update Profile",
-                        size: ButtonSize.large,
-                        backgroundColor: colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        borderRadius: 12,
-                        isDisabled:_isLoading,
-                        type: ButtonType.elevated,
-                        onPressed:_isLoading
-                            ? null  // Disable the button when loading
-                            : () async {
-                          if (_formKey.currentState!.validate()// && _isBvnVerified
-                          ) {
-                            setState(() {
-                             _isLoading = true;
-                            });
-                            try {
-                              ResponseResult? resp = await _controller.createNewUserWallet();
-                              if (resp?.status == ResponseStatus.failed) {
-                                if (mounted) {
-                                  setState(() {
-                                   _isLoading = false;
-                                  });
-                                  CustomPopup.show(
-                                    type: PopupType.error,
-                                    context: context,
-                                    title: "Error",
-                                    message: resp?.message ?? "An error occurred",
-                                  );
-                                }
-                              } else if (resp?.status == ResponseStatus.success) {
-                                if (mounted) {
-                                  // Show success popup
-                                  CustomPopup.show(
-                                    type: PopupType.success,
-                                    context: context,
-                                    title: "Success",
-                                    message: resp?.message ?? "Operation successful",
-                                  );
-
-                                  // Wait for 1 second to show the popup
-                                  await Future.delayed(const Duration(seconds: 1));
-
-                                  // Check for passcode
-                                  final storage = const FlutterSecureStorage();
-                                  String? storedPasscode = await storage.read(key: 'passcode');
-                                  bool hasPasscode = storedPasscode != null;
-
-                                  setState(() {
-                                   _isLoading = false;
-                                  });
-
-                                  // Dismiss the popup before navigation
-                                  Navigator.of(context).pop(); // This dismisses the popup
-
-                                  // Navigate after showing popup
-                                  if (!mounted) return;
-                                  if (!hasPasscode) {
-                                    context.pushNamed("passcodesetup-screen");
-                                  } else {
-                                    context.goNamed("home");
-                                  }
-                                }
-                              }
-                            } catch (e) {
-                              if (mounted) {
-                                setState(() {
-                                 _isLoading = false;
-                                });
-                                CustomPopup.show(
-                                  type: PopupType.error,
-                                  context: context,
-                                  title: "Error",
-                                  message: "An unexpected error occurred",
-                                );
-                              }
-                            }
-                          }
-                        },
-                      ),
-                    ),
+                    _buildSubmitButton(),
                     SizedBox(height: 32.h),
                   ],
                 ),
               ),
             ),
-            // Loading overlay
-            if (_isLoading)
-              Container(
-                color: Colors.black.withOpacity(0.3),
-                child: Center(
-                  child: Container(
-                    padding: EdgeInsets.all(24.w),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
-                        ),
-                        SizedBox(height: 16.h),
-                        Text(
-                          "Processing...",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+            if (_isLoading) _buildLoadingOverlay(),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildBasicInformationSection() {
+    return _buildSectionCard(
+      title: 'Basic Information',
+      icon: Icons.person,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: CustomTextField(
+                labelText: 'First Name',
+                hintText: 'Enter your First Name',
+                controller: _controller.first_name,
+                prefixIcon: const Icon(Icons.person_outline),
+                validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "firstName"),
+                fieldName: Fields.name,
+                readOnly: true,
+                onChanged: (value) => userDetails.firstName = value,
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: CustomTextField(
+                labelText: 'Last Name',
+                hintText: 'Enter your Last Name',
+                controller: _controller.last_name,
+                readOnly: true,
+                validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "lastName"),
+                prefixIcon: const Icon(Icons.person),
+                fieldName: Fields.name,
+                onChanged: (value) => userDetails.lastName = value,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 18.h),
+        CustomTextField(
+          labelText: 'Email',
+          hintText: 'Enter your email',
+          readOnly: true,
+          prefixIcon: const Icon(Icons.email_outlined),
+          onChanged: (value) => userDetails.email = value,
+          keyboardType: TextInputType.emailAddress,
+          fieldName: Fields.email,
+          controller: _controller.emailController,
+          validator: (value) => FormValidator.validate(value, ValidatorType.email, fieldName: Fields.email),
+        ),
+        SizedBox(height: 18.h),
+        CustomTextField(
+          border: InputBorder.none,
+          labelText: 'Phone',
+          hintText: 'Enter phone number',
+          prefixIcon: const Icon(Icons.phone),
+          fieldName: 'phone',
+          onChanged: (value) {
+            userDetails.phone = value;
+            _controller.phone_number.text = value;
+          },
+          controller: _controller.phone_number,
+          validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "Phone number"),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPersonalInformationSection() {
+    return _buildSectionCard(
+      title: 'Personal Information',
+      icon: Icons.assignment_ind,
+      children: [
+        DatePickerTextField(
+          context: context,
+          dateFormat: DateFormat("yyy-MM-dd"),
+          onChange: (value) {
+            userDetails.dateOfBirth = value ?? "";
+            setState(() {
+              _controller.date_of_birth.text = value ?? "";
+            });
+          },
+          dateController: _controller.date_of_birth,
+          validator: (value) => FormValidator.validate(
+              value, ValidatorType.isEmpty,
+              fieldName: "date of birth"
+          ),
+        ),
+        SizedBox(height: 18.h),
+        _buildBVNSection(),
+        SizedBox(height: 18.h),
+        DropdownTextField(
+          controller: _controller.PEP,
+          validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "Politically Exposed Person"),
+          onChange: (value) {
+            setState(() {
+              _controller.PEP.text = value ?? "";
+            });
+          },
+          options: const ["Yes", "No"],
+          labelText: 'P.E.P',
+          hintText: 'Politically Exposed Person?',
+          prefixIcon: Icons.gavel,
+          fieldName: 'P.E.P',
+          displayStringForOption: (options) => options,
+        ),
+        SizedBox(height: 18.h),
+        CustomTextField(
+          labelText: 'Referrer ID',
+          hintText: 'This field is optional',
+          prefixIcon: const Icon(Icons.people),
+          fieldName: Fields.name,
+          onChanged: (value) {
+            _controller.refby.text = value;
+          },
+          controller: _controller.refby,
+        ),
+      ],
+    );
+  }
+  Widget _buildBVNSection() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              flex: 7,
+              child: CustomTextField(
+                labelText: 'BVN',
+                hintText: 'Input your valid BVN',
+                validator: (value) => FormValidator.validate(
+                    value, ValidatorType.digits,
+                    fieldName: "BVN"
+                ),
+                prefixIcon: const Icon(Icons.perm_identity),
+                fieldName: Fields.name,
+                onChanged: (value) {
+                  _controller.bvn.text = value ?? "";
+                  // Reset verification status when BVN changes
+                  if (_isBvnVerified) {
+                    setState(() {
+                      _isBvnVerified = false;
+                    });
+                  }
+                },
+                controller: _controller.bvn,
+                suffixIcon: _isBvnVerified
+                    ? Icon(Icons.check_circle, color: Colors.green)
+                    : null,
+              ),
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              flex: 3,
+              child: ElevatedButton(
+                onPressed: _isKYCLoading ? null : _verifyBVN,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _isKYCLoading
+                      ? colorScheme.primary.withOpacity(0.5)
+                      : colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 15.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: _isKYCLoading
+                    ? SizedBox(
+                  width: 16.w,
+                  height: 16.h,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+                    : Text('Verify'),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 10.h),
+        if (_isBvnVerified)
+          Container(
+            padding: EdgeInsets.all(12.h),
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.green.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 20.w),
+                SizedBox(width: 8.w),
+                Text(
+                  'BVN Successfully Verified',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else if (!_isKYCLoading)
+          Center(
+            child: TextButton.icon(
+              onPressed: () => _showDojahKYC(),
+              icon: Icon(Icons.verified_user, color: colorScheme.primary),
+              label: Text(
+                'Complete KYC Verification',
+                style: TextStyle(color: colorScheme.primary),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 32.w),
+      child: CustomButton(
+        text: "Update Profile",
+        size: ButtonSize.large,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: Colors.white,
+        borderRadius: 12,
+        isDisabled: _isLoading,
+        type: ButtonType.elevated,
+        onPressed: _isLoading ? null : _handleFormSubmission,
+      ),
+    );
+  }
 }
 
-void ShowWidgetID(BuildContext context, bool verified, String firstName, String lastName, String email, String dateOfBirth, String gender, String bvn, {
-  Function? onSuccess,
-  Function(String)? onError,
-  Function? onClose,
-}) {
+// ==================== UTILITY FUNCTIONS ====================
 
-
-  final metaData = {
-    "first_name": firstName,
-    "last_name": lastName,
-    "email": email,
-    "dob": dateOfBirth,
-    "gender": gender.toLowerCase(),
-  };
-
-  final govData = {
-    "bvn": bvn,
-    //"nin": "", // Keep empty for now
-    "dl": "",
-    "mobile": ""
-  };
-
-  final config = {
-    'widget_id': dotenv.env['WIDGET_ID']
-  };
-
-  DojahKYC? _dojahKYC;
-  _dojahKYC = DojahKYC(
-    appId: dotenv.env['APP_ID']!,
-    publicKey: dotenv.env['PUBLIC_KEY']!,
-    type: "custom",
-    userData: metaData,
-    govData: govData,
-    config: config,
-  );
-  print(govData);
-  print(config);
-  print(metaData);
-  _dojahKYC.open(
-      context,
-      onSuccess: (result) {
-        print(result);
-        if (onSuccess != null) {
-          onSuccess();
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Verification successful!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      },
-      onClose: (close) {
-        print('Widget Closed');
-        if (onClose != null) {
-          onClose();
-        }
-      },
-      onError: (error) {
-        print(error);
-        if (onError != null) {
-          onError(error.toString());
-        }
-        // Handle error
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Verification failed: $error'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-  );
-}
 String? validator(String? input) {
   if (input == null || input.isEmpty) {
     return "This field cannot be empty";
-  } else {
-    return null;
   }
+  return null;
 }

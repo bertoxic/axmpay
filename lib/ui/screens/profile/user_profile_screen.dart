@@ -1,6 +1,7 @@
 import 'package:AXMPAY/main.dart';
 import 'package:AXMPAY/models/user_model.dart';
 import 'package:AXMPAY/providers/user_service_provider.dart';
+import 'package:AXMPAY/ui/screens/upgrade_account/verification/verifydetails.dart';
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
 import 'package:flutter/material.dart';
@@ -281,7 +282,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               subtitle: "Enhance your account capabilities",
               color: colorScheme.primary,
               onTap: () => context.pushNamed("upgrade_account_page"),
-            ),
+              // onTap: () => {
+              // // Navigate to SecondScreen
+              // Navigator.push(
+              // context,
+              // MaterialPageRoute(builder: (context) => VerificationScreen(onVerificationComplete: (bool){
+              //   var us = userService.userdata;
+              //   print(bool);
+              // }, usrprovider: userService,)),
+              // )
+                   // }
+                    ),
           _buildOptionTile(
             context,
             icon: Icons.lock,

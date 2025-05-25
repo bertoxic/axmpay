@@ -520,7 +520,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         final passCodeMap = jsonDecode(passCodeMapString);
 
         if (passCodeMap["email"] == userDetails.email) {
-          context.goNamed("/home");
+          context.goNamed("home");
         } else {
           _navigateToPasscodeSetup(userDetails.email);
         }

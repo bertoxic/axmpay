@@ -177,12 +177,11 @@ class _MobileTopUpState extends State<MobileTopUp> {
       case "GLO":
         return Colors.green;
       case "AIRTEL":
-        return Colors.red;
+        return Color(0xFFDD4343);
       case "MTN":
-        return Colors.amber;
+        return Color(0xFFEBB53B);
     }
-    return colorScheme.primary;
-  }
+    return colorScheme.primary;}
 
   Future<DataBundleList?> _getListOfDataBundles() async {
     if (!phoneIsValid) return null;
@@ -241,8 +240,417 @@ class _MobileTopUpState extends State<MobileTopUp> {
       ),
     );
   }
-
   Widget _buildPhoneNumberInput() {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(left: 6.w, bottom: 12.h),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.phone_android_rounded,
+                  size: 20.sp,
+                  color: colorScheme.primary,
+                ),
+                SizedBox(width: 8.w),
+                AppText.body(
+                  "Phone Number",
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.grey[800],
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: LinearGradient(
+                colors: [Colors.white, Colors.grey[50]!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  height: 58.h,
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        colorScheme.primary,
+                        colorScheme.primary.withOpacity(0.8),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: colorScheme.primary.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppText.caption(
+                        "+234",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15.sp,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: CustomTextField(
+                    fieldName: "phone",
+                    controller: phoneController,
+                    onChanged: (value) {
+                      String formattedNumber = _formatPhoneNumber(value);
+                      if (formattedNumber != value) {
+                        phoneController.value = TextEditingValue(
+                          text: formattedNumber,
+                          selection: TextSelection.collapsed(offset: formattedNumber.length),
+                        );
+                      }
+                    },
+                    onEditingComplete: () {
+                      _onPhoneChanged();
+                    },
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      fillColor: Colors.transparent,
+                      filled: true,
+                      hintText: "Enter phone number",
+                      hintStyle: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
+                        borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildServiceProviderInfo() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.white, Colors.grey[50]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: FutureBuilder<ResponseResult?>(
+        future: _phoneCheckFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return SizedBox(
+              height: 80.h,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 32.w,
+                      height: 32.w,
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                        strokeWidth: 3,
+                      ),
+                    ),
+                    SizedBox(height: 12.h),
+                    Text(
+                      "Detecting network...",
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: Colors.red[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.red[200]!, width: 1),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.error_outline, color: Colors.red[600], size: 24.sp),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Text(
+                      "Error verifying number: ${snapshot.error}",
+                      style: TextStyle(
+                        color: Colors.red[700],
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          } else if (snapshot.hasData) {
+            if (snapshot.data?.status.toString().toLowerCase() ==
+                ResponseStatus.failed.toString().toLowerCase()) {
+              return Container(
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.red[200]!, width: 1),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.error_outline, color: Colors.red[600], size: 24.sp),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Text(
+                        "${snapshot.data?.message}",
+                        style: TextStyle(
+                          color: Colors.red[700],
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    height: 56.h,
+                    width: 56.h,
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.grey[100]!,
+                          Colors.grey[50]!,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: _topUpController.getServiceProviderLogo(
+                      serviceProviderNetwork ?? "",
+                    ),
+                  ),
+                  SizedBox(width: 20.w),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Network Provider",
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[500],
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        serviceProviderNetwork ?? "",
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.grey[800],
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            }
+          }
+          return Row(
+            children: [
+              Expanded(child: Center(child: Text("Enter a valid phone number"),)),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildAmountInput() {
+    if (isData) return const SizedBox();
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(left: 6.w, bottom: 12.h),
+            child: Row(
+              children: [
+                Icon(
+                  FontAwesomeIcons.nairaSign,
+                  size: 18.sp,
+                  color: colorScheme.primary,
+                ),
+                SizedBox(width: 8.w),
+                AppText.body(
+                  "Amount",
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.grey[800],
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.white, Colors.grey[50]!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: CustomTextField(
+              fieldName: "amount",
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                fillColor: Colors.transparent,
+                filled: true,
+                hintText: "Enter amount",
+                hintStyle: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+                prefixIcon: Container(
+                  margin: EdgeInsets.all(12.w),
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    FontAwesomeIcons.nairaSign,
+                    color: colorScheme.primary,
+                    size: 16.sp,
+                  ),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  Widget _buildPhoneNumberInputx() {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
@@ -339,7 +747,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
     );
   }
 
-  Widget _buildServiceProviderInfo() {
+  Widget _buildServiceProviderInfox() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 16.h),
       decoration: BoxDecoration(
@@ -417,7 +825,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
     );
   }
 
-  Widget _buildAmountInput() {
+  Widget _buildAmountInputx() {
     if (isData) return SizedBox();
     return Container(
       decoration: BoxDecoration(
@@ -655,10 +1063,19 @@ class _MobileTopUpState extends State<MobileTopUp> {
                 color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
-                Icons.arrow_forward,
-                color: isSelected ? Colors.white : Colors.grey[400],
-                size: 20.sp,
+              child: GestureDetector(
+                onTap: (){
+                  setState(() {
+                    isSelectingDataBundle = true;
+                    selectedDataBundle = null;
+                    amountController.clear();
+                  });
+                },
+                child: Icon(
+                  Icons.arrow_forward,
+                  color: isSelected ? Colors.white : Colors.grey[400],
+                  size: 20.sp,
+                ),
               ),
             ),
         ],
@@ -671,26 +1088,7 @@ class _MobileTopUpState extends State<MobileTopUp> {
       height: 56.h,
       text: "Top Up Now",
       width: double.infinity,
-      // style: TextStyle(
-      //   fontSize: 16.sp,
-      //   fontWeight: FontWeight.w600,
-      //   color: Colors.white,
-      // ),
-      // decoration: BoxDecoration(
-      //   borderRadius: BorderRadius.circular(16),
-      //   gradient: LinearGradient(
-      //     colors: [colorScheme.primary, colorScheme.primary.withOpacity(0.8)],
-      //     begin: Alignment.topLeft,
-      //     end: Alignment.bottomRight,
-      //   ),
-      //   boxShadow: [
-      //     BoxShadow(
-      //       color: colorScheme.primary.withOpacity(0.3),
-      //       blurRadius: 12,
-      //       offset: Offset(0, 4),
-      //     ),
-      //   ],
-      // ),
+
       onPressed: () {
         // Validate phone number
         if (!phoneIsValid || phoneNumberValue == null || phoneNumberValue!.isEmpty) {
@@ -1029,63 +1427,7 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
     );
   }
 
-  Widget _buildAccountInfo(UserServiceProvider userp) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.primary.withOpacity(0.2)),
-      ),
-      padding: EdgeInsets.all(16.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.account_balance_wallet,
-                  color: colorScheme.primary,
-                  size: 20.sp,
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Text(
-                "Account to be Debited",
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: Colors.grey[700],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            userp.userdata?.firstname ?? "",
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            "Available Balance",
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: Colors.grey[600],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -1214,3 +1556,61 @@ class _BottomSheetContentState extends State<BottomSheetContent> {
     }
   }
 }
+
+// Widget _buildAccountInfo(UserServiceProvider userp) {
+//   return Container(
+//     decoration: BoxDecoration(
+//       color: Colors.blue.withOpacity(0.1),
+//       borderRadius: BorderRadius.circular(16),
+//       border: Border.all(color: colorScheme.primary.withOpacity(0.2)),
+//     ),
+//     padding: EdgeInsets.all(16.w),
+//     child: Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Row(
+//           children: [
+//             Container(
+//               padding: EdgeInsets.all(8.w),
+//               decoration: BoxDecoration(
+//                 color: colorScheme.primary.withOpacity(0.1),
+//                 borderRadius: BorderRadius.circular(8),
+//               ),
+//               child: Icon(
+//                 Icons.account_balance_wallet,
+//                 color: colorScheme.primary,
+//                 size: 20.sp,
+//               ),
+//             ),
+//             SizedBox(width: 12.w),
+//             Text(
+//               "Account to be Debited",
+//               style: TextStyle(
+//                 fontSize: 14.sp,
+//                 color: Colors.grey[700],
+//                 fontWeight: FontWeight.w500,
+//               ),
+//             ),
+//           ],
+//         ),
+//         SizedBox(height: 12.h),
+//         Text(
+//           userp.userdata?.firstname ?? "",
+//           style: TextStyle(
+//             fontSize: 16.sp,
+//             fontWeight: FontWeight.w600,
+//             color: Colors.black87,
+//           ),
+//         ),
+//         SizedBox(height: 4.h),
+//         Text(
+//           "Available Balance",
+//           style: TextStyle(
+//             fontSize: 12.sp,
+//             color: Colors.grey[600],
+//           ),
+//         ),
+//       ],
+//     ),
+//   );
+// }
