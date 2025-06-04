@@ -7,6 +7,7 @@ import 'package:AXMPAY/ui/widgets/custom_buttons.dart';
 import 'package:AXMPAY/ui/widgets/custom_dialog.dart';
 import 'package:AXMPAY/ui/widgets/custom_dropdown.dart';
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dojah_kyc/flutter_dojah_kyc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -29,7 +30,9 @@ class UpdateUserDetailsPage extends StatefulWidget {
   State<UpdateUserDetailsPage> createState() => _UpdateUserDetailsPageState();
 }
 
-class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
+class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
+
   // Form and Controllers
   final _formKey = GlobalKey<FormState>();
   late RegistrationController _controller;
@@ -43,17 +46,21 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
   late UserDetails userDetails;
   String? _authToken;
 
+
   @override
   void initState() {
     super.initState();
     _controller = RegistrationController(context);
     _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addObserver(this);
     _initializeUserData();
     _loadAuthToken();
   }
 
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -87,7 +94,9 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
       _authToken = await SharedPreferencesUtil.getString('auth_token');
       if (_authToken == null || _authToken!.isEmpty) {
         _showSnackBar('Authentication token not found. Please login again.');
-        // TODO: Navigate to login screen
+        if(mounted){
+          context.go('/login');
+        }
       }
     } catch (e) {
       _showSnackBar('Failed to load authentication token: ${e.toString()}');
@@ -122,7 +131,6 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
 
   // ==================== BVN VERIFICATION METHODS ====================
 
-// ==================== BVN VERIFICATION METHODS ====================
 
   Future<void> _verifyBVN() async {
     if (!_validateAuthToken()) return;
@@ -134,56 +142,56 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
 
     if (!_validatePersonalDetails()) return;
 
-    setState(() => _isKYCLoading = true);
+    setState(() {
+      _isKYCLoading = true;
+      _isBvnVerified = false;
+    });
 
     try {
-      await _showDojahKYC(
+      await _showDojahKYCWithProperCleanup(
         onSuccess: () {
-          // Add a slight delay to ensure the widget has fully closed
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (mounted) {
-              setState(() {
-                _isBvnVerified = true;
-                _isKYCLoading = false;
-              });
-              _showSnackBar('BVN verified successfully', isSuccess: true);
-            }
-          });
+          print("KYC Success - BVN Verified");
+          if (mounted) {
+            setState(() {
+              _isBvnVerified = true;
+              _isKYCLoading = false; // Ensure loading is set to false on success
+            });
+            _showSnackBar('BVN verified successfully', isSuccess: true);
+          }
         },
         onError: (String errorMessage) {
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (mounted) {
-              setState(() {
-                _isBvnVerified = false;
-                _isKYCLoading = false;
-              });
-              _showSnackBar('BVN verification failed: $errorMessage', isError: true);
-            }
-          });
+          print("KYC Error: $errorMessage");
+          if (mounted) {
+            setState(() {
+              _isBvnVerified = false;
+              _isKYCLoading = false; // Set loading to false on error
+            });
+            _showSnackBar('BVN verification failed: $errorMessage', isError: true);
+          }
         },
         onClose: () {
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (mounted) {
-              setState(() {
-                _isKYCLoading = false;
-              });
-              // Don't show canceled message if verification was successful
+          print("KYC Widget Closed/Canceled");
+          if (mounted) {
+            setState(() {
+              _isKYCLoading = false; // Set loading to false when closed/canceled
               if (!_isBvnVerified) {
-                _showSnackBar('BVN verification canceled');
+                _showSnackBar('BVN verification was canceled');
               }
-            }
-          });
+            });
+          }
         },
       );
     } catch (e) {
       if (mounted) {
-        setState(() => _isKYCLoading = false);
+        setState(() {
+          _isKYCLoading = false; // Set loading to false on exception
+          _isBvnVerified = false;
+        });
         _showSnackBar('Failed to verify BVN: ${e.toString()}', isError: true);
       }
     }
   }
-
-  Future<void> _showDojahKYC({
+  Future<void> _showDojahKYCWithProperCleanup({
     Function? onSuccess,
     Function(String)? onError,
     Function? onClose,
@@ -196,6 +204,35 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
     }
 
     if (!_validatePersonalDetails()) return;
+
+    bool hasSucceeded = false;
+    bool hasCompleted = false;
+    bool isDisposed = false;
+
+    // Safety cleanup function
+    void safeCleanup() {
+      if (!isDisposed) {
+        isDisposed = true;
+        if (mounted) {
+          // Use a post-frame callback to ensure UI is stable
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _isKYCLoading) {
+              setState(() {
+                _isKYCLoading = false;
+              });
+            }
+          });
+        }
+      }
+    }
+
+    Timer? safetyTimer = Timer(const Duration(minutes: 10), () {
+      if (mounted && _isKYCLoading && !hasCompleted) {
+        print('Safety timeout triggered - cleaning up KYC');
+        safeCleanup();
+        _showSnackBar('Verification timed out. Please try again.', isError: true);
+      }
+    });
 
     final metaData = {
       "first_name": _controller.first_name.text,
@@ -215,10 +252,10 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
 
     final config = {
       'widget_id': dotenv.env['WIDGET_ID'],
-      // Add these configuration options to handle redirection properly
-      'redirect_url': 'app://close', // Custom URL scheme for your app
-      'auto_close': true, // Automatically close after successful verification
-      'close_on_success': true, // Close the widget on successful verification
+      'redirect_url': 'app://close',
+      'auto_close': true,
+      'close_on_success': true,
+      'debug': false,
     };
 
     try {
@@ -231,54 +268,186 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
         config: config,
       );
 
-      print('MetaData: $metaData');
-      print('GovData: $govData');
-      print('Config: $config');
+      print('Starting KYC verification...');
 
-      dojahKYC.open(
-        context,
-        onSuccess: (result) {
-          print('KYC Success: $result');
-          // Force close any open web views or modals
-          Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+      try {
+        dojahKYC.open(
+          context,
+          onSuccess: (result) {
+            print('KYC Success: $result');
+            hasSucceeded = true;
+            hasCompleted = true;
+            safetyTimer?.cancel();
 
-          if (onSuccess != null) {
-            onSuccess();
-          }
-        },
-        onClose: (close) {
-          print('KYC Widget Closed: $close');
-          // Ensure we're back to the main screen
-          Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+            // Let the onClose handle navigation since it will be called anyway
+            if (onSuccess != null) {
+              onSuccess();
+            }
+          },
+          onClose: (close) {
+            print('KYC Widget Closed: $close');
 
-          if (onClose != null) {
-            onClose();
-          }
-        },
-        onError: (error) {
-          print('KYC Error: $error');
-          // Force close on error as well
-          Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+            // Update loading state immediately but don't navigate yet
+            if (mounted) {
+              setState(() {
+                _isKYCLoading = false;
+              });
+            }
 
-          if (onError != null) {
-            onError(error.toString());
-          }
-        },
-      );
+            if (!hasCompleted) {
+              hasCompleted = true;
+              safetyTimer.cancel();
+            }
+
+            // Handle navigation in post-frame callback
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              safeCleanup();
+
+              // Only navigate back once, and only if needed
+              try {
+                if (context.canPop() && mounted) {
+                  context.pop();
+                }
+              } catch (navError) {
+                print('Navigation cleanup error (non-critical): $navError');
+              }
+
+              // Call onClose callback only if verification wasn't successful
+              if (onClose != null && !hasSucceeded) {
+                onClose();
+              }
+            });
+          },
+          onError: (error) {
+            print('KYC Error: $error');
+            hasCompleted = true;
+            safetyTimer?.cancel();
+
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              safeCleanup();
+
+              try {
+                if (context.canPop() && mounted) {
+                  context.pop();
+                }
+              } catch (navError) {
+                print('Navigation cleanup error (non-critical): $navError');
+              }
+
+              if (onError != null) {
+                onError(error.toString());
+              }
+            });
+          },
+        );
+      } catch (openError) {
+        print('Error opening KYC widget: $openError');
+        hasCompleted = true;
+        safetyTimer?.cancel();
+        safeCleanup();
+
+        if (onError != null) {
+          onError('Failed to open verification: ${openError.toString()}');
+        }
+      }
     } catch (e) {
-      print('DojahKYC Exception: $e');
+      print('DojahKYC Setup Exception: $e');
+      hasCompleted = true;
+      safetyTimer?.cancel();
+      safeCleanup();
+
       if (onError != null) {
-        onError(e.toString());
+        onError('Setup failed: ${e.toString()}');
       }
     }
   }
+// Enhanced app lifecycle handling
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
 
-// Alternative method using Timer to handle stuck webview
-  Future<void> _showDojahKYCWithTimeout({
+    switch (state) {
+      case AppLifecycleState.paused:
+      // App is going to background
+        if (_isKYCLoading) {
+          print('App paused during KYC - will check on resume');
+        }
+        break;
+
+      case AppLifecycleState.resumed:
+      // App came back to foreground
+        if (_isKYCLoading) {
+          if (kDebugMode) {
+            print('App resumed - checking KYC state');
+          }
+          // Give some time for the KYC widget to properly restore or cleanup
+          Future.delayed(const Duration(seconds: 3), () {
+            if (mounted && _isKYCLoading && !_isBvnVerified) {
+              if (kDebugMode) {
+                print('Cleaning up stuck KYC state after app resume');
+              }
+              setState(() {
+                _isKYCLoading = false;
+              });
+              _showSnackBar('Please complete BVN verification');
+            }
+          });
+        }
+        break;
+
+      case AppLifecycleState.detached:
+      // App is being terminated
+        if (_isKYCLoading) {
+          _isKYCLoading = false;
+        }
+        break;
+
+      default:
+        break;
+    }
+  }
+
+
+
+// Enhanced PopScope handling
+  Widget buildEnhancedPopScope() {
+    return PopScope(
+      canPop: true, // Always allow back navigation
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (_isKYCLoading) {
+          if (kDebugMode) {
+            print('Back pressed during KYC - cleaning up');
+          }// Clean up state
+          setState(() {
+            _isKYCLoading = false;
+            _isBvnVerified = false;
+          });
+
+          try {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+              }
+            });
+          } catch (e) {
+            if (kDebugMode) {
+              print('Cleanup error (non-critical): $e');
+            }
+          }
+
+          _showSnackBar('KYC verification cancelled');
+        }
+      },
+      child: buildMainScaffold(context), // Your existing scaffold code
+    );
+  }
+
+  Future<void> _showDojahKYC({
     Function? onSuccess,
     Function(String)? onError,
     Function? onClose,
-  }) async {if (!_validateAuthToken()) return;
+  }) async {
+    if (!_validateAuthToken()) return;
 
     if (_controller.bvn.text.isEmpty) {
       _showSnackBar('Please enter your BVN first');
@@ -287,26 +456,18 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
 
     if (!_validatePersonalDetails()) return;
 
-    // Set a timeout to handle cases where the widget gets stuck
-    Timer? timeoutTimer;
+    bool hasSucceeded = false;
     bool hasCompleted = false;
 
-    void completeVerification() {
-      if (!hasCompleted) {
-        hasCompleted = true;
-        timeoutTimer?.cancel();
-      }
-    }
-
-    // Set a 5-minute timeout
-    timeoutTimer = Timer(const Duration(minutes: 5), () {
-      if (!hasCompleted) {
-        print('KYC Timeout - forcing close');
-        Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
-        if (mounted) {
-          _showSnackBar('Verification timed out. Please try again.', isError: true);
-          setState(() => _isKYCLoading = false);
-        }
+    // Add a safety timeout to reset loading state if widget gets stuck
+    Timer? safetyTimer = Timer(const Duration(seconds: 30), () {
+      if (mounted && _isKYCLoading && !hasCompleted) {
+        print('Safety timeout triggered - resetting KYC loading state');
+        setState(() {
+          _isKYCLoading = false;
+          _isBvnVerified = false;
+        });
+        _showSnackBar('Verification timed out. Please try again.', isError: true);
       }
     });
 
@@ -343,40 +504,57 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
         config: config,
       );
 
+      print('MetaData: $metaData');
+      print('GovData: $govData');
+      print('Config: $config');
+
       dojahKYC.open(
         context,
         onSuccess: (result) {
-          completeVerification();
+          hasSucceeded = true;
+          hasCompleted = true;
+          safetyTimer?.cancel();
+
           print('KYC Success: $result');
 
-          // Force navigation back to your app
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
-          });
+          // Force close any open web views or modals
+          Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
 
           if (onSuccess != null) {
             onSuccess();
           }
         },
         onClose: (close) {
-          completeVerification();
+          if (!hasCompleted) {
+            hasCompleted = true;
+            safetyTimer?.cancel();
+          }
+
           print('KYC Widget Closed: $close');
 
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
-          });
+          // Ensure we're back to the main screen
+          Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
 
-          if (onClose != null) {
+          // Always reset loading state on close, regardless of success
+          if (mounted) {
+            setState(() {
+              _isKYCLoading = false;
+            });
+          }
+
+          // Only call onClose if verification didn't succeed
+          if (onClose != null && !hasSucceeded) {
             onClose();
           }
         },
         onError: (error) {
-          completeVerification();
+          hasCompleted = true;
+          safetyTimer?.cancel();
+
           print('KYC Error: $error');
 
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
-          });
+          // Force close on error as well
+          Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
 
           if (onError != null) {
             onError(error.toString());
@@ -384,17 +562,23 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
         },
       );
     } catch (e) {
-      completeVerification();
+      hasCompleted = true;
+      safetyTimer.cancel();
+
       print('DojahKYC Exception: $e');
+
+      if (mounted) {
+        setState(() {
+          _isKYCLoading = false;
+          _isBvnVerified = false;
+        });
+      }
+
       if (onError != null) {
         onError(e.toString());
       }
     }
   }
-
-// Enhanced BVN Section with better UX
-
-  // ==================== FORM SUBMISSION ====================
 
   Future<void> _handleFormSubmission() async {
     if (!_validateAuthToken()) return;
@@ -444,7 +628,10 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
             pathParameters: {"email": userEmail}
         );
       } else {
-        context.goNamed("home");
+        if(mounted){
+          context.goNamed("home");
+        }
+
       }
     } catch (navError) {
       print("Navigation error: ${navError.toString()}");
@@ -655,48 +842,60 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
 
   // ==================== BUILD METHOD ====================
 
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Scaffold(
-        backgroundColor: colorScheme.background,
-        appBar: AppBar(
-          title: const Text('Update Profile'),
-          elevation: _isScrolled ? 2 : 0,
-          backgroundColor: _isScrolled ? colorScheme.surface : Colors.transparent,
-          centerTitle: true,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: colorScheme.primary),
-            onPressed: () => Navigator.of(context).pop(),
+// Add this method to handle back button press
+  Widget buildMainScaffold(BuildContext context) {
+    return  Scaffold(
+          backgroundColor: colorScheme.background,
+          appBar: AppBar(
+            title: const Text('Update Profile'),
+            elevation: _isScrolled ? 2 : 0,
+            backgroundColor: _isScrolled ? colorScheme.surface : Colors.transparent,
+            centerTitle: true,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: colorScheme.primary),
+              onPressed: () {
+                // Reset KYC loading state when back button is pressed
+                if (_isKYCLoading) {
+                  setState(() {
+                    _isKYCLoading = false;
+                    _isBvnVerified = false;
+                  });
+                  _showSnackBar('KYC verification cancelled');
+                }
+                Navigator.of(context).pop();
+              },
+            ),
           ),
-        ),
-        body: Stack(
-          children: [
-            SingleChildScrollView(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 18.w),
-                child: Column(
-                  children: [
-                    SizedBox(height: 20.h),
-                    _buildProfileHeader(),
-                    SizedBox(height: 28.h),
-                    _buildBasicInformationSection(),
-                    _buildPersonalInformationSection(),
-                    SizedBox(height: 28.h),
-                    _buildSubmitButton(),
-                    SizedBox(height: 32.h),
-                  ],
+          body: Stack(
+            children: [
+              SingleChildScrollView(
+                controller: _scrollController,
+                physics: const BouncingScrollPhysics(),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 18.w),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        SizedBox(height: 20.h),
+                        _buildProfileHeader(),
+                        SizedBox(height: 28.h),
+                        _buildBasicInformationSection(),
+                        _buildPersonalInformationSection(),
+                        SizedBox(height: 28.h),
+                        _buildSubmitButton(),
+                        SizedBox(height: 32.h),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
-            if (_isLoading) _buildLoadingOverlay(),
-          ],
-        ),
-      ),
-    );
+              if (_isLoading) _buildLoadingOverlay(),
+            ],
+          ),
+          );
+
+
   }
 
   Widget _buildBasicInformationSection() {
@@ -833,8 +1032,10 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                 fieldName: Fields.name,
                 onChanged: (value) {
                   _controller.bvn.text = value ?? "";
-                  // Reset verification status when BVN changes
-                  if (_isBvnVerified) {
+                  setState(() {
+                    _isKYCLoading = false;
+                  });
+                  if (_isBvnVerified && value != null && value.isNotEmpty) {
                     setState(() {
                       _isBvnVerified = false;
                     });
@@ -842,7 +1043,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                 },
                 controller: _controller.bvn,
                 suffixIcon: _isBvnVerified
-                    ? Icon(Icons.check_circle, color: Colors.green)
+                    ? Icon(Icons.check_circle, color: Colors.green, size: 24.w)
                     : null,
               ),
             ),
@@ -850,9 +1051,11 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
             Expanded(
               flex: 3,
               child: ElevatedButton(
-                onPressed: _isKYCLoading ? null : _verifyBVN,
+                onPressed: (_isKYCLoading || _isBvnVerified) ? null : _verifyBVN,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _isKYCLoading
+                  backgroundColor: _isBvnVerified
+                      ? Colors.green
+                      : _isKYCLoading
                       ? colorScheme.primary.withOpacity(0.5)
                       : colorScheme.primary,
                   foregroundColor: Colors.white,
@@ -870,7 +1073,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
-                    : Text('Verify'),
+                    : Text(_isBvnVerified ? 'Verified' : 'Verify'),
               ),
             ),
           ],
@@ -888,11 +1091,28 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
               children: [
                 Icon(Icons.check_circle, color: Colors.green, size: 20.w),
                 SizedBox(width: 8.w),
-                Text(
-                  'BVN Successfully Verified',
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Text(
+                    'BVN Successfully Verified',
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                // Add a button to retry verification if needed
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _isBvnVerified = false;
+                    });
+                  },
+                  child: Text(
+                    'Re-verify',
+                    style: TextStyle(
+                      color: colorScheme.primary,
+                      fontSize: 12.sp,
+                    ),
                   ),
                 ),
               ],
@@ -901,7 +1121,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
         else if (!_isKYCLoading)
           Center(
             child: TextButton.icon(
-              onPressed: () => _showDojahKYC(),
+              onPressed: () => _verifyBVN(),
               icon: Icon(Icons.verified_user, color: colorScheme.primary),
               label: Text(
                 'Complete KYC Verification',
@@ -927,6 +1147,11 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage> {
         onPressed: _isLoading ? null : _handleFormSubmission,
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return buildEnhancedPopScope();
   }
 }
 

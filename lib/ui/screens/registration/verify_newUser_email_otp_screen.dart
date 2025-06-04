@@ -284,7 +284,6 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
       ResponseResult resp = await userProvider.emailVerification(context, widget.preRegisterDetails.email, otp!);
       if (!mounted) return;
 
-      // Replace the success handling section with:
       if (resp.status == ResponseStatus.failed) {
         await CustomPopup.show(
           backgroundColor: colorScheme.onPrimary,
@@ -305,8 +304,7 @@ class _NewUserOTPVerificationScreenState extends State<NewUserOTPVerificationScr
           context: context,
         );
 
-        // Navigate after a short delay to let popup show
-        Future.delayed(const Duration(milliseconds: 800), () {
+        Future.delayed(const Duration(milliseconds: 1800), () {
           if (mounted) {
             context.goNamed("login");
           }

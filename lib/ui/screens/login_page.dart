@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:AXMPAY/main.dart';
+import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:AXMPAY/utils/global_error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +21,8 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
+class _LoginPageState extends State<LoginPage>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -44,6 +47,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   @override
   void dispose() {
     _animationController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -52,8 +57,12 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     final authProvider = Provider.of<AuthenticationProvider>(context);
     final size = MediaQuery.of(context).size;
     final keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+    final viewInsets = MediaQuery.of(context).viewInsets;
+    final padding = MediaQuery.of(context).padding;
 
     return Scaffold(
+      // Add resizeToAvoidBottomInset to handle keyboard properly
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           // Custom Background with Curved Division
@@ -63,50 +72,62 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               primaryColor: Theme.of(context).colorScheme.primary,
             ),
           ),
-          // Main Content
+          // Main Content with proper keyboard handling
           SafeArea(
-            child: Column(
-              children: [
-                SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: 24,
-                      right: 24,
-                      bottom: MediaQuery.of(context).viewInsets.bottom,
-                    ),
-                    child: Container(
-                      constraints: BoxConstraints(
-                        minHeight: size.height - MediaQuery.of(context).padding.top,
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            // Calculate available height
-                            final availableHeight = constraints.maxHeight;
-                            final isSmallScreen = availableHeight < 600;
+            child: SingleChildScrollView(
+              // Enable scrolling when keyboard appears
+              physics: const ClampingScrollPhysics(),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                child: Container(
+                  constraints: BoxConstraints(
+                    minHeight: size.height - padding.top - padding.bottom,
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Calculate responsive values outside of build methods
+                        Builder(
+                          builder: (context) {
+                            final isKeyboardVisible = viewInsets.bottom > 100;
+                            final isSmallScreen = size.height < 700;
 
                             return Column(
-                              mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Logo section with adaptive sizing
-                                SizedBox(height: isSmallScreen ? 20 : 40),
-                                if (!keyboardVisible)
+                                // Logo section with adaptive sizing and keyboard handling
+                                SizedBox(
+                                    height: isKeyboardVisible
+                                        ? 10
+                                        : (isSmallScreen ? 20 : 40)),
+
+                                // Only show logo when keyboard is not visible or on larger screens
+                                if (!isKeyboardVisible || !isSmallScreen)
                                   Center(
                                     child: TweenAnimationBuilder(
                                       tween: Tween<double>(begin: 0, end: 1),
-                                      duration: const Duration(milliseconds: 1200),
+                                      duration:
+                                          const Duration(milliseconds: 1200),
                                       builder: (context, double value, child) {
                                         return Transform.scale(
                                           scale: value,
                                           child: Container(
-                                            width: isSmallScreen ? 90 : 120,
-                                            height: isSmallScreen ? 90 : 120,
-                                            padding: EdgeInsets.all(isSmallScreen ? 8 : 12),
+                                            width: isKeyboardVisible
+                                                ? 60
+                                                : (isSmallScreen ? 90 : 120),
+                                            height: isKeyboardVisible
+                                                ? 60
+                                                : (isSmallScreen ? 90 : 120),
+                                            padding: EdgeInsets.all(
+                                                isKeyboardVisible
+                                                    ? 6
+                                                    : (isSmallScreen ? 8 : 12)),
                                             decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(30),
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
                                             ),
                                             child: SvgIcon(
                                               "assets/images/axmpay_logo.svg",
@@ -120,23 +141,33 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                     ),
                                   ),
 
-                                // Welcome text with adaptive spacing
-                                SizedBox(height: isSmallScreen ? 12 : 32),
-                                if (!keyboardVisible && !isSmallScreen)
+                                // Welcome text with adaptive spacing and keyboard handling
+                                SizedBox(
+                                    height: isKeyboardVisible
+                                        ? 8
+                                        : (isSmallScreen ? 12 : 32)),
+
+                                // Hide welcome text when keyboard is visible on small screens
+                                if (!isKeyboardVisible)
                                   FadeTransition(
                                     opacity: _fadeAnimation,
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'Welcome back!',
-                                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineMedium
+                                              ?.copyWith(
                                             fontWeight: FontWeight.bold,
                                             color: Colors.white,
                                             fontSize: isSmallScreen ? 24 : 32,
                                             shadows: [
                                               Shadow(
-                                                color: Colors.black.withOpacity(0.1),
+                                                color: Colors.black
+                                                    .withOpacity(0.1),
                                                 offset: const Offset(2, 2),
                                                 blurRadius: 4,
                                               ),
@@ -146,17 +177,25 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                         SizedBox(height: 8),
                                         Text(
                                           'Please sign in to continue.',
-                                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                            color: Colors.white.withOpacity(0.9),
-                                            fontSize: isSmallScreen ? 14 : 16,
-                                          ),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge
+                                              ?.copyWith(
+                                                color: Colors.white
+                                                    .withOpacity(0.9),
+                                                fontSize:
+                                                    isSmallScreen ? 14 : 16,
+                                              ),
                                         ),
                                       ],
                                     ),
                                   ),
 
                                 // Form fields section with adaptive spacing
-                                SizedBox(height: isSmallScreen ? 16 : 40),
+                                SizedBox(
+                                    height: isKeyboardVisible
+                                        ? 12
+                                        : (isSmallScreen ? 16 : 40)),
 
                                 // Email field
                                 buildTextField(
@@ -168,7 +207,10 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   validator: validateEmail,
                                 ),
 
-                                SizedBox(height: isSmallScreen ? 16 : 20),
+                                SizedBox(
+                                    height: isKeyboardVisible
+                                        ? 12
+                                        : (isSmallScreen ? 16 : 20)),
 
                                 // Password field
                                 buildTextField(
@@ -180,39 +222,44 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   validator: validatePassword,
                                   suffixIcon: IconButton(
                                     icon: Icon(
-                                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                      _obscurePassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
                                       color: Colors.white.withOpacity(0.7),
                                     ),
-                                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                    onPressed: () => setState(() =>
+                                        _obscurePassword = !_obscurePassword),
                                   ),
                                 ),
 
                                 SizedBox(height: 8),
 
-                                // Forgot password with improved visibility
-                                Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    color: Colors.black.withOpacity(0.15),
-                                  ),
-                                  margin: EdgeInsets.only(left: size.width * 0.5),
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
+                                // Forgot password with improved visibility and responsive layout
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Colors.black.withOpacity(0.15),
+                                    ),
                                     child: TextButton.icon(
                                       icon: Icon(
                                         Icons.lock_reset,
                                         size: 16,
                                         color: Colors.white.withOpacity(0.9),
                                       ),
-                                      onPressed: () => context.pushNamed("forgot_password_input_mail"),
+                                      onPressed: () => context.pushNamed(
+                                          "forgot_password_input_mail"),
                                       label: Text(
                                         'Forgot password?',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.w600,
+                                          fontSize: isKeyboardVisible ? 12 : 14,
                                           shadows: [
                                             Shadow(
-                                              color: Colors.black.withOpacity(0.3),
+                                              color:
+                                                  Colors.black.withOpacity(0.3),
                                               offset: const Offset(1, 1),
                                               blurRadius: 2,
                                             ),
@@ -220,17 +267,21 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                         ),
                                       ),
                                       style: TextButton.styleFrom(
-                                        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 4, horizontal: 8),
                                       ),
                                     ),
                                   ),
                                 ),
 
-                                // Login button with adaptive spacing
-                                SizedBox(height: isSmallScreen ? 40 : 80),
+                                // Adaptive spacing based on keyboard visibility
+                                SizedBox(
+                                    height: isKeyboardVisible
+                                        ? 20
+                                        : (isSmallScreen ? 40 : 80)),
 
-                                // Login button implementation
-                                Container(
+                                // Login button with adaptive spacing
+                                Container( padding: EdgeInsets.symmetric( horizontal:4.w),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(16),
                                     gradient: LinearGradient(
@@ -250,63 +301,83 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                       ),
                                     ],
                                   ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            elevation: 0,
-                                            backgroundColor: Theme.of(context).colorScheme.primary,
-                                            foregroundColor: Theme.of(context).colorScheme.primary,
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: isSmallScreen ? 12 : 16,
-                                              horizontal: 16,
-                                            ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(16),
-                                            ),
-                                          ),
-                                          onPressed: _isLoading ? null : () => _handleLogin(authProvider),
-                                          child: _isLoading
-                                              ? const CircularProgressIndicator(
-                                            color: Colors.deepPurple,
-                                            strokeWidth: 2,
-                                          )
-                                              : Text(
-                                            'Sign In',
-                                            style: TextStyle(
-                                              fontSize: isSmallScreen ? 16 : 18,
-                                              fontWeight: FontWeight.w600,
-                                              color: Theme.of(context).colorScheme.onPrimary,
-                                            ),
-                                          ),
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        elevation: 0,
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        foregroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: isKeyboardVisible
+                                              ? 12
+                                              : (isSmallScreen ? 12 : 16),
+                                          horizontal: 16,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(16),
                                         ),
                                       ),
-                                    ],
+                                      onPressed: _isLoading
+                                          ? null
+                                          : () => _handleLogin(authProvider),
+                                      child: _isLoading
+                                          ? const CircularProgressIndicator(
+                                              color: Colors.deepPurple,
+                                              strokeWidth: 2,
+                                            )
+                                          : Text(
+                                              'Sign In',
+                                              style: TextStyle(
+                                                fontSize: isKeyboardVisible
+                                                    ? 14
+                                                    : (isSmallScreen ? 16 : 18),
+                                                fontWeight: FontWeight.w600,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onPrimary,
+                                              ),
+                                            ),
+                                    ),
                                   ),
                                 ),
 
                                 // Sign up link with adaptive spacing
-                                SizedBox(height: isSmallScreen ? 16 : 32),
+                                SizedBox(
+                                    height: isKeyboardVisible
+                                        ? 12
+                                        : (isSmallScreen ? 16 : 32)),
 
                                 // Sign up implementation
                                 Center(
                                   child: TextButton(
-                                    onPressed: () => context.pushNamed("register"),
+                                    onPressed: () =>
+                                        context.pushNamed("register"),
                                     child: RichText(
                                       text: TextSpan(
                                         text: "Don't have an account? ",
                                         style: TextStyle(
-                                          color: Theme.of(context).colorScheme.primary.withOpacity(0.9),
-                                          fontSize: 14,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                              .withOpacity(0.9),
+                                          fontSize: isKeyboardVisible ? 12 : 14,
                                         ),
                                         children: [
                                           TextSpan(
                                             text: "Sign up",
                                             style: TextStyle(
-                                              color: Theme.of(context).colorScheme.primary,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 14,
+                                              fontSize:
+                                                  isKeyboardVisible ? 12 : 14,
                                             ),
                                           ),
                                         ],
@@ -320,11 +391,11 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                             );
                           },
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ],
@@ -456,27 +527,21 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
       if (!mounted) return;
 
-      final userServiceProvider = Provider.of<UserServiceProvider>(context, listen: false);
+      final userServiceProvider =
+          Provider.of<UserServiceProvider>(context, listen: false);
 
       if (resp == null) {
         throw Exception('Login response is null');
       }
 
       if (resp.status == ResponseStatus.failed) {
-
-        //if (widgetStateProvider.dropdownValue){
         await _showLoginFailedPopup(resp.message);
-
-        //  return;
-       // }
-       return;
+        return;
       }
 
       await _handleUserNavigation(userServiceProvider, userDetails);
-
     } catch (e) {
       if (!mounted) return;
-
       await _showErrorPopup(e);
     } finally {
       if (mounted) {
@@ -486,15 +551,13 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Future<void> _showLoginFailedPopup(String message) async {
-
     await CustomPopup.show(
       type: PopupType.error,
       context: context,
       message: message,
       title: "Login Failed",
     );
-    print("ddddddddddddddddddddddddddddddddd");
-
+    print("Login failed popup shown");
   }
 
   Future<void> _showErrorPopup(Object e) async {
@@ -507,10 +570,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Future<void> _handleUserNavigation(
-      UserServiceProvider userServiceProvider,
-      LoginDetails userDetails
-      ) async {
-    if (userServiceProvider.userdata?.userStatus.toString().toLowerCase() == "confirmed") {
+      UserServiceProvider userServiceProvider, LoginDetails userDetails) async {
+    if (userServiceProvider.userdata?.userStatus.toString().toLowerCase() ==
+        "confirmed") {
       final storage = FlutterSecureStorage();
       final passCodeMapString = await storage.read(key: 'passcodeMap');
 

@@ -7,6 +7,7 @@ import 'package:AXMPAY/ui/widgets/custom_container.dart';
 import 'package:AXMPAY/ui/widgets/custom_responsive_sizes/responsive_size.dart';
 import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PrivacyPolicyScreen extends StatefulWidget {
   PrivacyPolicyScreen({Key? key}) : super(key: key);
@@ -614,7 +615,7 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> with TickerPr
             ),
             SizedBox(height: 8.sp),
             Text(
-              "Contact our privacy team at privacy@fustPay.com",
+              "Contact our privacy team at privacy@fustPay.net",
               style: TextStyle(
                 fontSize: 14.sp,
                 color: Colors.grey[600],
@@ -622,25 +623,28 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> with TickerPr
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 16.sp),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 12.sp),
-              decoration: BoxDecoration(
-                color: colorScheme.primary,
-                borderRadius: BorderRadius.circular(25.sp),
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.primary.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: Offset(0, 4),
+            GestureDetector(
+              onTap:()=> _launchEmail('privacy@fustpay.net'),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 20.sp, vertical: 12.sp),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  borderRadius: BorderRadius.circular(25.sp),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorScheme.primary.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  "Contact Support",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.sp,
                   ),
-                ],
-              ),
-              child: Text(
-                "Contact Support",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14.sp,
                 ),
               ),
             ),
@@ -651,6 +655,12 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> with TickerPr
   }
 }
 
+Future<void> _launchEmail(String email) async {
+  final Uri emailUri = Uri(scheme: 'mailto', path: email);
+  if (!await launchUrl(emailUri)) {
+    throw Exception('Could not launch $email');
+  }
+}
 class PrivacySection {
   final String title;
   final String content;

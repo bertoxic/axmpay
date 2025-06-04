@@ -39,49 +39,48 @@ class _FustPaySplashScreenState extends State<FustPaySplashScreen>
   String _animatedText = '';
   List<Color> _currentGradient = [];
   double _backgroundRotation = 0.0;
-
-  // Bezier curve points
-  final List<Offset> _bezierPoints = [
-    Offset(0, 0),
-    Offset(0.3, 0.1),
-    Offset(0.5, 0.5),
-    Offset(0.7, 0.9),
-    Offset(1.0, 1.0),
-  ];
+  bool _hasNavigated = false; // Prevent multiple navigation calls
 
   @override
   void initState() {
     super.initState();
     _currentGradient = [..._gradientColors];
+    _setupAnimations();
+    _startNavigationTimer();
+  }
+
+  void _setupAnimations() {
     _setupMainAnimation();
     _setupLogoAnimation();
     _setupTextAnimation();
     _setupBackgroundAnimation();
     _setupBezierAnimation();
+  }
 
-    Future.delayed(const Duration(seconds: 3), () {
-      Navigator.of(context).push(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
-          transitionDuration: const Duration(milliseconds: 1200),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            var begin = const Offset(0.0, 0.3);
-            var end = Offset.zero;
-            var curve = Curves.easeOutCubic;
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            var offsetAnimation = animation.drive(tween);
-
-            return FadeTransition(
-              opacity: animation,
-              child: SlideTransition(
-                position: offsetAnimation,
-                child: child,
-              ),
-            );
-          },
-        ),
-      );
+  void _startNavigationTimer() {
+    // Navigate to login page after splash duration
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted && !_hasNavigated) {
+        _navigateToLogin();
+      }
     });
+  }
+
+  void _navigateToLogin() {
+    if (_hasNavigated) return;
+    _hasNavigated = true;
+
+    // Stop all repeating animations before navigation
+    _backgroundController.stop();
+    _bezierController.stop();
+    _logoController.stop();
+
+    // Use GoRouter navigation instead of Navigator
+    // Replace '/login' with your actual login route path
+    context.go('/login');
+
+    // Alternative: If you need to replace the current route completely
+    // context.pushReplacement('/login');
   }
 
   void _setupBezierAnimation() {
@@ -97,9 +96,11 @@ class _FustPaySplashScreenState extends State<FustPaySplashScreen>
       ),
     );
 
-    _bezierController
-      ..forward()
-      ..repeat(reverse: true);
+    _bezierController.forward().then((_) {
+      if (mounted && !_hasNavigated) {
+        _bezierController.repeat(reverse: true);
+      }
+    });
   }
 
   void _setupMainAnimation() {
@@ -163,9 +164,11 @@ class _FustPaySplashScreenState extends State<FustPaySplashScreen>
       ),
     );
 
-    _logoController
-      ..forward()
-      ..repeat(reverse: true);
+    _logoController.forward().then((_) {
+      if (mounted && !_hasNavigated) {
+        _logoController.repeat(reverse: true);
+      }
+    });
   }
 
   void _setupTextAnimation() {
@@ -175,14 +178,19 @@ class _FustPaySplashScreenState extends State<FustPaySplashScreen>
     );
 
     _textController.addListener(() {
-      setState(() {
-        final progress = (_text.length * _textController.value).round();
-        _animatedText = _text.substring(0, progress);
-      });
+      if (mounted) {
+        setState(() {
+          final progress = (_text.length * _textController.value).round();
+          _animatedText = _text.substring(0, progress);
+        });
+      }
     });
 
+    // Start text animation after main animation completes
     _mainController.forward().then((_) {
-      _textController.forward();
+      if (mounted && !_hasNavigated) {
+        _textController.forward();
+      }
     });
   }
 
@@ -199,14 +207,18 @@ class _FustPaySplashScreenState extends State<FustPaySplashScreen>
       ),
     );
 
-    _backgroundController
-      ..forward()
-      ..repeat();
-
     _backgroundController.addListener(() {
-      setState(() {
-        _backgroundRotation = _backgroundAnimation.value;
-      });
+      if (mounted) {
+        setState(() {
+          _backgroundRotation = _backgroundAnimation.value;
+        });
+      }
+    });
+
+    _backgroundController.forward().then((_) {
+      if (mounted && !_hasNavigated) {
+        _backgroundController.repeat();
+      }
     });
   }
 
@@ -248,127 +260,130 @@ class _FustPaySplashScreenState extends State<FustPaySplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: AnimatedBuilder(
-        animation: Listenable.merge([
-          _mainController,
-          _logoController,
-          _textController,
-          _backgroundController,
-          _bezierController
-        ]),
-        builder: (context, child) {
-          return Stack(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: _currentGradient,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    transform: GradientRotation(_backgroundRotation),
-                    stops: const [0.0, 0.3, 0.7, 1.0],
+    return PopScope(
+      canPop: false, // Prevent back button from working on splash screen
+      child: Scaffold(
+        body: AnimatedBuilder(
+          animation: Listenable.merge([
+            _mainController,
+            _logoController,
+            _textController,
+            _backgroundController,
+            _bezierController
+          ]),
+          builder: (context, child) {
+            return Stack(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: _currentGradient,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      transform: GradientRotation(_backgroundRotation),
+                      stops: const [0.0, 0.3, 0.7, 1.0],
+                    ),
                   ),
                 ),
-              ),
-              CustomPaint(
-                size: Size(MediaQuery.of(context).size.width,
-                    MediaQuery.of(context).size.height),
-                painter: BezierPainter(
-                  _createBezierPath(MediaQuery.of(context).size),
-                  Color(0xFF9D50BB).withOpacity(0.3),
+                CustomPaint(
+                  size: Size(MediaQuery.of(context).size.width,
+                      MediaQuery.of(context).size.height),
+                  painter: BezierPainter(
+                    _createBezierPath(MediaQuery.of(context).size),
+                    Color(0xFF9D50BB).withOpacity(0.3),
+                  ),
                 ),
-              ),
-              Center(
-                child: Transform.scale(
-                  scale: _scaleAnimation.value,
-                  child: Transform.rotate(
-                    angle: _rotateAnimation.value,
-                    child: Opacity(
-                      opacity: _opacityAnimation.value,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Transform.scale(
-                            scale: _logoScaleAnimation.value *
-                                _logoPulseAnimation.value,
-                            child: Container(
-                              width: 200,
-                              height: 200,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 20,
-                                    spreadRadius: 5,
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.white.withOpacity(0.4),
-                                    blurRadius: 25,
-                                    spreadRadius: -8,
-                                  ),
-                                ],
-                              ),
-                              child: Center(
-                                child: ShaderMask(
-                                  shaderCallback: (bounds) => LinearGradient(
-                                    colors: [
-                                      colorScheme.primary,
-                                      colorScheme.primary.withOpacity(0.3),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ).createShader(bounds),
-                                  child: SvgIcon(
-                                    "assets/images/axmpay_logo.svg",
-                                    color: Colors.white,
-                                    width: 85.w,
-                                    height: 75.h,
+                Center(
+                  child: Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: Transform.rotate(
+                      angle: _rotateAnimation.value,
+                      child: Opacity(
+                        opacity: _opacityAnimation.value,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Transform.scale(
+                              scale: _logoScaleAnimation.value *
+                                  _logoPulseAnimation.value,
+                              child: Container(
+                                width: 200,
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 20,
+                                      spreadRadius: 5,
+                                    ),
+                                    BoxShadow(
+                                      color: Colors.white.withOpacity(0.4),
+                                      blurRadius: 25,
+                                      spreadRadius: -8,
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: ShaderMask(
+                                    shaderCallback: (bounds) => LinearGradient(
+                                      colors: [
+                                        Theme.of(context).colorScheme.primary,
+                                        Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ).createShader(bounds),
+                                    child: SvgIcon(
+                                      "assets/images/axmpay_logo.svg",
+                                      color: Colors.white,
+                                      width: 85.w,
+                                      height: 75.h,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          SizedBox(height: 50),
-                          ShaderMask(
-                            shaderCallback: (bounds) => LinearGradient(
-                              colors: [Colors.white, Colors.white70],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            ).createShader(bounds),
-                            child: Text(
-                              _animatedText,
-                              style: TextStyle(
-                                fontSize: 60,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                letterSpacing: 2.0,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black.withOpacity(0.3),
-                                    offset: Offset(4, 4),
-                                    blurRadius: 8,
-                                  ),
-                                  Shadow(
-                                    color: Colors.white.withOpacity(0.3),
-                                    offset: Offset(-2, -2),
-                                    blurRadius: 6,
-                                  ),
-                                ],
+                            SizedBox(height: 50),
+                            ShaderMask(
+                              shaderCallback: (bounds) => LinearGradient(
+                                colors: [Colors.white, Colors.white70],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ).createShader(bounds),
+                              child: Text(
+                                _animatedText,
+                                style: TextStyle(
+                                  fontSize: 60,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  letterSpacing: 2.0,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black.withOpacity(0.3),
+                                      offset: Offset(4, 4),
+                                      blurRadius: 8,
+                                    ),
+                                    Shadow(
+                                      color: Colors.white.withOpacity(0.3),
+                                      offset: Offset(-2, -2),
+                                      blurRadius: 6,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }

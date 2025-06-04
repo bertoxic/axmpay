@@ -58,30 +58,55 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Change Password'),
+        title: const Text(
+          'Change Password',
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+          ),
+        ),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
-        foregroundColor: colorScheme.primary,
+        foregroundColor: const Color(0xFF1E293B),
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: size.width * 0.06,
+              horizontal: size.width * 0.05,
               vertical: size.height * 0.02,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: size.height * 0.03),
-                _buildHeader(colorScheme, size),
-                SizedBox(height: size.height * 0.05),
-                _buildPasswordForm(colorScheme, size),
-                SizedBox(height: size.height * 0.04),
-                _buildChangeButton(colorScheme, size),
                 SizedBox(height: size.height * 0.02),
+                _buildHeader(colorScheme, size),
+                SizedBox(height: size.height * 0.04),
+                _buildPasswordForm(colorScheme, size),
+                SizedBox(height: size.height * 0.03),
+                _buildChangeButton(colorScheme, size),
+                SizedBox(height: size.height * 0.025),
                 _buildPasswordRequirements(colorScheme, size),
               ],
             ),
@@ -92,89 +117,145 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   }
 
   Widget _buildHeader(ColorScheme colorScheme, Size size) {
-    return Column(
-      children: [
-        Container(
-          height: size.width * 0.2,
-          width: size.width * 0.2,
-          decoration: BoxDecoration(
-            color: colorScheme.primary.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.lock_reset,
-            size: size.width * 0.12,
-            color: colorScheme.primary,
-          ),
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF667EEA),
+            Color(0xFF764BA2),
+          ],
         ),
-        SizedBox(height: size.height * 0.025),
-        Text(
-          "Change Your Password",
-          style: TextStyle(
-            fontSize: size.width * 0.06,
-            fontWeight: FontWeight.bold,
-            color: colorScheme.onBackground,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF667EEA).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
-        ),
-        SizedBox(height: size.height * 0.01),
-        Text(
-          "Create a strong password to keep your account secure",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: size.width * 0.04,
-            color: colorScheme.onBackground.withOpacity(0.7),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            height: size.width * 0.16,
+            width: size.width * 0.16,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 2,
+              ),
+            ),
+            child: Icon(
+              Icons.security,
+              size: size.width * 0.08,
+              color: Colors.white,
+            ),
           ),
-        ),
-      ],
+          SizedBox(height: size.height * 0.02),
+          const Text(
+            "Secure Your Account",
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: size.height * 0.008),
+          const Text(
+            "Update your password to keep your account protected",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white70,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildPasswordForm(ColorScheme colorScheme, Size size) {
-    return Form(
-      key: _passwordFormKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Current Password
-          _buildPasswordField(
-            controller: _oldPasswordController,
-            label: "Current Password",
-            hint: "Enter your current password",
-            isPasswordVisible: _oldPasswordVisible,
-            toggleVisibility: () => setState(() => _oldPasswordVisible = !_oldPasswordVisible),
-            validator: (value) => FormValidator.validate(
-              value,
-              ValidatorType.digits,
-              fieldName: "Current password",
-            ),
-          ),
-          SizedBox(height: size.height * 0.025),
-
-          // New Password
-          _buildPasswordField(
-            controller: _newPasswordController,
-            label: "New Password",
-            hint: "Enter your new password",
-            isPasswordVisible: _newPasswordVisible,
-            toggleVisibility: () => setState(() => _newPasswordVisible = !_newPasswordVisible),
-            validator: (value) => FormValidator.validate(
-              value,
-              ValidatorType.digits,
-              fieldName: "New password",
-            ),
-          ),
-          SizedBox(height: size.height * 0.025),
-
-          // Confirm New Password
-          _buildPasswordField(
-            controller: _confirmPasswordController,
-            label: "Confirm New Password",
-            hint: "Confirm your new password",
-            isPasswordVisible: _confirmPasswordVisible,
-            toggleVisibility: () => setState(() => _confirmPasswordVisible = !_confirmPasswordVisible),
-            validator: (value) => _validateConfirmPassword(value),
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
         ],
+      ),
+      child: Form(
+        key: _passwordFormKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Password Details",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1E293B),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Current Password
+            _buildPasswordField(
+              controller: _oldPasswordController,
+              label: "Current Password",
+              hint: "Enter your current password",
+              isPasswordVisible: _oldPasswordVisible,
+              toggleVisibility: () => setState(() => _oldPasswordVisible = !_oldPasswordVisible),
+              validator: (value) => FormValidator.validate(
+                value,
+                ValidatorType.digits,
+                fieldName: "Current password",
+              ),
+              icon: Icons.lock_outline,
+              color: const Color(0xFF64748B),
+            ),
+            const SizedBox(height: 20),
+
+            // New Password
+            _buildPasswordField(
+              controller: _newPasswordController,
+              label: "New Password",
+              hint: "Enter your new password",
+              isPasswordVisible: _newPasswordVisible,
+              toggleVisibility: () => setState(() => _newPasswordVisible = !_newPasswordVisible),
+              validator: (value) => FormValidator.validate(
+                value,
+                ValidatorType.digits,
+                fieldName: "New password",
+              ),
+              icon: Icons.lock_reset,
+              color: const Color(0xFF059669),
+            ),
+            const SizedBox(height: 20),
+
+            // Confirm New Password
+            _buildPasswordField(
+              controller: _confirmPasswordController,
+              label: "Confirm New Password",
+              hint: "Confirm your new password",
+              isPasswordVisible: _confirmPasswordVisible,
+              toggleVisibility: () => setState(() => _confirmPasswordVisible = !_confirmPasswordVisible),
+              validator: (value) => _validateConfirmPassword(value),
+              icon: Icons.verified_user,
+              color: const Color(0xFF7C3AED),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -186,35 +267,85 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     required bool isPasswordVisible,
     required Function() toggleVisibility,
     required String? Function(String?) validator,
+    required IconData icon,
+    required Color color,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                size: 16,
+                color: color,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+                color: color,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         TextFormField(
           controller: controller,
           obscureText: !isPasswordVisible,
           validator: validator,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: TextStyle(
+              color: Colors.grey.shade400,
+              fontWeight: FontWeight.w400,
+            ),
             filled: true,
-            fillColor: Colors.grey.withOpacity(0.1),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            fillColor: const Color(0xFFF1F5F9),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: Colors.grey.shade200,
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: color.withOpacity(0.6),
+                width: 2,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(
+                color: Color(0xFFEF4444),
+                width: 1,
+              ),
             ),
             suffixIcon: IconButton(
               icon: Icon(
-                isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                color: Colors.grey,
+                isPasswordVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                color: Colors.grey.shade500,
+                size: 20,
               ),
               onPressed: toggleVisibility,
             ),
@@ -225,34 +356,63 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   }
 
   Widget _buildChangeButton(ColorScheme colorScheme, Size size) {
-    return SizedBox(
+    return Container(
       width: double.infinity,
-      height: size.height * 0.06,
+      height: 56,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Color(0xFF667EEA),
+            Color(0xFF764BA2),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF667EEA).withOpacity(0.4),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: ElevatedButton(
         onPressed: _isLoading ? null : _handleChangePassword,
         style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
-          elevation: 0,
         ),
         child: _isLoading
-            ? SizedBox(
+            ? const SizedBox(
           height: 24,
           width: 24,
           child: CircularProgressIndicator(
-            color: colorScheme.onPrimary,
+            color: Colors.white,
             strokeWidth: 2.5,
           ),
         )
-            : const Text(
-          "Change Password",
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+            : const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.shield_outlined,
+              color: Colors.white,
+              size: 20,
+            ),
+            SizedBox(width: 12),
+            Text(
+              "Update Password",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -260,47 +420,86 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   Widget _buildPasswordRequirements(ColorScheme colorScheme, Size size) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: colorScheme.primary.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF059669).withOpacity(0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Password Requirements:",
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF059669).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.info_outline,
+                  size: 18,
+                  color: Color(0xFF059669),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                "Password Requirements",
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 8),
-          _buildRequirementItem("At least 8 characters long"),
-          _buildRequirementItem("At least one uppercase letter"),
-          _buildRequirementItem("At least one number"),
-          _buildRequirementItem("At least one special character"),
+          const SizedBox(height: 16),
+          _buildRequirementItem("At least 8 characters long", Icons.check_circle),
+          _buildRequirementItem("At least one uppercase letter", Icons.check_circle),
+          _buildRequirementItem("At least one number", Icons.check_circle),
+          _buildRequirementItem("At least one special character", Icons.check_circle),
         ],
       ),
     );
   }
 
-  Widget _buildRequirementItem(String text) {
+  Widget _buildRequirementItem(String text, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Icon(
-            Icons.check_circle_outline,
-            size: 16,
-            color: Colors.green,
+          Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: const Color(0xFF059669).withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 16,
+              color: const Color(0xFF059669),
+            ),
           ),
-          SizedBox(width: 8),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.black87,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF475569),
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],

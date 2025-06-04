@@ -381,34 +381,35 @@ class _MobileTopUpState extends State<MobileTopUp> {
   }
 
   Widget _buildServiceProviderInfo() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.white, Colors.grey[50]!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: FutureBuilder<ResponseResult?>(
-        future: _phoneCheckFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return SizedBox(
+    return FutureBuilder<ResponseResult?>(
+      future: _phoneCheckFuture,
+      builder: (context, snapshot) {
+        // Return empty SizedBox when no data/loading initially
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            padding: EdgeInsets.all(20.w),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.white, Colors.grey[50]!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                  spreadRadius: 0,
+                ),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: SizedBox(
               height: 80.h,
               child: Center(
                 child: Column(
@@ -434,9 +435,33 @@ class _MobileTopUpState extends State<MobileTopUp> {
                   ],
                 ),
               ),
-            );
-          } else if (snapshot.hasError) {
-            return Container(
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Container(
+            padding: EdgeInsets.all(20.w),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.white, Colors.grey[50]!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                  spreadRadius: 0,
+                ),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
                 color: Colors.red[50],
@@ -459,11 +484,35 @@ class _MobileTopUpState extends State<MobileTopUp> {
                   ),
                 ],
               ),
-            );
-          } else if (snapshot.hasData) {
-            if (snapshot.data?.status.toString().toLowerCase() ==
-                ResponseStatus.failed.toString().toLowerCase()) {
-              return Container(
+            ),
+          );
+        } else if (snapshot.hasData) {
+          if (snapshot.data?.status.toString().toLowerCase() ==
+              ResponseStatus.failed.toString().toLowerCase()) {
+            return Container(
+              padding: EdgeInsets.all(20.w),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.white, Colors.grey[50]!],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                    spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
                   color: Colors.red[50],
@@ -486,9 +535,33 @@ class _MobileTopUpState extends State<MobileTopUp> {
                     ),
                   ],
                 ),
-              );
-            } else {
-              return Row(
+              ),
+            );
+          } else {
+            return Container(
+              padding: EdgeInsets.all(20.w),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.white, Colors.grey[50]!],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                    spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
@@ -543,16 +616,14 @@ class _MobileTopUpState extends State<MobileTopUp> {
                     ],
                   ),
                 ],
-              );
-            }
+              ),
+            );
           }
-          return Row(
-            children: [
-              Expanded(child: Center(child: Text("Enter a valid phone number"),)),
-            ],
-          );
-        },
-      ),
+        }
+
+        // Return completely empty widget when no data initially
+        return const SizedBox.shrink();
+      },
     );
   }
 
