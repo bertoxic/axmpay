@@ -198,7 +198,7 @@ class CustomPopup extends StatelessWidget {
     // Get the state provider
     final stateProvider = Provider.of<CustomWidgetStateProvider>(context, listen: false);
 
-    // Check if a popup is already showing
+    // Checks if a popup is already showing
     if (stateProvider.dropdownValue) {
       return Future.value(null); // Return null if a popup is already visible
     }

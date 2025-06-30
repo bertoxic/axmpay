@@ -66,7 +66,6 @@ class _MobileTopUpState extends State<MobileTopUp> {
     super.dispose();
   }
 
-  // Add this method to handle phone number formatting
   String _formatPhoneNumber(String phone) {
     if (phone.isEmpty) return phone;
 
@@ -153,7 +152,6 @@ class _MobileTopUpState extends State<MobileTopUp> {
     });
   }
 
-// Add this method to centralize data state reset
   void _resetDataState() {
     isDataSelected = false;
     selectedDataBundle = null;
@@ -1303,7 +1301,6 @@ class _MobileTopUpState extends State<MobileTopUp> {
       },
     );
 
-// Add this method to reset the form
 
   }
   void _resetForm() {
@@ -1320,7 +1317,6 @@ class _MobileTopUpState extends State<MobileTopUp> {
   Widget _buildDataBundleSelection() {
     if (!isDataSelected) return const SizedBox();
 
-    // Reset data bundle if phone number changes
     if (!phoneIsValid) {
       _resetDataState();
       return const SizedBox();

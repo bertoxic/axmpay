@@ -32,7 +32,6 @@ class UpdateUserDetailsPage extends StatefulWidget {
 
 class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
     with TickerProviderStateMixin, WidgetsBindingObserver {
-
   // Form and Controllers
   final _formKey = GlobalKey<FormState>();
   late RegistrationController _controller;
@@ -42,10 +41,9 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
   bool _isScrolled = false;
   bool _isLoading = false;
   bool _isKYCLoading = false;
-  bool _isBvnVerified = false;
+  bool _isNINVerified = false;
   late UserDetails userDetails;
   String? _authToken;
-
 
   @override
   void initState() {
@@ -56,7 +54,6 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
     _initializeUserData();
     _loadAuthToken();
   }
-
 
   @override
   void dispose() {
@@ -94,7 +91,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
       _authToken = await SharedPreferencesUtil.getString('auth_token');
       if (_authToken == null || _authToken!.isEmpty) {
         _showSnackBar('Authentication token not found. Please login again.');
-        if(mounted){
+        if (mounted) {
           context.go('/login');
         }
       }
@@ -114,8 +111,10 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
   // ==================== VALIDATION METHODS ====================
 
   bool _validatePersonalDetails() {
-    if (_controller.first_name.text.isEmpty || _controller.last_name.text.isEmpty) {
-      _showSnackBar('Please fill all details in personal section before BVN verification');
+    if (_controller.first_name.text.isEmpty ||
+        _controller.last_name.text.isEmpty) {
+      _showSnackBar(
+          'Please fill all details in personal section before NIN verification');
       return false;
     }
     return true;
@@ -131,12 +130,11 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
 
   // ==================== BVN VERIFICATION METHODS ====================
 
-
-  Future<void> _verifyBVN() async {
+  Future<void> _verifyNIN() async {
     if (!_validateAuthToken()) return;
 
-    if (_controller.bvn.text.isEmpty) {
-      _showSnackBar('Please enter your BVN first');
+    if (_controller.nin.text.isEmpty) {
+      _showSnackBar('Please enter your NIN first');
       return;
     }
 
@@ -144,38 +142,41 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
 
     setState(() {
       _isKYCLoading = true;
-      _isBvnVerified = false;
+      _isNINVerified = false;
     });
 
     try {
       await _showDojahKYCWithProperCleanup(
         onSuccess: () {
-          print("KYC Success - BVN Verified");
+          print("KYC Success - NIN Verified");
           if (mounted) {
             setState(() {
-              _isBvnVerified = true;
-              _isKYCLoading = false; // Ensure loading is set to false on success
+              _isNINVerified = true;
+              _isKYCLoading =
+                  false; // Ensure loading is set to false on success
             });
-            _showSnackBar('BVN verified successfully', isSuccess: true);
+            _showSnackBar('NIN verified successfully', isSuccess: true);
           }
         },
         onError: (String errorMessage) {
           print("KYC Error: $errorMessage");
           if (mounted) {
             setState(() {
-              _isBvnVerified = false;
+              _isNINVerified = false;
               _isKYCLoading = false; // Set loading to false on error
             });
-            _showSnackBar('BVN verification failed: $errorMessage', isError: true);
+            _showSnackBar('NIN verification failed: $errorMessage',
+                isError: true);
           }
         },
         onClose: () {
           print("KYC Widget Closed/Canceled");
           if (mounted) {
             setState(() {
-              _isKYCLoading = false; // Set loading to false when closed/canceled
-              if (!_isBvnVerified) {
-                _showSnackBar('BVN verification was canceled');
+              _isKYCLoading =
+                  false; // Set loading to false when closed/canceled
+              if (!_isNINVerified) {
+                _showSnackBar('NIN verification was canceled');
               }
             });
           }
@@ -185,12 +186,13 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
       if (mounted) {
         setState(() {
           _isKYCLoading = false; // Set loading to false on exception
-          _isBvnVerified = false;
+          _isNINVerified = false;
         });
-        _showSnackBar('Failed to verify BVN: ${e.toString()}', isError: true);
+        _showSnackBar('Failed to verify NIN: ${e.toString()}', isError: true);
       }
     }
   }
+
   Future<void> _showDojahKYCWithProperCleanup({
     Function? onSuccess,
     Function(String)? onError,
@@ -198,8 +200,8 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
   }) async {
     if (!_validateAuthToken()) return;
 
-    if (_controller.bvn.text.isEmpty) {
-      _showSnackBar('Please enter your BVN first');
+    if (_controller.nin.text.isEmpty) {
+      _showSnackBar('Please enter your NIN first');
       return;
     }
 
@@ -230,7 +232,8 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
       if (mounted && _isKYCLoading && !hasCompleted) {
         print('Safety timeout triggered - cleaning up KYC');
         safeCleanup();
-        _showSnackBar('Verification timed out. Please try again.', isError: true);
+        _showSnackBar('Verification timed out. Please try again.',
+            isError: true);
       }
     });
 
@@ -244,7 +247,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
     };
 
     final govData = {
-      "bvn": _controller.bvn.text,
+      "nin": _controller.nin.text,
       "dl": "",
       "mobile": _controller.phone_number.text,
       "auth_token": _authToken,
@@ -361,6 +364,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
       }
     }
   }
+
 // Enhanced app lifecycle handling
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -368,35 +372,35 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
 
     switch (state) {
       case AppLifecycleState.paused:
-      // App is going to background
+        // App is going to background
         if (_isKYCLoading) {
           print('App paused during KYC - will check on resume');
         }
         break;
 
       case AppLifecycleState.resumed:
-      // App came back to foreground
+        // App came back to foreground
         if (_isKYCLoading) {
           if (kDebugMode) {
             print('App resumed - checking KYC state');
           }
           // Give some time for the KYC widget to properly restore or cleanup
           Future.delayed(const Duration(seconds: 3), () {
-            if (mounted && _isKYCLoading && !_isBvnVerified) {
+            if (mounted && _isKYCLoading && !_isNINVerified) {
               if (kDebugMode) {
                 print('Cleaning up stuck KYC state after app resume');
               }
               setState(() {
                 _isKYCLoading = false;
               });
-              _showSnackBar('Please complete BVN verification');
+              _showSnackBar('Please complete NIN verification');
             }
           });
         }
         break;
 
       case AppLifecycleState.detached:
-      // App is being terminated
+        // App is being terminated
         if (_isKYCLoading) {
           _isKYCLoading = false;
         }
@@ -407,8 +411,6 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
     }
   }
 
-
-
 // Enhanced PopScope handling
   Widget buildEnhancedPopScope() {
     return PopScope(
@@ -417,16 +419,17 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
         if (_isKYCLoading) {
           if (kDebugMode) {
             print('Back pressed during KYC - cleaning up');
-          }// Clean up state
+          } // Clean up state
           setState(() {
             _isKYCLoading = false;
-            _isBvnVerified = false;
+            _isNINVerified = false;
           });
 
           try {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (Navigator.of(context).canPop()) {
-                Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+                Navigator.of(context, rootNavigator: true)
+                    .popUntil((route) => route.isFirst);
               }
             });
           } catch (e) {
@@ -449,8 +452,8 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
   }) async {
     if (!_validateAuthToken()) return;
 
-    if (_controller.bvn.text.isEmpty) {
-      _showSnackBar('Please enter your BVN first');
+    if (_controller.nin.text.isEmpty) {
+      _showSnackBar('Please enter your NIN first');
       return;
     }
 
@@ -465,9 +468,10 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
         print('Safety timeout triggered - resetting KYC loading state');
         setState(() {
           _isKYCLoading = false;
-          _isBvnVerified = false;
+          _isNINVerified = false;
         });
-        _showSnackBar('Verification timed out. Please try again.', isError: true);
+        _showSnackBar('Verification timed out. Please try again.',
+            isError: true);
       }
     });
 
@@ -481,7 +485,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
     };
 
     final govData = {
-      "bvn": _controller.bvn.text,
+      "nin": _controller.nin.text,
       "dl": "",
       "mobile": _controller.phone_number.text,
       "auth_token": _authToken,
@@ -518,7 +522,8 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
           print('KYC Success: $result');
 
           // Force close any open web views or modals
-          Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+          Navigator.of(context, rootNavigator: true)
+              .popUntil((route) => route.isFirst);
 
           if (onSuccess != null) {
             onSuccess();
@@ -533,7 +538,8 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
           print('KYC Widget Closed: $close');
 
           // Ensure we're back to the main screen
-          Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+          Navigator.of(context, rootNavigator: true)
+              .popUntil((route) => route.isFirst);
 
           // Always reset loading state on close, regardless of success
           if (mounted) {
@@ -554,7 +560,8 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
           print('KYC Error: $error');
 
           // Force close on error as well
-          Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+          Navigator.of(context, rootNavigator: true)
+              .popUntil((route) => route.isFirst);
 
           if (onError != null) {
             onError(error.toString());
@@ -570,7 +577,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
       if (mounted) {
         setState(() {
           _isKYCLoading = false;
-          _isBvnVerified = false;
+          _isNINVerified = false;
         });
       }
 
@@ -598,7 +605,8 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
       if (resp?.status == ResponseStatus.failed) {
         _showErrorPopup(resp?.message ?? "An error occurred");
       } else if (resp?.status == ResponseStatus.success) {
-        await _handleSuccessfulSubmission(resp?.message ?? "Operation successful");
+        await _handleSuccessfulSubmission(
+            resp?.message ?? "Operation successful");
       }
     } catch (e) {
       if (mounted) {
@@ -623,20 +631,18 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
       String userEmail = _getUserEmail();
 
       if (!hasPasscode) {
-        context.pushReplacementNamed(
-            "passcode_setup_screen",
-            pathParameters: {"email": userEmail}
-        );
+        context.pushReplacementNamed("passcode_setup_screen",
+            pathParameters: {"email": userEmail});
       } else {
-        if(mounted){
+        if (mounted) {
           context.goNamed("home");
         }
-
       }
     } catch (navError) {
       print("Navigation error: ${navError.toString()}");
       if (mounted) {
-        _showSnackBar("Navigation error: Please restart the app", isError: true);
+        _showSnackBar("Navigation error: Please restart the app",
+            isError: true);
       }
     }
   }
@@ -645,13 +651,14 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
     return _controller.emailController.text.isNotEmpty
         ? _controller.emailController.text
         : userDetails.email.isNotEmpty
-        ? userDetails.email
-        : "user@example.com";
+            ? userDetails.email
+            : "user@example.com";
   }
 
   // ==================== UI HELPER METHODS ====================
 
-  void _showSnackBar(String message, {bool isSuccess = false, bool isError = false}) {
+  void _showSnackBar(String message,
+      {bool isSuccess = false, bool isError = false}) {
     if (!mounted) return;
 
     Color backgroundColor = colorScheme.primary;
@@ -686,11 +693,10 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
     );
   }
 
-  Widget _buildSectionCard({
-    required String title,
-    required List<Widget> children,
-    required IconData icon
-  }) {
+  Widget _buildSectionCard(
+      {required String title,
+      required List<Widget> children,
+      required IconData icon}) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 10.h),
       decoration: BoxDecoration(
@@ -742,9 +748,9 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
           Text(
             title,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
-            ),
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
           ),
         ],
       ),
@@ -842,60 +848,58 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
 
   // ==================== BUILD METHOD ====================
 
-// Add this method to handle back button press
   Widget buildMainScaffold(BuildContext context) {
-    return  Scaffold(
-          backgroundColor: colorScheme.background,
-          appBar: AppBar(
-            title: const Text('Update Profile'),
-            elevation: _isScrolled ? 2 : 0,
-            backgroundColor: _isScrolled ? colorScheme.surface : Colors.transparent,
-            centerTitle: true,
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: colorScheme.primary),
-              onPressed: () {
-                // Reset KYC loading state when back button is pressed
-                if (_isKYCLoading) {
-                  setState(() {
-                    _isKYCLoading = false;
-                    _isBvnVerified = false;
-                  });
-                  _showSnackBar('KYC verification cancelled');
-                }
-                Navigator.of(context).pop();
-              },
-            ),
-          ),
-          body: Stack(
-            children: [
-              SingleChildScrollView(
-                controller: _scrollController,
-                physics: const BouncingScrollPhysics(),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 18.w),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        SizedBox(height: 20.h),
-                        _buildProfileHeader(),
-                        SizedBox(height: 28.h),
-                        _buildBasicInformationSection(),
-                        _buildPersonalInformationSection(),
-                        SizedBox(height: 28.h),
-                        _buildSubmitButton(),
-                        SizedBox(height: 32.h),
-                      ],
-                    ),
-                  ),
+    return Scaffold(
+      backgroundColor: colorScheme.background,
+      appBar: AppBar(
+        title: const Text('Update Profile'),
+        elevation: _isScrolled ? 2 : 0,
+        backgroundColor: _isScrolled ? colorScheme.surface : Colors.transparent,
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: colorScheme.primary),
+          onPressed: () {
+            // Reset KYC loading state when back button is pressed
+            if (_isKYCLoading) {
+              setState(() {
+                _isKYCLoading = false;
+                _isNINVerified = false;
+              });
+              _showSnackBar('KYC verification cancelled');
+            }
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 18.w),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    SizedBox(height: 20.h),
+                    _buildProfileHeader(),
+                    SizedBox(height: 28.h),
+                    _buildBasicInformationSection(),
+                    _buildAddressInformationSection(),
+                    _buildPersonalInformationSection(),
+                    SizedBox(height: 28.h),
+                    _buildSubmitButton(),
+                    SizedBox(height: 32.h),
+                  ],
                 ),
               ),
-              if (_isLoading) _buildLoadingOverlay(),
-            ],
+            ),
           ),
-          );
-
-
+          if (_isLoading) _buildLoadingOverlay(),
+        ],
+      ),
+    );
   }
 
   Widget _buildBasicInformationSection() {
@@ -911,7 +915,9 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
                 hintText: 'Enter your First Name',
                 controller: _controller.first_name,
                 prefixIcon: const Icon(Icons.person_outline),
-                validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "firstName"),
+                validator: (value) => FormValidator.validate(
+                    value, ValidatorType.isEmpty,
+                    fieldName: "firstName"),
                 fieldName: Fields.name,
                 readOnly: true,
                 onChanged: (value) => userDetails.firstName = value,
@@ -924,7 +930,9 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
                 hintText: 'Enter your Last Name',
                 controller: _controller.last_name,
                 readOnly: true,
-                validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "lastName"),
+                validator: (value) => FormValidator.validate(
+                    value, ValidatorType.isEmpty,
+                    fieldName: "lastName"),
                 prefixIcon: const Icon(Icons.person),
                 fieldName: Fields.name,
                 onChanged: (value) => userDetails.lastName = value,
@@ -942,7 +950,9 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
           keyboardType: TextInputType.emailAddress,
           fieldName: Fields.email,
           controller: _controller.emailController,
-          validator: (value) => FormValidator.validate(value, ValidatorType.email, fieldName: Fields.email),
+          validator: (value) => FormValidator.validate(
+              value, ValidatorType.email,
+              fieldName: Fields.email),
         ),
         SizedBox(height: 18.h),
         CustomTextField(
@@ -956,7 +966,155 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
             _controller.phone_number.text = value;
           },
           controller: _controller.phone_number,
-          validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "Phone number"),
+          validator: (value) => FormValidator.validate(
+              value, ValidatorType.isEmpty,
+              fieldName: "Phone number"),
+        ),
+      ],
+    );
+  }
+
+
+  List<String> _getCountryNames() {
+    return CountryMap.map((country) => country['name'] as String).toList();
+  }
+
+  List<String> _getStatesForCountry(String countryName) {
+    final country = CountryMap.firstWhere(
+          (country) => country['name'] == countryName,
+      orElse: () => {'states': <String>[]},
+    );
+    return List<String>.from(country['states'] ?? []);
+  }
+
+  void _onCountryChanged(String? countryName) {
+    setState(() {
+      _controller.country.text = countryName ?? "";
+      // Clear state when country changes
+      _controller.state.text = "";
+    });
+  }
+
+// Updated widget method
+  Widget _buildAddressInformationSection() {
+    return _buildSectionCard(
+      title: 'Address Information',
+      icon: Icons.location_on,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: DropdownTextField(
+                controller: _controller.country,
+                validator: (value) => FormValidator.validate(
+                    value, ValidatorType.isEmpty,
+                    fieldName: "country"),
+                onChange: _onCountryChanged,
+                options: _getCountryNames(),
+                labelText: 'Country',
+                hintText: 'Select country',
+                prefixIcon: Icons.flag,
+                fieldName: 'Country',
+                displayStringForOption: (options) => options,
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: DropdownTextField(
+                controller: _controller.state,
+                validator: (value) => FormValidator.validate(
+                    value, ValidatorType.isEmpty,
+                    fieldName: "state"),
+                onChange: (value) {
+                  setState(() {
+                    _controller.state.text = value ?? "";
+                  });
+                },
+                options: _controller.country.text.isNotEmpty
+                    ? _getStatesForCountry(_controller.country.text)
+                    : [],
+                labelText: 'State',
+                hintText: _controller.country.text.isEmpty
+                    ? 'Select country first'
+                    : 'Select state',
+                prefixIcon: Icons.map,
+                fieldName: 'State',
+                displayStringForOption: (options) => options,
+                // Disable the field if no country is selected
+
+               // enabled: _controller.country.text.isNotEmpty,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 18.h),
+        Row(
+          children: [
+            Expanded(
+              child: CustomTextField(
+                labelText: 'City',
+                hintText: 'Enter city',
+                prefixIcon: const Icon(Icons.location_city),
+                fieldName: "Fields.city",
+                validator: (value) => FormValidator.validate(
+                    value, ValidatorType.isEmpty,
+                    fieldName: "city"),
+                onChanged: (value) {
+                  setState(() {
+                    _controller.city.text = value ?? "";
+                  });
+                },
+                controller: _controller.city,
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: CustomTextField(
+                labelText: 'Postal Code',
+                hintText: 'Enter postal code',
+                prefixIcon: const Icon(Icons.local_post_office),
+                fieldName: "Fields.postalCode",
+                validator: (value) => FormValidator.validate(
+                    value, ValidatorType.isEmpty,
+                    fieldName: "postal code"),
+                onChanged: (value) {
+                  setState(() {
+                    _controller.zipCode.text = value ?? "";
+                  });
+                },
+                controller: _controller.zipCode,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 18.h),
+        CustomTextField(
+          labelText: 'Street Address',
+          hintText: 'Enter your street address',
+          prefixIcon: const Icon(Icons.home),
+          fieldName: "streetAddress",
+          validator: (value) => FormValidator.validate(
+              value, ValidatorType.isEmpty,
+              fieldName: "street address"),
+          onChanged: (value) {
+            setState(() {
+              _controller.streetAddress.text = value ?? "";
+            });
+          },
+          controller: _controller.streetAddress,
+        ),
+        SizedBox(height: 18.h),
+        CustomTextField(
+          labelText: 'Landmark (Optional)',
+          hintText: 'Enter a nearby landmark',
+          prefixIcon: const Icon(Icons.place),
+          fieldName: "Fields.landmark",
+          onChanged: (value) {
+            setState(() {
+              _controller.nearestLandMark.text = value ?? "";
+            });
+          },
+          controller: _controller.nearestLandMark,
         ),
       ],
     );
@@ -979,15 +1137,16 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
           dateController: _controller.date_of_birth,
           validator: (value) => FormValidator.validate(
               value, ValidatorType.isEmpty,
-              fieldName: "date of birth"
-          ),
+              fieldName: "date of birth"),
         ),
         SizedBox(height: 18.h),
-        _buildBVNSection(),
+        _buildNINSection(),
         SizedBox(height: 18.h),
         DropdownTextField(
           controller: _controller.PEP,
-          validator: (value) => FormValidator.validate(value, ValidatorType.isEmpty, fieldName: "Politically Exposed Person"),
+          validator: (value) => FormValidator.validate(
+              value, ValidatorType.isEmpty,
+              fieldName: "Politically Exposed Person"),
           onChange: (value) {
             setState(() {
               _controller.PEP.text = value ?? "";
@@ -1014,7 +1173,8 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
       ],
     );
   }
-  Widget _buildBVNSection() {
+
+  Widget _buildNINSection() {
     return Column(
       children: [
         Row(
@@ -1022,27 +1182,26 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
             Expanded(
               flex: 7,
               child: CustomTextField(
-                labelText: 'BVN',
-                hintText: 'Input your valid BVN',
+                labelText: 'NIN',
+                hintText: 'Input your valid NIN',
                 validator: (value) => FormValidator.validate(
                     value, ValidatorType.digits,
-                    fieldName: "BVN"
-                ),
+                    fieldName: "NIN"),
                 prefixIcon: const Icon(Icons.perm_identity),
                 fieldName: Fields.name,
                 onChanged: (value) {
-                  _controller.bvn.text = value ?? "";
+                  _controller.nin.text = value ?? "";
                   setState(() {
                     _isKYCLoading = false;
                   });
-                  if (_isBvnVerified && value != null && value.isNotEmpty) {
+                  if (_isNINVerified && value != null && value.isNotEmpty) {
                     setState(() {
-                      _isBvnVerified = false;
+                      _isNINVerified = false;
                     });
                   }
                 },
-                controller: _controller.bvn,
-                suffixIcon: _isBvnVerified
+                controller: _controller.nin,
+                suffixIcon: _isNINVerified
                     ? Icon(Icons.check_circle, color: Colors.green, size: 24.w)
                     : null,
               ),
@@ -1051,13 +1210,14 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
             Expanded(
               flex: 3,
               child: ElevatedButton(
-                onPressed: (_isKYCLoading || _isBvnVerified) ? null : _verifyBVN,
+                onPressed:
+                    (_isKYCLoading || _isNINVerified) ? null : _verifyNIN,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _isBvnVerified
+                  backgroundColor: _isNINVerified
                       ? Colors.green
                       : _isKYCLoading
-                      ? colorScheme.primary.withOpacity(0.5)
-                      : colorScheme.primary,
+                          ? colorScheme.primary.withOpacity(0.5)
+                          : colorScheme.primary,
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 15.h),
                   shape: RoundedRectangleBorder(
@@ -1066,20 +1226,21 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
                 ),
                 child: _isKYCLoading
                     ? SizedBox(
-                  width: 16.w,
-                  height: 16.h,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-                    : Text(_isBvnVerified ? 'Verified' : 'Verify'),
+                        width: 16.w,
+                        height: 16.h,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(_isNINVerified ? 'Verified' : 'Verify'),
               ),
             ),
           ],
         ),
         SizedBox(height: 10.h),
-        if (_isBvnVerified)
+        if (_isNINVerified)
           Container(
             padding: EdgeInsets.all(12.h),
             decoration: BoxDecoration(
@@ -1093,7 +1254,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
-                    'BVN Successfully Verified',
+                    'NIN Successfully Verified',
                     style: TextStyle(
                       color: Colors.green,
                       fontWeight: FontWeight.w500,
@@ -1104,7 +1265,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
                 TextButton(
                   onPressed: () {
                     setState(() {
-                      _isBvnVerified = false;
+                      _isNINVerified = false;
                     });
                   },
                   child: Text(
@@ -1121,7 +1282,7 @@ class _UpdateUserDetailsPageState extends State<UpdateUserDetailsPage>
         else if (!_isKYCLoading)
           Center(
             child: TextButton.icon(
-              onPressed: () => _verifyBVN(),
+              onPressed: () => _verifyNIN(),
               icon: Icon(Icons.verified_user, color: colorScheme.primary),
               label: Text(
                 'Complete KYC Verification',

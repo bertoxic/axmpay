@@ -4,7 +4,7 @@ import 'package:AXMPAY/ui/widgets/custom_text/custom_apptext.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:shimmer/shimmer.dart'; // Add this import
+import 'package:shimmer/shimmer.dart';
 
 import '../../../models/transaction_model.dart';
 import '../../../providers/user_service_provider.dart';

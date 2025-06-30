@@ -23,13 +23,13 @@ class RegistrationController {
   final TextEditingController gender = TextEditingController();
   final TextEditingController phone_number = TextEditingController();
   final TextEditingController placeOfBirthController = TextEditingController();
-  final TextEditingController bvn = TextEditingController();
+  final TextEditingController nin = TextEditingController();
   final TextEditingController streetAddress = TextEditingController();
   final TextEditingController city = TextEditingController();
   final TextEditingController state = TextEditingController();
   final TextEditingController localGovArea = TextEditingController();
   final TextEditingController nearestLandMark = TextEditingController();
-  final TextEditingController zip_code = TextEditingController();
+  final TextEditingController zipCode = TextEditingController();
   final TextEditingController PEP = TextEditingController();
   final TextEditingController houseNumber = TextEditingController();
   late UserDetails? userDetails;
@@ -75,8 +75,8 @@ void _initializeController() {
         email: emailController.text,
         firstName: first_name.text,
         address: Address(street: streetAddress.text, city: city.text, state: state.text, houseNumber: houseNumber.text),
-        bvn: bvn.text,
-        nin: placeOfBirthController.text,
+        bvn: nin.text,
+        nin: nin.text,
         phone: phone_number.text,
         gender: gender.text,
     );
@@ -100,7 +100,6 @@ void _initializeController() {
         if (dateParts.length == 3) {
           // Rearrange from yyyy-mm-dd to dd/mm/yyyy
           formattedDate = "${dateParts[2]}/${dateParts[1]}/${dateParts[0]}";
-          print("0000000000000000 $formattedDate");
         } else {
           // Keep original if format doesn't match expected pattern
           formattedDate = date_of_birth.text;
@@ -116,7 +115,7 @@ void _initializeController() {
       dateOfBirth: formattedDate, // Use the converted date format
       firstName: first_name.text,
       address: address,
-      BVN: bvn.text,
+      BVN: nin.text,
       placeOfBirth: placeOfBirthController.text,
       phone: phone_number.text,
       refby: refby.text,
@@ -161,11 +160,11 @@ void _initializeController() {
     gender.dispose();
     phone_number.dispose();
     placeOfBirthController.dispose();
-    bvn.dispose();
+    nin.dispose();
     streetAddress.dispose();
     city.dispose();
     state.dispose();
-    zip_code.dispose();
+    zipCode.dispose();
     houseNumber.dispose();
     PEP.dispose();
     localGovArea.dispose();

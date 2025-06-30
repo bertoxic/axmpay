@@ -174,7 +174,6 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                     return;
                   }
 
-                  // If all validations pass, proceed with form submission
                   try {
                     _controller.createUserWalletPayload();
                     ResponseResult? responseResult =
@@ -371,7 +370,7 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
               Padding(
                 padding: EdgeInsets.all(16.w),
                 child: Form(
-                  key: _documentsFormKey, // Add this new form key
+                  key: _documentsFormKey,
                   child: Column(
                     children: [
                       _buildDocumentUploader(
