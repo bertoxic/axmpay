@@ -12,12 +12,13 @@ class PhotoPicker extends StatefulWidget {
   final String? hintText;
   final String? labelText;
   final Widget? prefixIcon;
-
+  final bool onlyCamera;
   const PhotoPicker({
     super.key,
     required this.context,
     required this.onChange,
     required this.controller,
+    this.onlyCamera=false,
     this.validator,
     this.hintText,
     this.labelText,
@@ -145,13 +146,13 @@ class _PhotoPickerState extends State<PhotoPicker> with AutomaticKeepAliveClient
                           onTap: _getImageFromCameraBase64,
                           context: context,
                         ),
-                        _buildOptionButton(
+                        !widget.onlyCamera?_buildOptionButton(
                           icon: Icons.photo_library_rounded,
                           text: 'Choose from Gallery',
                           subtext: 'Select an existing photo from your device',
                           onTap: _getImageFromGalleryBase64,
                           context: context,
-                        ),
+                        ):SizedBox(),
                         Padding(
                           padding: EdgeInsets.symmetric(vertical: 10.h),
                           child: Text(

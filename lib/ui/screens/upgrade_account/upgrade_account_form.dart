@@ -283,9 +283,9 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                           controller: _controller.idTypeController,
                           options: const [
                             "National ID",
-                            "Driver's License",
-                            "Voter's card",
-                            "International PassPort"
+                            // "Driver's License",
+                            // "Voter's card",
+                            // "International PassPort"
                           ],
                           labelText: 'Identification Type',
                           hintText: 'Select type of identification',
@@ -306,13 +306,13 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                           icon: Icons.calendar_today_outlined,
                         ),
                         SizedBox(height: 16.h),
-                        _buildDateField(
-                          controller: _controller.idExpiryDateController,
-                          labelText: 'ID Expiry Date',
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(const Duration(days: 10780)),
-                          icon: Icons.event_outlined,
-                        ),
+                        // _buildDateField(
+                        //   controller: _controller.idExpiryDateController,
+                        //   labelText: 'ID Expiry Date',
+                        //   firstDate: DateTime.now(),
+                        //   lastDate: DateTime.now().add(const Duration(days: 10780)),
+                        //   icon: Icons.event_outlined,
+                        // ),
                       ],
                     ),
                   ),
@@ -377,37 +377,42 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
                         controller: _controller.userPhotoController,
                         label: "User Photo",
                         icon: Icons.person_outline,
+                        onlyCamera: true,
                       ),
                       SizedBox(height: 16.h),
                       _buildDocumentUploader(
                         controller: _controller.idCardFrontController,
-                        label: "ID Card Front",
+                        label: "NIN Card Front or Slip",
                         icon: Icons.credit_card_outlined,
+                        onlyCamera: false,
                       ),
                       SizedBox(height: 16.h),
-                      _buildDocumentUploader(
-                        controller: _controller.idCardBackController,
-                        label: "ID Card Back",
-                        icon: Icons.credit_card_outlined,
-                      ),
-                      SizedBox(height: 16.h),
+                      // _buildDocumentUploader(
+                      //   controller: _controller.idCardBackController,
+                      //   label: "NIN Card Back",
+                      //   icon: Icons.credit_card_outlined,
+                      // ),
+                      // SizedBox(height: 16.h),
                       _buildDocumentUploader(
                         controller: _controller.customerSignatureController,
                         label: "Customer Signature",
                         icon: Icons.draw_outlined,
+                        onlyCamera: false,
                       ),
                       SizedBox(height: 16.h),
                       _buildDocumentUploader(
                         controller: _controller.utilityBillController,
                         label: "Utility Bill",
                         icon: Icons.receipt_outlined,
+                        onlyCamera: false,
+
                       ),
                       SizedBox(height: 16.h),
-                      _buildDocumentUploader(
-                        controller: _controller.proofOfAddressController,
-                        label: "Proof of Address",
-                        icon: Icons.home_outlined,
-                      ),
+                      // _buildDocumentUploader(
+                      //   controller: _controller.proofOfAddressController,
+                      //   label: "Proof of Address",
+                      //   icon: Icons.home_outlined,
+                      // ),
                     ],
                   ),
                 ),
@@ -491,6 +496,7 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
     required TextEditingController controller,
     required String label,
     required IconData icon,
+    required bool onlyCamera ,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -500,6 +506,7 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
       child: PhotoPicker(
         hintText: label,
         labelText: label,
+        onlyCamera: onlyCamera,
         prefixIcon: Icon(
           icon,
           color: Theme.of(context).colorScheme.primary,
@@ -731,8 +738,7 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
     // Validate identification fields
     if (_controller.idTypeController.text.isEmpty ||
         _controller.idNumberController.text.isEmpty ||
-        _controller.idIssueDateController.text.isEmpty ||
-        _controller.idExpiryDateController.text.isEmpty) {
+        _controller.idIssueDateController.text.isEmpty ) {
       return false;
     }
     return true;
@@ -742,10 +748,10 @@ class _UpdateUserDetailsPageState extends State<UpgradeAccountPage> with SingleT
     // Validate document uploads
     if (_controller.userPhotoController.text.isEmpty ||
         _controller.idCardFrontController.text.isEmpty ||
-        _controller.idCardBackController.text.isEmpty ||
         _controller.customerSignatureController.text.isEmpty ||
-        _controller.utilityBillController.text.isEmpty ||
-        _controller.proofOfAddressController.text.isEmpty) {
+        _controller.utilityBillController.text.isEmpty //||
+        // _controller.proofOfAddressController.text.isEmpty
+    ) {
       return false;
     }
 
